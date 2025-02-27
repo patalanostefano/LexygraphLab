@@ -1,0 +1,18 @@
+package it.uniroma1.springboot.mvc;
+
+import java.util.Map; 
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+
+@Controller
+public class HelloController {
+
+	@RequestMapping("/hello/{name}")
+	public String hello(Map<String, Object> model, @PathVariable String name) {
+		model.put("name", name); 
+		return "greeting"; 
+	}
+	
+}

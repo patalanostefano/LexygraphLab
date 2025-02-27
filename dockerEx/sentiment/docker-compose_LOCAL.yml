@@ -1,0 +1,63 @@
+version: "3"
+
+services:
+  frontend:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    environment:
+      WEBAPP_URL: "http://172.16.238.11"
+    ports:
+      - "80:80"
+    networks:
+      sentiment:
+        ipv4_address: 172.16.238.9
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+
+  webapp:
+    build: 
+      context: ./webapp
+      dockerfile: Dockerfile
+    environment:
+      LOGIC_API_URL: "http://172.16.238.10:5000"
+    ports:
+      - "8080:8080"
+    networks:
+      sentiment:
+        ipv4_address: 172.16.238.11
+    depends_on:
+      - logic
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+      restart_policy:
+        condition: on-failure
+  logic:
+    build: 
+      context: ./logic
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    networks:
+      sentiment:
+        ipv4_address: 172.16.238.10
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 1
+      restart_policy:
+        condition: on-failure
+
+networks:
+  sentiment:
+    ipam:
+      driver: default
+      config:
+        - subnet: "172.16.238.0/24"
