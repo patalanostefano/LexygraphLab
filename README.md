@@ -1,8 +1,8 @@
 # LexygraphLab
  
-##SCRUM
+## SCRUM
 
-##(6-Week Scrum Program)
+## (6-Week Scrum Program)
 
 
 ## Sprint 0 (1 week preparation)
