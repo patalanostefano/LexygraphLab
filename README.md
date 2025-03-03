@@ -1,11 +1,13 @@
 # LexygraphLab
- 
+<img width="565" alt="Screenshot 2025-03-03 alle 09 01 48" src="https://github.com/user-attachments/assets/c31c84fa-d80e-46c4-8081-3c3a11486c6f" />
 ## SCRUM (6-Week Program)
 
 
 
 ## Sprint 0 (1 week preparation)
+
 **Goals:** Project setup, environment configuration, initial architecture
+
 
 ### Tasks:
 1. **Setup Project Infrastructure**
