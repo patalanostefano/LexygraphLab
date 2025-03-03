@@ -1,0 +1,86 @@
+# Server configuration
+server:
+  port: 8082
+  servlet:
+    context-path: /
+  error:
+    include-message: always
+    include-binding-errors: always
+
+# Spring configuration
+spring:
+  application:
+    name: document-service
+  
+  # Database configuration
+  datasource:
+    url: jdbc:postgresql://localhost:5432/document_service
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:password}
+    driver-class-name: org.postgresql.Driver
+  
+  # JPA configuration
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+    show-sql: false
+  
+  # File upload limits
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+# Document service specific configuration
+document:
+  storage:
+    type: local  # Options: local, s3
+    local:
+      directory: ${STORAGE_DIR:./document-storage}
+    s3:
+      bucket: ${S3_BUCKET:lexygraphai-documents}
+      region: ${S3_REGION:us-east-1}
+      access-key: ${AWS_ACCESS_KEY:}
+      secret-key: ${AWS_SECRET_KEY:}
+
+# Security configuration
+security:
+  jwt:
+    secret: ${JWT_SECRET:lexygraphai-document-service-jwt-secret-key-for-signing-tokens}
+    expiration: 86400000  # 24 hours in milliseconds
+
+# Integration with other services
+service:
+  processing:
+    url: ${PROCESSING_SERVICE_URL:http://localhost:8083/api/v1}
+
+# Actuator configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+
+# OpenAPI documentation
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+  packages-to-scan: com.lexygraphai.document.controller
+
+# Logging configuration
+logging:
+  level:
+    root: INFO
+    com.lexygraphai: DEBUG
+    org.springframework.web: INFO
+    org.hibernate: WARN

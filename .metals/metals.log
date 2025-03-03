@@ -453,3 +453,118 @@ mar 03, 2025 10:56:39 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint noti
 AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
 mar 03, 2025 10:57:01 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
 AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 03, 2025 10:58:42 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 03, 2025 11:00:40 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 03, 2025 11:16:17 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 03, 2025 11:16:19 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+2025.03.03 11:17:56 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/repository/DocumentRepository.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 03, 2025 11:17:57 AM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-03/r_compiler-error_11-17-57-035.md
+2025.03.03 11:18:07 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/repository/CollectionRepository.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.03 11:18:07 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.03 11:18:07 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/controller/CollectionController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.03 11:18:07 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/service/DocumentServiceImpl.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.03 11:18:07 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/service/DocumentService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.03 11:18:07 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/DocumentServiceApplication.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 03, 2025 11:18:08 AM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-03/r_compiler-error_11-18-08-081.md
+mar 03, 2025 11:18:08 AM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-03/r_compiler-error_11-18-08-171.md
+mar 03, 2025 11:18:08 AM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-03/r_compiler-error_11-18-08-459.md
+2025.03.03 11:18:08 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/model/Document.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 03, 2025 11:18:08 AM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-03/r_compiler-error_11-18-08-617.md
+mar 03, 2025 11:18:08 AM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-03/r_compiler-error_11-18-08-603.md
+mar 03, 2025 11:18:09 AM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-03/r_compiler-error_11-18-09-046.md
+mar 03, 2025 11:18:09 AM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-03/r_compiler-error_11-18-09-518.md
+mar 03, 2025 11:18:15 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+2025.03.03 11:18:15 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/model/Document.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.03 11:18:18 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/model/Document.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.03 11:18:18 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/model/Document.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 03, 2025 11:18:19 AM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-03/r_compiler-error_11-18-19-403.md
+2025.03.03 11:18:19 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/model/Collection.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.03 11:18:19 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/model/Document.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.03 11:18:19 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/model/Document.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.03 11:18:19 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/service/StorageService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.03 11:18:19 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/service/FileSystemStorageService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.03 11:18:19 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/service/S3StorageService.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 03, 2025 11:18:19 AM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-03/r_compiler-error_11-18-19-911.md
+2025.03.03 11:18:19 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/service/CollectionService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.03 11:18:20 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/service/CollectionServiceImpl.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.03 11:18:19 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/config/StorageConfig.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.03 11:18:20 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/config/SecurityConfig.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 03, 2025 11:18:20 AM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-03/r_compiler-error_11-18-20-834.md
+2025.03.03 11:18:22 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/model/Document.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 03, 2025 11:18:22 AM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-03/r_compiler-error_11-18-22-293.md
+mar 03, 2025 11:18:22 AM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-03/r_compiler-error_11-18-22-721.md
+2025.03.03 11:18:31 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/model/Document.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 03, 2025 11:18:32 AM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-03/r_compiler-error_11-18-32-094.md
+mar 03, 2025 11:18:33 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 03, 2025 11:22:29 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+2025.03.03 11:23:59 WARN  Running javac-semanticdb failed for file:///Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/config/AwsConfig.java. Output:
+
+2025.03.03 11:24:00 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/config/AwsConfig.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 03, 2025 11:24:00 AM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-03/r_compiler-error_11-24-00-405.md
+2025.03.03 11:24:01 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/config/AwsConfig.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.03 11:24:01 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/config/AwsConfig.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.03 11:24:01 WARN  Running javac-semanticdb failed for file:///Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/config/AwsConfig.java. Output:
+
+mar 03, 2025 11:24:02 AM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-03/r_compiler-error_11-24-02-641.md
+2025.03.03 11:24:03 WARN  no build target for: /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/config/AwsConfig.java
+mar 03, 2025 11:24:03 AM scala.meta.internal.metals.StdReporter $anonfun$create$1
+GRAVE: QDox parse error in file:///Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/config/AwsConfig.java (full report at: /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-03/r_qdox-error_11-24-03-531.md)
+2025.03.03 11:24:03 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/repository/DocumentRepository.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.03 11:24:03 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/repository/CollectionRepository.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.03 11:24:03 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.03 11:24:03 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/controller/CollectionController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.03 11:24:03 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/service/DocumentServiceImpl.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.03 11:24:03 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/model/Document.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.03 11:24:03 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/DocumentServiceApplication.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.03 11:24:03 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/model/Collection.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.03 11:24:03 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/service/StorageService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.03 11:24:03 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/service/FileSystemStorageService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.03 11:24:03 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/service/S3StorageService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.03 11:24:03 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/service/CollectionServiceImpl.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.03 11:24:03 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/service/CollectionService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.03 11:24:03 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/config/StorageConfig.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.03 11:24:03 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/config/SecurityConfig.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.03 11:24:03 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/service/DocumentService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.03 11:24:03 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/config/AwsConfig.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.03 11:24:04 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/config/AwsConfig.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 03, 2025 11:24:04 AM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-03/r_compiler-error_11-24-04-297.md
+mar 03, 2025 11:24:04 AM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-03/r_compiler-error_11-24-04-682.md
+mar 03, 2025 11:24:04 AM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-03/r_compiler-error_11-24-04-908.md
+mar 03, 2025 11:24:05 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 03, 2025 11:25:09 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+2025.03.03 11:25:11 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/config/AwsConfig.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.03 11:25:11 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/lexygraphai/document/config/AwsConfig.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 03, 2025 11:25:13 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 03, 2025 11:25:13 AM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-03/r_compiler-error_11-25-13-492.md
+mar 03, 2025 11:25:13 AM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-03/r_compiler-error_11-25-13-730.md
