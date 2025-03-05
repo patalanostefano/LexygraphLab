@@ -1,0 +1,12 @@
+fastapi==0.103.1
+uvicorn==0.23.2
+pydantic==2.3.0
+python-multipart==0.0.6
+pytesseract==0.3.10
+PyPDF2==3.0.1
+python-docx==0.8.11
+Pillow==10.0.1
+transformers==4.32.1
+torch==2.0.1
+tika==2.6.0
+spacy==3.6.1

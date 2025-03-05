@@ -1,8 +1,9 @@
 package com.lexygraphai.document.service;
 
-import com.lexygraphai.document.dto.CollectionRequest;
-import com.lexygraphai.document.dto.CollectionResponse;
 import org.springframework.data.domain.Page;
+
+import com.lexygraphai.document.ProcessRequestDto.java.CollectionRequest;
+import com.lexygraphai.document.ProcessRequestDto.java.CollectionResponse;
 
 import java.util.UUID;
 

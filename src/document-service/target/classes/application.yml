@@ -12,40 +12,37 @@ spring:
   application:
     name: document-service
   
-  # Database configuration
-  datasource:
-    url: jdbc:postgresql://localhost:5432/document_service
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:password}
-    driver-class-name: org.postgresql.Driver
-  
-  # JPA configuration
-  jpa:
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
-    show-sql: false
+  # Disable default database
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
   
   # File upload limits
   servlet:
     multipart:
-      max-file-size: 50MB
-      max-request-size: 50MB
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+# AWS Configuration
+aws:
+  region: ${AWS_REGION:us-east-1}
+  s3:
+    bucket: ${S3_BUCKET_NAME:lexygraphai-documents}
+  dynamodb:
+    endpoint: ${DYNAMODB_ENDPOINT:http://localstack:4566}
+    document-table: ${DOCUMENT_TABLE:lexygraphai-documents}
+    chunk-table: ${CHUNK_TABLE:lexygraphai-document-chunks}
+    collection-table: ${COLLECTION_TABLE:lexygraphai-collections}
+    procedure-table: ${PROCEDURE_TABLE:lexygraphai-procedures}
+    workflow-table: ${WORKFLOW_TABLE:lexygraphai-workflows}
 
 # Document service specific configuration
 document:
   storage:
-    type: local  # Options: local, s3
-    local:
-      directory: ${STORAGE_DIR:./document-storage}
-    s3:
-      bucket: ${S3_BUCKET:lexygraphai-documents}
-      region: ${S3_REGION:us-east-1}
-      access-key: ${AWS_ACCESS_KEY:}
-      secret-key: ${AWS_SECRET_KEY:}
+    type: s3
+  processing:
+    chunk-size: 2000
+    chunk-overlap: 200
+    auto-summarize: true
 
 # Security configuration
 security:
@@ -55,8 +52,10 @@ security:
 
 # Integration with other services
 service:
-  processing:
-    url: ${PROCESSING_SERVICE_URL:http://localhost:8083/api/v1}
+  text-processing:
+    url: ${TEXT_PROCESSING_SERVICE_URL:http://text-processing-service:8083/api/v1}
+  workflow:
+    url: ${WORKFLOW_SERVICE_URL:http://workflow-service:8084/api/v1}
 
 # Actuator configuration
 management:
@@ -82,5 +81,5 @@ logging:
   level:
     root: INFO
     com.lexygraphai: DEBUG
-    org.springframework.web: INFO
-    org.hibernate: WARN
+    com.amazonaws: WARN
+    software.amazon.awssdk: WARN

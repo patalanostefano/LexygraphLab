@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  document-service:
+    build: 
+      context: ./src/document-service
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-dev}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-test}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-test}
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME:-lexygraphai-documents}
+      - TEXT_PROCESSING_SERVICE_URL=http://text-processing-service:8083
+    volumes:
+      - document-data:/data
+    depends_on:
+      - localstack
+      - text-processing-service
+    networks:
+      - lexygraphai-network
+
+  text-processing-service:
+    build: 
+      context: ./text-processing-service
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8083"
+    environment:
+      - DEBUG=True
+    volumes:
+      - text-processing-data:/app/data
+    networks:
+      - lexygraphai-network
+
+  localstack:
+    image: localstack/localstack:latest
+    ports:
+      - "4566:4566"
+      - "4510-4559:4510-4559"
+    environment:
+      - SERVICES=s3,dynamodb
+      - DEBUG=${DEBUG:-0}
+      - AWS_DEFAULT_REGION=us-east-1
+      - DEFAULT_REGION=us-east-1
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - ./localstack-init:/docker-entrypoint-initaws.d
+      - localstack-data:/tmp/localstack
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - lexygraphai-network
+
+  # Optional: Add a simple web UI for document management
+  document-ui:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./ui:/usr/share/nginx/html
+    depends_on:
+      - document-service
+    networks:
+      - lexygraphai-network
+
+volumes:
+  document-data:
+  text-processing-data:
+  localstack-data:
+
+networks:
+  lexygraphai-network:
+    driver: bridge

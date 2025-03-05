@@ -1,6 +1,6 @@
 package com.lexygraphai.document.service;
 
-import com.lexygraphai.document.dto.*;
+import com.lexygraphai.document.ProcessRequestDto.java.*;
 import com.lexygraphai.document.model.DocumentStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;

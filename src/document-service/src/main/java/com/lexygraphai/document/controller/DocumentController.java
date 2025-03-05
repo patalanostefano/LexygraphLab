@@ -2,6 +2,7 @@ package com.lexygraphai.document.controller;
 
 import com.lexygraphai.document.dto.*;
 import com.lexygraphai.document.model.DocumentStatus;
+import com.lexygraphai.document.security.UserPrincipal;
 import com.lexygraphai.document.service.DocumentService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -17,11 +18,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/documents")
@@ -43,13 +45,14 @@ public class DocumentController {
     @ApiResponse(responseCode = "401", description = "Unauthorized")
     @ApiResponse(responseCode = "413", description = "File too large")
     public ResponseEntity<DocumentResponse> uploadDocument(
+            @AuthenticationPrincipal UserPrincipal currentUser,
             @Parameter(description = "The document file to upload (PDF, DOCX, JPG, PNG, etc.)")
             @RequestPart("file") MultipartFile file,
             
             @Parameter(description = "Document metadata (optional)")
             @RequestPart(value = "metadata", required = false) Map<String, Object> metadata) {
         
-        DocumentResponse response = documentService.uploadDocument(file, metadata);
+        DocumentResponse response = documentService.uploadDocument(currentUser.getId(), file, metadata);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
@@ -62,6 +65,8 @@ public class DocumentController {
     @ApiResponse(responseCode = "200", description = "List of documents")
     @ApiResponse(responseCode = "401", description = "Unauthorized")
     public ResponseEntity<Page<DocumentSummary>> listDocuments(
+            @AuthenticationPrincipal UserPrincipal currentUser,
+            
             @Parameter(description = "Filter by tag") 
             @RequestParam(required = false) String tag,
             
@@ -69,7 +74,7 @@ public class DocumentController {
             @RequestParam(required = false) DocumentStatus status,
             
             @Parameter(description = "Filter by collection ID") 
-            @RequestParam(required = false) UUID collectionId,
+            @RequestParam(required = false) String collectionId,
             
             @Parameter(description = "Page number for pagination") 
             @RequestParam(defaultValue = "0") int page,
@@ -77,7 +82,8 @@ public class DocumentController {
             @Parameter(description = "Page size for pagination") 
             @RequestParam(defaultValue = "20") int size) {
         
-        Page<DocumentSummary> documents = documentService.findDocuments(tag, status, collectionId, page, size);
+        Page<DocumentSummary> documents = documentService.findDocuments(
+                currentUser.getId(), tag, status, collectionId, page, size);
         return ResponseEntity.ok(documents);
     }
 
@@ -91,10 +97,12 @@ public class DocumentController {
     @ApiResponse(responseCode = "401", description = "Unauthorized")
     @ApiResponse(responseCode = "404", description = "Document not found")
     public ResponseEntity<DocumentResponse> getDocument(
+            @AuthenticationPrincipal UserPrincipal currentUser,
+            
             @Parameter(description = "Document ID", required = true)
-            @PathVariable UUID documentId) {
+            @PathVariable String documentId) {
         
-        DocumentResponse document = documentService.getDocumentDetails(documentId);
+        DocumentResponse document = documentService.getDocumentDetails(currentUser.getId(), documentId);
         return ResponseEntity.ok(document);
     }
 
@@ -108,10 +116,12 @@ public class DocumentController {
     @ApiResponse(responseCode = "401", description = "Unauthorized")
     @ApiResponse(responseCode = "404", description = "Document not found")
     public ResponseEntity<Void> deleteDocument(
+            @AuthenticationPrincipal UserPrincipal currentUser,
+            
             @Parameter(description = "Document ID", required = true)
-            @PathVariable UUID documentId) {
+            @PathVariable String documentId) {
         
-        documentService.deleteDocument(documentId);
+        documentService.deleteDocument(currentUser.getId(), documentId);
         return ResponseEntity.noContent().build();
     }
 
@@ -125,18 +135,39 @@ public class DocumentController {
     @ApiResponse(responseCode = "401", description = "Unauthorized")
     @ApiResponse(responseCode = "404", description = "Document not found")
     public ResponseEntity<byte[]> downloadDocument(
+            @AuthenticationPrincipal UserPrincipal currentUser,
+            
             @Parameter(description = "Document ID", required = true)
-            @PathVariable UUID documentId) {
+            @PathVariable String documentId) {
         
-        byte[] content = documentService.getDocumentContent(documentId);
-        String mimeType = documentService.getDocumentMimeType(documentId);
-        String filename = documentService.getDocumentName(documentId);
+        byte[] content = documentService.getDocumentContent(currentUser.getId(), documentId);
+        String mimeType = documentService.getDocumentMimeType(currentUser.getId(), documentId);
+        String filename = documentService.getDocumentName(currentUser.getId(), documentId);
         
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.parseMediaType(mimeType));
         headers.setContentDispositionFormData("attachment", filename);
         
         return new ResponseEntity<>(content, headers, HttpStatus.OK);
+    }
+
+    @GetMapping("/{documentId}/chunks")
+    @Operation(
+        summary = "Get document chunks",
+        description = "Get all text chunks for a document",
+        security = @SecurityRequirement(name = "bearerAuth")
+    )
+    @ApiResponse(responseCode = "200", description = "Document chunks")
+    @ApiResponse(responseCode = "401", description = "Unauthorized")
+    @ApiResponse(responseCode = "404", description = "Document not found")
+    public ResponseEntity<List<DocumentChunkDto>> getDocumentChunks(
+            @AuthenticationPrincipal UserPrincipal currentUser,
+            
+            @Parameter(description = "Document ID", required = true)
+            @PathVariable String documentId) {
+        
+        List<DocumentChunkDto> chunks = documentService.getDocumentChunks(currentUser.getId(), documentId);
+        return ResponseEntity.ok(chunks);
     }
 
     @PostMapping("/{documentId}/process")
@@ -150,13 +181,16 @@ public class DocumentController {
     @ApiResponse(responseCode = "401", description = "Unauthorized")
     @ApiResponse(responseCode = "404", description = "Document not found")
     public ResponseEntity<ProcessResponse> processDocument(
+            @AuthenticationPrincipal UserPrincipal currentUser,
+            
             @Parameter(description = "Document ID", required = true)
-            @PathVariable UUID documentId,
+            @PathVariable String documentId,
             
             @Parameter(description = "Processing configuration", required = true)
             @Valid @RequestBody ProcessRequest processRequest) {
         
-        ProcessResponse response = documentService.processDocument(documentId, processRequest);
+        ProcessResponse response = documentService.processDocument(
+                currentUser.getId(), documentId, processRequest);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response);
     }
 }

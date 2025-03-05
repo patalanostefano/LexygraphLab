@@ -1,0 +1,49 @@
+# Production profile configuration
+
+# AWS services configuration for production
+aws:
+  region: ${AWS_REGION}
+  s3:
+    bucket: ${S3_BUCKET_NAME}
+  dynamodb:
+    endpoint: https://dynamodb.${AWS_REGION}.amazonaws.com
+    document-table: ${DOCUMENT_TABLE}
+    chunk-table: ${CHUNK_TABLE}
+    collection-table: ${COLLECTION_TABLE}
+    procedure-table: ${PROCEDURE_TABLE}
+    workflow-table: ${WORKFLOW_TABLE}
+
+# Document service specific configuration
+document:
+  storage:
+    type: s3
+
+# Integration with other services
+service:
+  text-processing:
+    url: ${TEXT_PROCESSING_SERVICE_URL}
+  workflow:
+    url: ${WORKFLOW_SERVICE_URL}
+
+# Logging - less verbose in production
+logging:
+  level:
+    root: WARN
+    com.lexygraphai: INFO
+    org.springframework.web: WARN
+    com.amazonaws: WARN
+    software.amazon.awssdk: WARN
+
+# Security configuration for production
+security:
+  jwt:
+    secret: ${JWT_SECRET}
+    expiration: 86400000  # 24 hours in milliseconds
+
+spring:
+  # For production authentication
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: https://auth.lexygraphai.com/.well-known/jwks.json
