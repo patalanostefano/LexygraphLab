@@ -1,32 +1,25 @@
-FROM eclipse-temurin:17-jre-alpine
+FROM maven:3.8.6-openjdk-17 as build
 
 WORKDIR /app
 
-# Add a non-root user
-RUN addgroup -S spring && adduser -S spring -G spring
+# Copy pom.xml first for better layer caching
+COPY pom.xml .
+RUN mvn dependency:go-offline
 
-# Set Spring user as the owner of the app directory
-RUN chown -R spring:spring /app
+# Copy source code and build
+COPY src ./src
+RUN mvn package -DskipTests
 
-# Copy the JAR file
-COPY target/*.jar app.jar
+FROM openjdk:17-slim
 
-# Create directories for file storage
-RUN mkdir -p /data/document-storage && \
-    chown -R spring:spring /data
+WORKDIR /app
 
-# Switch to the Spring user
-USER spring:spring
+# Copy built JAR from build stage
+COPY --from=build /app/target/*.jar app.jar
 
-# Configure volume for document storage
-VOLUME /data/document-storage
+# Set environment variables
+ENV SPRING_PROFILES_ACTIVE=prod
 
-# Expose application port
-EXPOSE 8082
+EXPOSE 8080
 
-# Run the application with optimized JVM settings
-ENTRYPOINT ["java", \
-            "-XX:+UseContainerSupport", \
-            "-XX:MaxRAMPercentage=75.0", \
-            "-Djava.security.egd=file:/dev/./urandom", \
-            "-jar", "/app/app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]

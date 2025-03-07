@@ -1,27 +1,287 @@
 openapi: 3.0.3
 info:
-  title: Document Service API
-  description: API for document management in the LexygraphAI platform
+  title: Document Processing Service API
+  description: API for document processing, extraction, summarization and management
   version: 1.0.0
-  contact:
-    name: LexygraphAI API Team
 servers:
-  - url: https://api.lexygraphai.com/api/v1
-    description: Production server
-  - url: http://localhost:8082/api/v1
-    description: Local development
-
+  - url: https://api.lexygraphai.com/v1
 tags:
-  - name: documents
-    description: Document operations
   - name: collections
-    description: Document collection operations
-
+    description: Operations related to document collections
+  - name: documents
+    description: Operations related to document processing and management
+  - name: extraction
+    description: Operations related to content extraction from documents
+  - name: processing
+    description: Operations related to document processing status
 paths:
+  /documents/{documentId}/view-url:
+    get:
+      summary: Generate a pre-signed URL for viewing the document in browser
+      operationId: getDocumentViewUrl
+      tags:
+        - documents
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: expiresIn
+          in: query
+          description: URL expiration time in seconds (default: 3600)
+          schema:
+            type: integer
+            default: 3600
+      responses:
+        '200':
+          description: Pre-signed URL for viewing the document
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    format: uri
+                  expiresAt:
+                    type: string
+                    format: date-time
+
+  /documents/{documentId}/download-url:
+    get:
+      summary: Generate a pre-signed URL for downloading the document
+      operationId: getDocumentDownloadUrl
+      tags:
+        - documents
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: expiresIn
+          in: query
+          description: URL expiration time in seconds (default: 3600)
+          schema:
+            type: integer
+            default: 3600
+      responses:
+        '200':
+          description: Pre-signed URL for downloading the document
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    format: uri
+                  filename:
+                    type: string
+                  expiresAt:
+                    type: string
+                    format: date-time
+
+  
+
+  /collections:
+    get:
+      summary: List all collections for the authenticated user
+      operationId: listCollections
+      tags:
+        - collections
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: A list of collections
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  collections:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Collection'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+    post:
+      summary: Create a new collection
+      operationId: createCollection
+      tags:
+        - collections
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  example: "Work Documents"
+                description:
+                  type: string
+                  example: "Documents related to work projects"
+      responses:
+        '201':
+          description: Collection created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Collection'
+
+  /collections/{collectionId}:
+    get:
+      summary: Get collection details
+      operationId: getCollection
+      tags:
+        - collections
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: collectionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Collection details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Collection'
+    put:
+      summary: Update a collection
+      operationId: updateCollection
+      tags:
+        - collections
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: collectionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+      responses:
+        '200':
+          description: Collection updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Collection'
+    delete:
+      summary: Delete a collection
+      operationId: deleteCollection
+      tags:
+        - collections
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: collectionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Collection deleted
+
+  /collections/{collectionId}/documents:
+    get:
+      summary: List documents in a collection
+      operationId: listCollectionDocuments
+      tags:
+        - collections
+        - documents
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: collectionId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [name, created_at, updated_at]
+            default: created_at
+        - name: direction
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+      responses:
+        '200':
+          description: List of documents in the collection
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  documents:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DocumentMetadata'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
   /documents:
     post:
-      summary: Upload a new document
-      description: Upload a document file with metadata for processing
+      summary: Upload and process a document
       operationId: uploadDocument
       tags:
         - documents
@@ -39,111 +299,48 @@ paths:
                 file:
                   type: string
                   format: binary
-                  description: The document file to upload (PDF, DOCX, JPG, PNG, etc.)
-                metadata:
-                  type: object
-                  properties:
-                    name:
-                      type: string
-                      example: "Contract Agreement"
-                    description:
-                      type: string
-                      example: "Legal contract for client XYZ"
-                    tags:
-                      type: array
-                      items:
-                        type: string
-                      example: ["contract", "legal", "agreement"]
-                    collectionId:
-                      type: string
-                      format: uuid
-                      example: "550e8400-e29b-41d4-a716-446655440000"
+                name:
+                  type: string
+                description:
+                  type: string
+                collectionId:
+                  type: string
+                  format: uuid
+                  description: Collection to add the document to
+                processingType:
+                  type: string
+                  enum: [TEXT, TABLE, IMAGE, HANDWRITTEN, COMPLEX]
+                  description: Type of document for specialized processing
+                  default: TEXT
+                processingOptions:
+                  type: string
+                  format: json
+                  description: JSON string with additional processing options
+                priority:
+                  type: string
+                  enum: [LOW, NORMAL, HIGH]
+                  default: NORMAL
+                language:
+                  type: string
+                  description: ISO 639-1 language code
+                  default: en
       responses:
-        '201':
-          description: Document successfully uploaded
+        '202':
+          description: Document accepted for processing
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DocumentResponse'
+                $ref: '#/components/schemas/DocumentSubmissionResponse'
         '400':
-          description: Invalid input
+          description: Invalid request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
-          description: Unauthorized
-        '413':
-          description: File too large
-          
-    get:
-      summary: List documents
-      description: Get a list of documents with optional filtering
-      operationId: listDocuments
-      tags:
-        - documents
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: tag
-          in: query
-          schema:
-            type: string
-          description: Filter by tag
-        - name: status
-          in: query
-          schema:
-            type: string
-            enum: [PENDING, PROCESSING, COMPLETED, FAILED]
-          description: Filter by document status
-        - name: collectionId
-          in: query
-          schema:
-            type: string
-            format: uuid
-          description: Filter by collection ID
-        - name: page
-          in: query
-          schema:
-            type: integer
-            minimum: 0
-            default: 0
-          description: Page number for pagination
-        - name: size
-          in: query
-          schema:
-            type: integer
-            minimum: 1
-            maximum: 100
-            default: 20
-          description: Page size for pagination
-      responses:
-        '200':
-          description: List of documents
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  content:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/DocumentSummary'
-                  page:
-                    type: integer
-                  size:
-                    type: integer
-                  totalElements:
-                    type: integer
-                  totalPages:
-                    type: integer
-        '401':
-          description: Unauthorized
+                $ref: '#/components/schemas/Error'
 
   /documents/{documentId}:
     get:
       summary: Get document details
-      description: Retrieve detailed information about a document
       operationId: getDocument
       tags:
         - documents
@@ -162,15 +359,48 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DocumentResponse'
-        '401':
-          description: Unauthorized
-        '404':
-          description: Document not found
-
+                $ref: '#/components/schemas/Document'
+    put:
+      summary: Update document metadata
+      operationId: updateDocument
+      tags:
+        - documents
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                collectionId:
+                  type: string
+                  format: uuid
+                tags:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Document updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
     delete:
       summary: Delete a document
-      description: Remove a document and associated data
       operationId: deleteDocument
       tags:
         - documents
@@ -186,18 +416,14 @@ paths:
       responses:
         '204':
           description: Document deleted
-        '401':
-          description: Unauthorized
-        '404':
-          description: Document not found
 
-  /documents/{documentId}/content:
+  /documents/{documentId}/status:
     get:
-      summary: Download document content
-      description: Download the original document file
-      operationId: downloadDocument
+      summary: Check document processing status
+      operationId: getDocumentStatus
       tags:
         - documents
+        - processing
       security:
         - bearerAuth: []
       parameters:
@@ -209,24 +435,19 @@ paths:
             format: uuid
       responses:
         '200':
-          description: Document file
+          description: Document processing status
           content:
-            application/octet-stream:
+            application/json:
               schema:
-                type: string
-                format: binary
-        '401':
-          description: Unauthorized
-        '404':
-          description: Document not found
+                $ref: '#/components/schemas/ProcessingStatusResponse'
 
-  /documents/{documentId}/process:
-    post:
-      summary: Process a document
-      description: Start processing a document with an agent or workflow
-      operationId: processDocument
+  /documents/{documentId}/extracted-text:
+    get:
+      summary: Get extracted text from document
+      operationId: getDocumentExtractedText
       tags:
         - documents
+        - extraction
       security:
         - bearerAuth: []
       parameters:
@@ -236,101 +457,96 @@ paths:
           schema:
             type: string
             format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              oneOf:
-                - $ref: '#/components/schemas/AgentProcessRequest'
-                - $ref: '#/components/schemas/WorkflowProcessRequest'
-      responses:
-        '202':
-          description: Processing initiated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ProcessResponse'
-        '400':
-          description: Invalid input
-        '401':
-          description: Unauthorized
-        '404':
-          description: Document not found
-
-  /collections:
-    post:
-      summary: Create a document collection
-      description: Create a new collection to organize documents
-      operationId: createCollection
-      tags:
-        - collections
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CollectionRequest'
-      responses:
-        '201':
-          description: Collection created
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CollectionResponse'
-        '400':
-          description: Invalid input
-        '401':
-          description: Unauthorized
-          
-    get:
-      summary: List collections
-      description: Get a list of document collections
-      operationId: listCollections
-      tags:
-        - collections
-      security:
-        - bearerAuth: []
-      parameters:
         - name: page
           in: query
           schema:
             type: integer
-            minimum: 0
-            default: 0
-          description: Page number for pagination
-        - name: size
+            description: Page number to retrieve (1-based)
+        - name: format
           in: query
           schema:
-            type: integer
-            minimum: 1
-            maximum: 50
-            default: 20
-          description: Page size for pagination
+            type: string
+            enum: [plain, html, markdown]
+            default: plain
       responses:
         '200':
-          description: List of collections
+          description: Extracted text content
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  content:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/CollectionResponse'
-                  page:
-                    type: integer
-                  size:
-                    type: integer
-                  totalElements:
-                    type: integer
-                  totalPages:
-                    type: integer
-        '401':
-          description: Unauthorized
+                $ref: '#/components/schemas/ExtractedTextResponse'
+            text/plain:
+              schema:
+                type: string
+            text/html:
+              schema:
+                type: string
+            text/markdown:
+              schema:
+                type: string
+
+  /documents/{documentId}/summary:
+    get:
+      summary: Get document summary
+      operationId: getDocumentSummary
+      tags:
+        - documents
+        - extraction
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: maxLength
+          in: query
+          schema:
+            type: integer
+            description: Maximum length of summary in characters
+            default: 500
+      responses:
+        '200':
+          description: Document summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SummaryResponse'
+
+  /documents/{documentId}/entities:
+    get:
+      summary: Get entities extracted from document
+      operationId: getDocumentEntities
+      tags:
+        - documents
+        - extraction
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: types
+          in: query
+          schema:
+            type: array
+            items:
+              type: string
+              enum: [PERSON, ORGANIZATION, LOCATION, DATE, PRODUCT, EVENT]
+            style: form
+            explode: false
+      responses:
+        '200':
+          description: Extracted entities
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntitiesResponse'
 
 components:
   securitySchemes:
@@ -340,7 +556,7 @@ components:
       bearerFormat: JWT
 
   schemas:
-    DocumentResponse:
+    Collection:
       type: object
       properties:
         id:
@@ -350,33 +566,33 @@ components:
           type: string
         description:
           type: string
-        uploadDate:
-          type: string
-          format: date-time
-        lastModifiedDate:
-          type: string
-          format: date-time
-        size:
+        documentCount:
           type: integer
-          format: int64
-        mimeType:
+        createdAt:
           type: string
-        status:
+          format: date-time
+        updatedAt:
           type: string
-          enum: [PENDING, PROCESSING, COMPLETED, FAILED]
-        tags:
-          type: array
-          items:
-            type: string
-        collectionId:
+          format: date-time
+        ownerId:
           type: string
           format: uuid
-        processingResults:
+        thumbnailUrl:
+          type: string
+          format: uri
+          description: Pre-signed URL for a representative thumbnail of the collection
+
+    DocumentBatchResponse:
+      type: object
+      properties:
+        documents:
           type: array
           items:
-            $ref: '#/components/schemas/ProcessingSummary'
+            $ref: '#/components/schemas/DocumentMetadata'
+        pagination:
+          $ref: '#/components/schemas/Pagination'
 
-    DocumentSummary:
+    DocumentSubmissionResponse:
       type: object
       properties:
         id:
@@ -384,115 +600,48 @@ components:
           format: uuid
         name:
           type: string
-        uploadDate:
-          type: string
-          format: date-time
-        size:
-          type: integer
-          format: int64
-        mimeType:
-          type: string
         status:
           type: string
-          enum: [PENDING, PROCESSING, COMPLETED, FAILED]
-        tags:
-          type: array
-          items:
-            type: string
-        collectionId:
-          type: string
-          format: uuid
-
-    ProcessingSummary:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-        agentId:
-          type: string
-          format: uuid
-        agentName:
-          type: string
-        status:
-          type: string
-          enum: [PENDING, PROCESSING, COMPLETED, FAILED]
-        startTime:
-          type: string
-          format: date-time
-        endTime:
-          type: string
-          format: date-time
-        outputType:
-          type: string
-
-    AgentProcessRequest:
-      type: object
-      required:
-        - type
-        - agentId
-      properties:
-        type:
-          type: string
-          enum: [AGENT]
-        agentId:
-          type: string
-          format: uuid
-        parameters:
-          type: object
-          additionalProperties: true
-
-    WorkflowProcessRequest:
-      type: object
-      required:
-        - type
-        - workflowId
-      properties:
-        type:
-          type: string
-          enum: [WORKFLOW]
-        workflowId:
-          type: string
-          format: uuid
-        parameters:
-          type: object
-          additionalProperties: true
-
-    ProcessResponse:
-      type: object
-      properties:
-        processId:
-          type: string
-          format: uuid
-        documentId:
-          type: string
-          format: uuid
-        status:
-          type: string
-          enum: [PENDING, PROCESSING, COMPLETED, FAILED]
-        startTime:
-          type: string
-          format: date-time
+          enum: [SUBMITTED, QUEUED]
         estimatedCompletionTime:
           type: string
           format: date-time
         statusCheckUrl:
           type: string
           format: uri
+        collectionId:
+          type: string
+          format: uuid
 
-    CollectionRequest:
+    ProcessingStatusResponse:
       type: object
-      required:
-        - name
       properties:
-        name:
+        documentId:
           type: string
-          maxLength: 100
-        description:
+          format: uuid
+        status:
           type: string
-          maxLength: 500
+          enum: [QUEUED, PARSING, PROCESSING, OCR_PROCESSING, TEXT_EXTRACTION, SUMMARIZING, COMPLETED, FAILED]
+        currentStep:
+          type: string
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+        estimatedCompletionTime:
+          type: string
+          format: date-time
+        completedSteps:
+          type: array
+          items:
+            type: string
+        elapsedTime:
+          type: integer
+          description: Time elapsed in seconds
+        error:
+          type: string
 
-    CollectionResponse:
+    DocumentMetadata:
       type: object
       properties:
         id:
@@ -502,23 +651,176 @@ components:
           type: string
         description:
           type: string
-        creationDate:
+        createdAt:
           type: string
           format: date-time
-        documentCount:
+        updatedAt:
+          type: string
+          format: date-time
+        size:
           type: integer
+          description: Size in bytes
+        mimeType:
+          type: string
+        status:
+          type: string
+          enum: [QUEUED, PROCESSING, COMPLETED, FAILED]
+        processingType:
+          type: string
+          enum: [TEXT, TABLE, IMAGE, HANDWRITTEN, COMPLEX]
+        collectionId:
+          type: string
+          format: uuid
+        hasSummary:
+          type: boolean
+        hasEntities:
+          type: boolean
+        pageCount:
+          type: integer
+        thumbnailUrl:
+          type: string
+          format: uri
+          description: Pre-signed URL for the document thumbnail
+        viewUrl:
+          type: string
+          format: uri
+          description: Pre-signed URL for viewing the document (expires after a short time)
+        tags:
+          type: array
+          items:
+            type: string
+        originalFilename:
+          type: string
+          description: Original filename when uploaded
 
-    ErrorResponse:
+    Document:
+      allOf:
+        - $ref: '#/components/schemas/DocumentMetadata'
+        - type: object
+          properties:
+            processingDetails:
+              type: object
+              properties:
+                contentType:
+                  type: string
+                  enum: [TEXT, TABLE, IMAGE, MIXED]
+                language:
+                  type: string
+                confidence:
+                  type: number
+                  format: float
+                extractionMethod:
+                  type: string
+                  enum: [PARSER, OCR, HYBRID]
+                processingTime:
+                  type: integer
+                  description: Processing time in milliseconds
+            content:
+              type: object
+              properties:
+                preview:
+                  type: string
+                summaryPreview:
+                  type: string
+                downloadUrl:
+                  type: string
+                  format: uri
+
+    ExtractedTextResponse:
       type: object
       properties:
-        timestamp:
+        documentId:
           type: string
-          format: date-time
-        status:
+          format: uuid
+        page:
           type: integer
-        error:
+        totalPages:
+          type: integer
+        format:
+          type: string
+          enum: [plain, html, markdown]
+        language:
+          type: string
+        content:
+          type: string
+        nextPageUrl:
+          type: string
+          format: uri
+        previousPageUrl:
+          type: string
+          format: uri
+
+    SummaryResponse:
+      type: object
+      properties:
+        documentId:
+          type: string
+          format: uuid
+        summary:
+          type: string
+        keyPoints:
+          type: array
+          items:
+            type: string
+        confidence:
+          type: number
+          format: float
+
+    EntitiesResponse:
+      type: object
+      properties:
+        documentId:
+          type: string
+          format: uuid
+        entities:
+          type: array
+          items:
+            type: object
+            properties:
+              text:
+                type: string
+              type:
+                type: string
+                enum: [PERSON, ORGANIZATION, LOCATION, DATE, PRODUCT, EVENT]
+              confidence:
+                type: number
+                format: float
+              page:
+                type: integer
+              position:
+                type: object
+                properties:
+                  start:
+                    type: integer
+                  end:
+                    type: integer
+              metadata:
+                type: object
+                additionalProperties: true
+
+    Pagination:
+      type: object
+      properties:
+        currentPage:
+          type: integer
+        totalPages:
+          type: integer
+        totalItems:
+          type: integer
+        itemsPerPage:
+          type: integer
+        hasNextPage:
+          type: boolean
+        hasPreviousPage:
+          type: boolean
+
+    Error:
+      type: object
+      properties:
+        code:
           type: string
         message:
           type: string
-        path:
-          type: string
+        details:
+          type: object
+          additionalProperties: true
