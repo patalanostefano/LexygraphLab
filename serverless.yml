@@ -1,0 +1,292 @@
+service: document-processing-system
+
+provider:
+  name: aws
+  region: ${opt:region, 'us-east-1'}
+  stage: ${opt:stage, 'dev'}
+  deploymentBucket:
+    name: doc-processing-deployments-${aws:accountId}
+  environment:
+    STAGE: ${opt:stage, 'dev'}
+    RAW_BUCKET: ${self:custom.environment.RAW_BUCKET}
+    PROCESSED_BUCKET: ${self:custom.environment.PROCESSED_BUCKET}
+    THUMBNAILS_BUCKET: ${self:custom.environment.THUMBNAILS_BUCKET}
+    DOCUMENTS_TABLE: ${self:custom.environment.DOCUMENTS_TABLE}
+    COLLECTIONS_TABLE: ${self:custom.environment.COLLECTIONS_TABLE}
+    DOC_PROCESSING_TABLE: ${self:custom.environment.DOC_PROCESSING_TABLE}
+    DOCUMENT_PARSER_QUEUE: ${self:custom.resources.documentParserQueue.queueUrl}
+    OCR_PROCESSING_QUEUE: ${self:custom.resources.ocrQueue.queueUrl}
+    TEXT_PROCESSING_QUEUE: ${self:custom.resources.textProcessingQueue.queueUrl}
+    SUMMARIZER_QUEUE: ${self:custom.resources.summarizerQueue.queueUrl}
+    AZURE_CV_ENDPOINT: ${self:custom.environment.AZURE_CV_ENDPOINT}
+    AZURE_CV_KEY: ${self:custom.environment.AZURE_CV_KEY}
+    OPENAI_API_KEY: ${self:custom.environment.OPENAI_API_KEY}
+    AUTH_JWT_ISSUER: ${self:custom.environment.AUTH_JWT_ISSUER}
+    AUTH_JWT_JWK_SET_URI: ${self:custom.environment.AUTH_JWT_JWK_SET_URI}
+
+  ecr:
+    images:
+      document-service:
+        path: ./services/document-service
+      document-parser:
+        path: ./services/document-parser
+      ocr-service:
+        path: ./services/ocr-service
+      text-processing:
+        path: ./services/text-processing
+      summarizer:
+        path: ./services/summarizer
+
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - s3:GetObject
+            - s3:PutObject
+            - s3:DeleteObject
+            - s3:ListBucket
+          Resource:
+            - arn:aws:s3:::${self:custom.environment.RAW_BUCKET}
+            - arn:aws:s3:::${self:custom.environment.RAW_BUCKET}/*
+            - arn:aws:s3:::${self:custom.environment.PROCESSED_BUCKET}
+            - arn:aws:s3:::${self:custom.environment.PROCESSED_BUCKET}/*
+            - arn:aws:s3:::${self:custom.environment.THUMBNAILS_BUCKET}
+            - arn:aws:s3:::${self:custom.environment.THUMBNAILS_BUCKET}/*
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+            - dynamodb:BatchWriteItem
+          Resource:
+            - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.environment.DOCUMENTS_TABLE}
+            - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.environment.COLLECTIONS_TABLE}
+            - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.environment.DOC_PROCESSING_TABLE}
+            - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.environment.DOCUMENTS_TABLE}/index/*
+            - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.environment.COLLECTIONS_TABLE}/index/*
+            - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.environment.DOC_PROCESSING_TABLE}/index/*
+        - Effect: Allow
+          Action:
+            - sqs:SendMessage
+            - sqs:ReceiveMessage
+            - sqs:DeleteMessage
+            - sqs:GetQueueAttributes
+            - sqs:GetQueueUrl
+            - sqs:ListQueues
+          Resource:
+            - !GetAtt DocumentParserQueue.Arn
+            - !GetAtt OcrQueue.Arn
+            - !GetAtt TextProcessingQueue.Arn
+            - !GetAtt SummarizerQueue.Arn
+        - Effect: Allow
+          Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+          Resource: arn:aws:logs:${aws:region}:${aws:accountId}:log-group:/aws/lambda/${self:service}-*:*
+
+functions:
+  api:
+    image: 
+      name: document-service
+    memorySize: 1024
+    timeout: 30
+    events:
+      - httpApi:
+          path: /api/v1/{proxy+}
+          method: ANY
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+
+  documentParser:
+    image: 
+      name: document-parser
+    memorySize: 512
+    timeout: 60
+    events:
+      - sqs:
+          arn: !GetAtt DocumentParserQueue.Arn
+          batchSize: 1
+
+  ocrProcessor:
+    image: 
+      name: ocr-service
+    memorySize: 1024
+    timeout: 120
+    events:
+      - sqs:
+          arn: !GetAtt OcrQueue.Arn
+          batchSize: 1
+
+  textProcessor:
+    image: 
+      name: text-processing
+    memorySize: 1024
+    timeout: 60
+    events:
+      - sqs:
+          arn: !GetAtt TextProcessingQueue.Arn
+          batchSize: 1
+
+  summarizer:
+    image: 
+      name: summarizer
+    memorySize: 1024
+    timeout: 120
+    events:
+      - sqs:
+          arn: !GetAtt SummarizerQueue.Arn
+          batchSize: 1
+
+resources:
+  Resources:
+    # S3 Buckets
+    RawDocumentsBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.environment.RAW_BUCKET}
+        CorsConfiguration:
+          CorsRules:
+            - AllowedHeaders: ['*']
+              AllowedMethods: [GET, PUT, POST, DELETE, HEAD]
+              AllowedOrigins: ['*']
+              MaxAge: 3000
+
+    ProcessedDocumentsBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.environment.PROCESSED_BUCKET}
+        
+    ThumbnailsBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:custom.environment.THUMBNAILS_BUCKET}
+        
+    # DynamoDB Tables
+    DocumentsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.environment.DOCUMENTS_TABLE}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: PK
+            AttributeType: S
+          - AttributeName: SK
+            AttributeType: S
+          - AttributeName: collectionId
+            AttributeType: S
+          - AttributeName: status
+            AttributeType: S
+        KeySchema:
+          - AttributeName: PK
+            KeyType: HASH
+          - AttributeName: SK
+            KeyType: RANGE
+        GlobalSecondaryIndexes:
+          - IndexName: CollectionDocumentsIndex
+            KeySchema:
+              - AttributeName: collectionId
+                KeyType: HASH
+              - AttributeName: PK
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+          - IndexName: StatusIndex
+            KeySchema:
+              - AttributeName: status
+                KeyType: HASH
+              - AttributeName: SK
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
+              
+    CollectionsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.environment.COLLECTIONS_TABLE}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: PK
+            AttributeType: S
+          - AttributeName: SK
+            AttributeType: S
+        KeySchema:
+          - AttributeName: PK
+            KeyType: HASH
+          - AttributeName: SK
+            KeyType: RANGE
+    
+    DocumentProcessingTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:custom.environment.DOC_PROCESSING_TABLE}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: PK
+            AttributeType: S
+          - AttributeName: SK
+            AttributeType: S
+        KeySchema:
+          - AttributeName: PK
+            KeyType: HASH
+          - AttributeName: SK
+            KeyType: RANGE
+            
+    # SQS Queues
+    DocumentParserQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${self:service}-${sls:stage}-document-parser-queue
+        VisibilityTimeout: 120
+        MessageRetentionPeriod: 86400
+        
+    OcrQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${self:service}-${sls:stage}-ocr-queue
+        VisibilityTimeout: 240
+        MessageRetentionPeriod: 86400
+        
+    TextProcessingQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${self:service}-${sls:stage}-text-processing-queue
+        VisibilityTimeout: 120
+        MessageRetentionPeriod: 86400
+        
+    SummarizerQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${self:service}-${sls:stage}-summarizer-queue
+        VisibilityTimeout: 240
+        MessageRetentionPeriod: 86400
+
+  Outputs:
+    ApiGatewayEndpoint:
+      Description: "API Gateway endpoint URL"
+      Value: {"Fn::Join": ["", ["https://", {"Ref": "HttpApi"}, ".execute-api.${aws:region}.amazonaws.com/${sls:stage}"]]}
+    RawBucketName:
+      Description: "S3 bucket for raw documents"
+      Value: !Ref RawDocumentsBucket
+    ProcessedBucketName:
+      Description: "S3 bucket for processed documents"
+      Value: !Ref ProcessedDocumentsBucket
+    ThumbnailsBucketName:
+      Description: "S3 bucket for document thumbnails"
+      Value: !Ref ThumbnailsBucket
+
+custom:
+  environment: ${file(env.${opt:stage, 'dev'}.yml)}
+  resources:
+    documentParserQueue:
+      queueUrl: !Ref DocumentParserQueue
+    ocrQueue:
+      queueUrl: !Ref OcrQueue
+    textProcessingQueue:
+      queueUrl: !Ref TextProcessingQueue
+    summarizerQueue:
+      queueUrl: !Ref SummarizerQueue

@@ -2,6 +2,8 @@ package com.docprocessing.document.repository;
 
 import com.docprocessing.document.exception.DocumentNotFoundException;
 import com.docprocessing.document.model.*;
+import com.docprocessing.document.model.EntitiesResponse;
+import com.docprocessing.document.model.Entity;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -263,30 +265,30 @@ public class DocumentRepositoryImpl implements DocumentRepository {
         String s3Key = String.format("users/%s/documents/%s/processed/entities.json", 
                 document.getUserId(), documentId);
                 
-        try {
-            GetObjectRequest getObjectRequest = GetObjectRequest.builder()
-                    .bucket(processedBucket)
-                    .key(s3Key)
-                    .build();
+                try {
+                    GetObjectRequest getObjectRequest = GetObjectRequest.builder()
+                            .bucket(processedBucket)
+                            .key(s3Key)
+                            .build();
+                            
+                    ResponseInputStream<GetObjectResponse> s3Response = s3Client.getObject(getObjectRequest);
+                    List<Entity> allEntities = objectMapper.readValue(s3Response, 
+                            new TypeReference<List<Entity>>() {});
                     
-            ResponseInputStream<GetObjectResponse> s3Response = s3Client.getObject(getObjectRequest);
-            List<EntitiesResponse.Entity> allEntities = objectMapper.readValue(s3Response, 
-                    new TypeReference<List<EntitiesResponse.Entity>>() {});
-            
-            // Filter by types if specified
-            List<EntitiesResponse.Entity> filteredEntities;
-            if (types != null && types.length > 0) {
-                Set<String> typeSet = new HashSet<>(Arrays.asList(types));
-                filteredEntities = allEntities.stream()
-                        .filter(entity -> typeSet.contains(entity.getType()))
-                        .collect(Collectors.toList());
-            } else {
-                filteredEntities = allEntities;
-            }
-            
-            EntitiesResponse response = new EntitiesResponse();
-            response.setDocumentId(documentId);
-            response.setEntities(filteredEntities);
+                    // Filter by types if specified
+                    List<Entity> filteredEntities;
+                    if (types != null && types.length > 0) {
+                        Set<String> typeSet = new HashSet<>(Arrays.asList(types));
+                        filteredEntities = allEntities.stream()
+                                .filter(entity -> typeSet.contains(entity.getType()))
+                                .collect(Collectors.toList());
+                    } else {
+                        filteredEntities = allEntities;
+                    }
+                    
+                    EntitiesResponse response = new EntitiesResponse();
+                    response.setDocumentId(documentId);
+                    response.setEntities(filteredEntities);
             
             return response;
         } catch (NoSuchKeyException e) {

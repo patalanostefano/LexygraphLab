@@ -33,7 +33,7 @@ public class CollectionController {
         var result = collectionService.listCollections(userId, page, limit);
         
         return ResponseEntity.ok(Map.of(
-            "collections", result.getCollections(),
+            "collections", result.getDocuments(), // Changed from result.getCollections()
             "pagination", result.getPagination()
         ));
     }
