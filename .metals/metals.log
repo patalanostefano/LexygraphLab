@@ -1,0 +1,111 @@
+2025.03.10 11:40:22 INFO  Started: Metals version 1.5.1 in folders '/Users/stefano/Desktop/LexygraphLab' for client Visual Studio Code 1.74.0.
+2025.03.10 11:40:31 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/CollectionController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.10 11:40:38 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/CollectionController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.10 11:40:38 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/CollectionController.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 10, 2025 11:40:39 AM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+AVVERTENZA: Unmatched cancel notification for request id 3
+mar 10, 2025 11:40:39 AM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+AVVERTENZA: Unmatched cancel notification for request id 4
+2025.03.10 11:40:38 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/CollectionController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.10 11:40:40 WARN  no build tool detected in workspace '/Users/stefano/Desktop/LexygraphLab'. The most common cause for this problem is that the editor was opened in the wrong working directory, for example if you use sbt then the workspace directory should contain build.sbt. 
+mar 10, 2025 11:40:40 AM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+AVVERTENZA: Unmatched cancel notification for request id 6
+mar 10, 2025 11:40:40 AM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+AVVERTENZA: Unmatched cancel notification for request id 5
+2025.03.10 11:40:40 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/CollectionController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.10 11:40:40 WARN  Build server is not auto-connectable.
+mar 10, 2025 11:40:40 AM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+AVVERTENZA: Unmatched cancel notification for request id 9
+2025.03.10 11:40:40 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/CollectionController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.10 11:40:40 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/CollectionController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.10 11:40:47 INFO  time: code lens generation in 6.87s
+2025.03.10 11:40:47 INFO  time: code lens generation in 7.52s
+mar 10, 2025 11:40:54 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 10, 2025 11:40:55 AM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-10/r_compiler-error_11-40-55-558.md
+mar 10, 2025 11:40:59 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 10, 2025 11:41:02 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+2025.03.10 11:41:13 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/CollectionController.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 10, 2025 11:41:35 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+2025.03.10 11:41:36 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/CollectionController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.10 11:42:11 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/CollectionController.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 10, 2025 11:42:13 AM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-10/r_compiler-error_11-42-13-926.md
+2025.03.10 11:42:15 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/CollectionController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.10 11:42:15 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/CollectionController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.10 11:42:15 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/CollectionController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.10 11:42:17 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/CollectionController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.10 11:42:17 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/CollectionController.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 10, 2025 11:42:17 AM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-10/r_compiler-error_11-42-17-780.md
+mar 10, 2025 11:42:17 AM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-10/r_compiler-error_11-42-17-883.md
+2025.03.10 11:42:17 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/CollectionController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.10 11:42:18 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/CollectionController.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 10, 2025 11:42:19 AM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-10/r_compiler-error_11-42-19-562.md
+mar 10, 2025 11:42:27 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 10, 2025 11:42:32 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+2025.03.10 11:42:35 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/CollectionController.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 10, 2025 11:42:37 AM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-10/r_compiler-error_11-42-37-041.md
+mar 10, 2025 11:42:37 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 10, 2025 11:47:37 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 10, 2025 11:47:49 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 10, 2025 11:47:51 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 10, 2025 11:49:39 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 10, 2025 11:51:18 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 10, 2025 3:17:29 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 10, 2025 4:31:32 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 10, 2025 4:33:18 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 10, 2025 6:22:04 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 10, 2025 6:50:11 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 10, 2025 9:47:44 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 10, 2025 10:48:25 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 10, 2025 11:50:49 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 10, 2025 11:51:10 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 9:18:14 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 9:18:50 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 9:53:42 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 9:53:47 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 10:40:46 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 10:51:33 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 10:52:21 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 10:52:30 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 10:52:43 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 10:55:28 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 10:56:06 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 10:56:19 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
