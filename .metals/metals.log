@@ -109,3 +109,813 @@ mar 11, 2025 10:56:06 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint noti
 AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
 mar 11, 2025 10:56:19 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
 AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 11:14:23 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 11:17:16 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 11:17:23 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+2025.03.11 11:17:55 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.11 11:17:55 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 11, 2025 11:17:56 AM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-11/r_compiler-error_11-17-56-591.md
+2025.03.11 11:17:58 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.11 11:17:58 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 11, 2025 11:17:58 AM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-11/r_compiler-error_11-17-58-611.md
+2025.03.11 11:17:58 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.11 11:18:33 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 11, 2025 11:18:33 AM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-11/r_compiler-error_11-18-33-871.md
+2025.03.11 11:18:33 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 11, 2025 11:18:34 AM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-11/r_compiler-error_11-18-34-199.md
+2025.03.11 11:18:42 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 11, 2025 11:18:43 AM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-11/r_compiler-error_11-18-43-482.md
+2025.03.11 11:22:51 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 11, 2025 11:22:52 AM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-11/r_compiler-error_11-22-52-469.md
+mar 11, 2025 11:23:01 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 11:23:03 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+2025.03.11 11:23:15 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 11, 2025 11:23:16 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 11:23:17 AM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-11/r_compiler-error_11-23-17-162.md
+2025.03.11 11:38:03 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 11, 2025 11:38:04 AM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-11/r_compiler-error_11-38-04-457.md
+mar 11, 2025 11:38:07 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 11:38:20 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 11:38:54 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+2025.03.11 11:39:00 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.11 11:39:00 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/CollectionController.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 11, 2025 11:39:01 AM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-11/r_compiler-error_11-39-01-409.md
+mar 11, 2025 11:39:01 AM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-11/r_compiler-error_11-39-01-878.md
+mar 11, 2025 11:39:33 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+2025.03.11 11:39:33 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 11, 2025 11:39:34 AM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-11/r_compiler-error_11-39-34-356.md
+2025.03.11 11:39:34 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/CollectionController.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 11, 2025 11:39:35 AM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-11/r_compiler-error_11-39-35-523.md
+mar 11, 2025 11:39:40 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 11:39:42 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 11:50:19 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 11:50:38 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 11:53:56 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 11:54:17 AM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 12:04:28 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 12:04:36 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 12:06:15 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 12:06:29 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 12:06:55 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 12:06:59 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 12:08:57 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 12:08:59 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 12:09:37 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 12:09:58 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+INFORMAZIONI: Unsupported notification method: $/setTrace
+mar 11, 2025 12:10:00 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+INFORMAZIONI: Unsupported notification method: $/setTrace
+mar 11, 2025 12:10:12 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 12:10:56 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 12:10:57 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 12:14:44 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 12:15:01 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 12:19:21 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 12:27:05 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 12:27:45 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 12:43:32 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 12:45:08 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 12:45:09 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 12:45:11 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 12:45:13 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 12:45:15 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 12:45:17 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 12:45:18 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 12:45:20 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 12:51:26 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 12:51:31 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 5:31:58 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 5:32:01 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+INFORMAZIONI: Unsupported notification method: $/setTrace
+mar 11, 2025 5:32:01 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+INFORMAZIONI: Unsupported notification method: $/setTrace
+mar 11, 2025 5:33:50 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 5:33:51 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+2025.03.11 17:37:22 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 11, 2025 5:37:22 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+AVVERTENZA: Unmatched cancel notification for request id 72
+mar 11, 2025 5:37:23 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 5:37:24 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 5:37:27 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 5:38:33 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 5:38:37 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 11, 2025 5:42:42 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+2025.03.11 17:46:48 INFO  Shutting down server
+2025.03.11 17:46:48 INFO  shutting down Metals
+2025.03.11 17:46:48 INFO  Exiting server
+2025.03.12 12:44:10 INFO  Started: Metals version 1.5.1 in folders '/Users/stefano/Desktop/LexygraphLab' for client Visual Studio Code 1.74.0.
+2025.03.12 12:44:18 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:44:18 WARN  no build tool detected in workspace '/Users/stefano/Desktop/LexygraphLab'. The most common cause for this problem is that the editor was opened in the wrong working directory, for example if you use sbt then the workspace directory should contain build.sbt. 
+2025.03.12 12:44:19 WARN  Build server is not auto-connectable.
+mar 12, 2025 12:44:28 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+AVVERTENZA: Unmatched cancel notification for request id 2
+2025.03.12 12:44:28 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:44:28 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:44:29 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:44:30 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+AVVERTENZA: Unmatched cancel notification for request id 6
+mar 12, 2025 12:44:30 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+AVVERTENZA: Unmatched cancel notification for request id 7
+mar 12, 2025 12:44:30 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+AVVERTENZA: Unmatched cancel notification for request id 5
+mar 12, 2025 12:44:30 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+AVVERTENZA: Unmatched cancel notification for request id 3
+mar 12, 2025 12:44:30 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+AVVERTENZA: Unmatched cancel notification for request id 8
+mar 12, 2025 12:44:30 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+AVVERTENZA: Unmatched cancel notification for request id 1
+mar 12, 2025 12:44:30 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+2025.03.12 12:44:29 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:44:30 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:44:30 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:44:31 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 12, 2025 12:44:31 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+AVVERTENZA: Unmatched cancel notification for request id 18
+mar 12, 2025 12:44:31 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+AVVERTENZA: Unmatched cancel notification for request id 17
+2025.03.12 12:44:30 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:44:34 INFO  time: code lens generation in 3.78s
+2025.03.12 12:44:34 INFO  time: code lens generation in 3.64s
+mar 12, 2025 12:44:36 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+2025.03.12 12:44:36 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/UserPrincipal.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:44:37 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/UserPrincipal.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:44:39 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/UserPrincipal.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:44:40 WARN  Running javac-semanticdb failed for file:///Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/UserPrincipal.java. Output:
+
+2025.03.12 12:44:40 INFO  time: code lens generation in 3.4s
+2025.03.12 12:44:40 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/UserPrincipal.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:44:42 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 12, 2025 12:44:46 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-44-46-406.md
+mar 12, 2025 12:44:46 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-44-46-829.md
+2025.03.12 12:44:59 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/UserPrincipal.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:45:01 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:45:01 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:45:01 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/UserPrincipal.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:45:05 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-45-05-503.md
+2025.03.12 12:45:07 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/UserPrincipal.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:45:43 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+2025.03.12 12:45:44 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/UserPrincipal.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:45:45 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 12, 2025 12:46:22 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+2025.03.12 12:46:22 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/UserPrincipal.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:46:25 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-46-25-150.md
+mar 12, 2025 12:46:29 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 12, 2025 12:46:31 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 12, 2025 12:46:32 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 12, 2025 12:46:35 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 12, 2025 12:46:35 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 12, 2025 12:47:03 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 12, 2025 12:47:08 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+2025.03.12 12:49:53 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:49:53 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:50:01 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 12, 2025 12:50:10 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 12, 2025 12:50:18 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 12, 2025 12:50:24 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 12, 2025 12:51:06 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+2025.03.12 12:51:10 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/CollectionController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:51:11 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/CollectionController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:51:12 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/CollectionController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:51:13 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/CollectionController.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:51:14 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-51-14-149.md
+2025.03.12 12:51:13 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/CollectionController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:51:15 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/CollectionController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:51:17 INFO  time: code lens generation in 2.09s
+mar 12, 2025 12:51:17 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-51-17-606.md
+2025.03.12 12:51:17 WARN  no build target for: /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/CollectionController.java
+2025.03.12 12:51:18 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/UserPrincipal.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:51:18 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:51:18 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:51:19 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-51-19-390.md
+mar 12, 2025 12:51:19 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-51-19-919.md
+2025.03.12 12:51:20 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/CollectionController.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:51:23 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-51-23-778.md
+2025.03.12 12:51:34 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:51:35 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:51:37 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:51:37 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-51-37-745.md
+2025.03.12 12:51:37 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:51:39 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:51:40 INFO  time: code lens generation in 1.95s
+mar 12, 2025 12:51:40 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-51-40-415.md
+2025.03.12 12:51:43 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/CollectionController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:51:52 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/CollectionController.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:51:53 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-51-53-573.md
+2025.03.12 12:51:53 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:51:53 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:51:55 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:51:55 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-51-55-995.md
+mar 12, 2025 12:51:56 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-51-56-622.md
+2025.03.12 12:51:58 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:51:58 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:51:59 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-51-59-502.md
+mar 12, 2025 12:52:00 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 12, 2025 12:52:25 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+2025.03.12 12:52:28 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/UserPrincipal.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:52:28 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/UserPrincipal.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:52:32 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/config/SecurityConfig.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:52:32 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/config/SecurityConfig.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:52:34 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-52-34-195.md
+2025.03.12 12:52:34 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/config/SecurityConfig.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:52:34 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/config/SecurityConfig.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:52:36 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/config/SecurityConfig.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:52:37 INFO  time: code lens generation in 1.78s
+mar 12, 2025 12:52:37 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-52-37-225.md
+2025.03.12 12:52:39 WARN  no build target for: /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/config/SecurityConfig.java
+2025.03.12 12:52:39 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:52:39 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:52:39 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/UserPrincipal.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:52:39 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:52:39 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/CollectionController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:52:39 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/config/SecurityConfig.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:52:40 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-52-40-667.md
+mar 12, 2025 12:52:42 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+2025.03.12 12:52:57 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/config/SecurityConfig.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:52:57 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-52-57-809.md
+2025.03.12 12:53:09 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:53:09 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:53:10 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:53:10 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:53:11 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-53-11-226.md
+mar 12, 2025 12:53:20 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+2025.03.12 12:53:21 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:53:21 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:53:23 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:53:24 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:53:25 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-53-25-412.md
+2025.03.12 12:53:25 INFO  time: code lens generation in 1.41s
+2025.03.12 12:53:25 WARN  no build target for: /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtAuthenticationFilter.java
+2025.03.12 12:53:25 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:53:25 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/CollectionController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:53:25 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:53:25 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/UserPrincipal.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:53:25 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/config/SecurityConfig.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:53:25 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:53:26 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-53-26-458.md
+mar 12, 2025 12:53:29 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 12, 2025 12:53:41 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+2025.03.12 12:53:54 WARN  Running javac-semanticdb failed for file:///Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/SupabaseJwtService.java. Output:
+
+2025.03.12 12:53:55 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:53:55 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-53-55-241.md
+mar 12, 2025 12:53:57 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+2025.03.12 12:54:00 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:54:01 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+2025.03.12 12:54:01 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:01 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:01 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:54:02 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-54-02-863.md
+2025.03.12 12:54:03 WARN  Running javac-semanticdb failed for file:///Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/SupabaseJwtService.java. Output:
+
+2025.03.12 12:54:04 WARN  no build target for: /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/SupabaseJwtService.java
+mar 12, 2025 12:54:04 PM scala.meta.internal.metals.StdReporter $anonfun$create$1
+GRAVE: QDox parse error in file:///Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/SupabaseJwtService.java (full report at: /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_qdox-error_12-54-04-148.md)
+2025.03.12 12:54:04 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:54:04 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-54-04-827.md
+2025.03.12 12:54:06 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:06 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:06 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/UserPrincipal.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:06 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/CollectionController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:06 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/config/SecurityConfig.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:06 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:07 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:54:09 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-54-09-107.md
+2025.03.12 12:54:11 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:12 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:12 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:54:15 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+AVVERTENZA: Unmatched cancel notification for request id 178
+2025.03.12 12:54:15 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/UserPrincipal.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:15 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/UserPrincipal.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:15 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/UserPrincipal.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:54:16 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-54-16-875.md
+mar 12, 2025 12:54:18 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+AVVERTENZA: Unmatched cancel notification for request id 182
+2025.03.12 12:54:18 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/UserPrincipal.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:18 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/UserPrincipal.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:54:18 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-54-18-797.md
+mar 12, 2025 12:54:18 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-54-18-806.md
+mar 12, 2025 12:54:19 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+AVVERTENZA: Unmatched cancel notification for request id 185
+2025.03.12 12:54:21 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:22 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/UserPrincipal.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:54:22 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-54-22-414.md
+2025.03.12 12:54:32 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:32 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/UserPrincipal.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:42 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:42 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/JwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:42 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/UserPrincipal.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:42 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/UserPrincipal.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:42 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/JwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:42 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/UserPrincipal.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:42 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/UserPrincipal.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:42 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/sercurity/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:54:43 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-54-43-776.md
+mar 12, 2025 12:54:43 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-54-43-906.md
+mar 12, 2025 12:54:44 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+AVVERTENZA: Unmatched cancel notification for request id 194
+2025.03.12 12:54:44 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:44 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:44 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/UserPrincipal.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:45 WARN  Running javac-semanticdb failed for file:///Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Output:
+
+mar 12, 2025 12:54:45 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+AVVERTENZA: Unmatched cancel notification for request id 201
+mar 12, 2025 12:54:45 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-54-45-734.md
+2025.03.12 12:54:47 WARN  Running javac-semanticdb failed for file:///Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/UserPrincipal.java. Output:
+
+2025.03.12 12:54:47 INFO  time: code lens generation in 2.28s
+2025.03.12 12:54:47 INFO  time: code lens generation in 2.28s
+mar 12, 2025 12:54:47 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+AVVERTENZA: Unmatched cancel notification for request id 199
+mar 12, 2025 12:54:47 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+AVVERTENZA: Unmatched cancel notification for request id 200
+mar 12, 2025 12:54:47 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+AVVERTENZA: Unmatched cancel notification for request id 195
+2025.03.12 12:54:47 WARN  no build target for: /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/UserPrincipal.java
+2025.03.12 12:54:47 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:47 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:54:47 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+AVVERTENZA: Unmatched cancel notification for request id 206
+mar 12, 2025 12:54:47 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+AVVERTENZA: Unmatched cancel notification for request id 205
+mar 12, 2025 12:54:47 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+AVVERTENZA: Unmatched cancel notification for request id 203
+2025.03.12 12:54:47 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/JwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:47 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/JwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:49 WARN  no build target for: /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/JwtService.java
+2025.03.12 12:54:51 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/CollectionController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:51 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:51 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/JwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:51 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:51 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/config/SecurityConfig.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:51 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:51 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/UserPrincipal.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:54:52 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-54-52-977.md
+mar 12, 2025 12:54:53 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-54-53-056.md
+2025.03.12 12:54:55 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:55 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:58 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/config/SecurityConfig.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:58 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:58 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/JwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:58 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/UserPrincipal.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:58 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:58 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:58 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/CollectionController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:58 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:58 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:58 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:58 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:58 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:54:58 WARN  Running javac-semanticdb failed for file:///Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Output:
+
+Exception in thread "pool-44-thread-1" java.io.IOException: Is a directory
+	at java.base/sun.nio.ch.FileDispatcherImpl.read0(Native Method)
+	at java.base/sun.nio.ch.FileDispatcherImpl.read(FileDispatcherImpl.java:48)
+	at java.base/sun.nio.ch.IOUtil.readIntoNativeBuffer(IOUtil.java:330)
+	at java.base/sun.nio.ch.IOUtil.read(IOUtil.java:296)
+	at java.base/sun.nio.ch.IOUtil.read(IOUtil.java:273)
+	at java.base/sun.nio.ch.FileChannelImpl.read(FileChannelImpl.java:232)
+	at java.base/sun.nio.ch.ChannelInputStream.read(ChannelInputStream.java:65)
+	at java.base/sun.nio.ch.ChannelInputStream.read(ChannelInputStream.java:107)
+	at java.base/sun.nio.ch.ChannelInputStream.read(ChannelInputStream.java:101)
+	at java.base/sun.nio.cs.StreamDecoder.readBytes(StreamDecoder.java:281)
+	at java.base/sun.nio.cs.StreamDecoder.implRead(StreamDecoder.java:324)
+	at java.base/sun.nio.cs.StreamDecoder.read(StreamDecoder.java:189)
+	at java.base/java.io.InputStreamReader.read(InputStreamReader.java:177)
+	at java.base/java.io.BufferedReader.fill(BufferedReader.java:162)
+	at java.base/java.io.BufferedReader.readLine(BufferedReader.java:329)
+	at java.base/java.io.BufferedReader.readLine(BufferedReader.java:396)
+	at java.base/java.nio.file.Files.readAllLines(Files.java:3415)
+	at java.base/java.nio.file.Files.readAllLines(Files.java:3453)
+	at scala.meta.internal.metals.StdReporter.$anonfun$1(ReportContext.scala:110)
+	at scala.collection.immutable.List.flatMap(List.scala:294)
+	at scala.meta.internal.metals.StdReporter.readInIds(ReportContext.scala:109)
+	at scala.meta.internal.metals.StdReporter.create(ReportContext.scala:129)
+	at scala.meta.internal.pc.CompilerAccess.handleError(CompilerAccess.scala:223)
+	at scala.meta.internal.pc.CompilerAccess.withSharedCompiler$$anonfun$2(CompilerAccess.scala:171)
+	at scala.Option.getOrElse(Option.scala:201)
+	at scala.meta.internal.pc.CompilerAccess.withSharedCompiler(CompilerAccess.scala:173)
+	at scala.meta.internal.pc.CompilerAccess.$anonfun$1(CompilerAccess.scala:103)
+	at scala.meta.internal.pc.CompilerAccess.onCompilerJobQueue$$anonfun$1(CompilerAccess.scala:246)
+	at scala.meta.internal.pc.CompilerJobQueue$Job.run(CompilerJobQueue.scala:153)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1136)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:635)
+	at java.base/java.lang.Thread.run(Thread.java:840)
+mar 12, 2025 12:54:59 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-54-59-529.md
+mar 12, 2025 12:54:59 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-54-59-539.md
+2025.03.12 12:54:59 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:54:59 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-54-59-938.md
+2025.03.12 12:55:00 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:55:00 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-55-00-904.md
+2025.03.12 12:55:01 WARN  no build target for: /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java
+mar 12, 2025 12:55:01 PM scala.meta.internal.metals.StdReporter $anonfun$create$1
+GRAVE: QDox parse error in file:///Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java (full report at: /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_qdox-error_12-55-01-839.md)
+2025.03.12 12:55:01 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/CollectionController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:55:01 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:55:01 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/config/SecurityConfig.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:55:01 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/JwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:55:01 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/UserPrincipal.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:55:02 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-55-02-308.md
+mar 12, 2025 12:55:02 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-55-02-335.md
+2025.03.12 12:55:03 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:55:03 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-55-03-324.md
+2025.03.12 12:55:04 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:55:04 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:55:04 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-55-04-712.md
+2025.03.12 12:55:06 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:55:06 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-55-06-414.md
+2025.03.12 12:55:08 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:55:08 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:55:10 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:55:12 WARN  no build target for: /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java
+2025.03.12 12:55:12 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/CollectionController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:55:12 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/config/SecurityConfig.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:55:12 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/UserPrincipal.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:55:12 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:55:12 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:55:12 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/JwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:55:13 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-55-13-322.md
+mar 12, 2025 12:55:13 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-55-13-379.md
+2025.03.12 12:55:14 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:55:14 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-55-14-943.md
+mar 12, 2025 12:55:15 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+AVVERTENZA: Unmatched cancel notification for request id 268
+2025.03.12 12:55:19 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/CollectionController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:55:19 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:55:20 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:55:21 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:55:21 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-55-21-468.md
+mar 12, 2025 12:55:21 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-55-21-559.md
+2025.03.12 12:55:25 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:55:25 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-55-25-654.md
+2025.03.12 12:55:25 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:55:28 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:55:28 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:55:28 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-55-28-616.md
+2025.03.12 12:55:28 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:55:28 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:55:29 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:55:29 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-55-29-478.md
+mar 12, 2025 12:55:29 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-55-29-584.md
+2025.03.12 12:55:29 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:55:30 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:55:35 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/JwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:55:35 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/JwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:56:18 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/JwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:56:18 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-56-18-896.md
+2025.03.12 12:56:20 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:56:20 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 12:56:20 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 12:56:21 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_12-56-21-472.md
+mar 12, 2025 1:57:51 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 12, 2025 3:19:43 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 12, 2025 3:19:43 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 12, 2025 3:19:46 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 12, 2025 3:19:47 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 12, 2025 3:33:32 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 12, 2025 3:33:33 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 12, 2025 3:36:30 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 12, 2025 3:36:31 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 12, 2025 3:46:10 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 12, 2025 3:46:12 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 12, 2025 4:28:14 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 12, 2025 4:28:15 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 12, 2025 4:28:16 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+2025.03.12 16:28:19 INFO  Shutting down server
+2025.03.12 16:28:19 INFO  shutting down Metals
+2025.03.12 16:28:20 INFO  Exiting server
+2025.03.12 16:53:06 INFO  Started: Metals version 1.5.1 in folders '/Users/stefano/Desktop/LexygraphLab' for client Visual Studio Code 1.74.0.
+2025.03.12 16:53:11 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:53:13 WARN  no build tool detected in workspace '/Users/stefano/Desktop/LexygraphLab'. The most common cause for this problem is that the editor was opened in the wrong working directory, for example if you use sbt then the workspace directory should contain build.sbt. 
+2025.03.12 16:53:13 WARN  Build server is not auto-connectable.
+2025.03.12 16:53:16 WARN  Running javac-semanticdb failed for file:///Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Output:
+
+mar 12, 2025 4:53:19 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+AVVERTENZA: Unmatched cancel notification for request id 2
+2025.03.12 16:53:19 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:53:19 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:53:19 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:53:20 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 4:53:20 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+AVVERTENZA: Unmatched cancel notification for request id 7
+mar 12, 2025 4:53:20 PM org.eclipse.lsp4j.jsonrpc.RemoteEndpoint handleCancellation
+AVVERTENZA: Unmatched cancel notification for request id 8
+2025.03.12 16:53:20 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:53:25 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:53:27 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:53:27 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 4:53:29 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_16-53-29-558.md
+2025.03.12 16:53:42 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:53:45 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:53:45 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:53:45 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 4:53:49 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_16-53-49-408.md
+2025.03.12 16:53:51 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/JwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:53:52 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/JwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:53:52 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/JwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:53:55 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/UserPrincipal.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:53:55 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/UserPrincipal.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:53:56 WARN  Running javac-semanticdb failed for file:///Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/UserPrincipal.java. Output:
+
+2025.03.12 16:53:57 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/JwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:53:57 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/JwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 4:53:57 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_16-53-57-733.md
+2025.03.12 16:53:57 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/JwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 4:54:00 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_16-54-00-304.md
+2025.03.12 16:54:01 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/JwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:54:14 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/JwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:54:14 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/UserPrincipal.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:54:16 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:54:16 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:54:20 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:54:20 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 4:54:21 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_16-54-21-119.md
+2025.03.12 16:54:20 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:54:22 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 4:54:22 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_16-54-22-869.md
+2025.03.12 16:54:24 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 4:54:25 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_16-54-25-085.md
+2025.03.12 16:54:26 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:54:26 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 4:54:27 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_16-54-27-016.md
+mar 12, 2025 4:54:27 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_16-54-27-164.md
+2025.03.12 16:54:29 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:54:29 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 4:54:29 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_16-54-29-587.md
+2025.03.12 16:54:30 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 4:54:31 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_16-54-31-097.md
+2025.03.12 16:54:31 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 4:54:32 PM scala.meta.internal.metals.StdReporter $anonfun$create$1
+GRAVE: QDox parse error in file:///Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java (full report at: /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_qdox-error_12-55-01-839.md)
+mar 12, 2025 4:54:32 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_16-54-32-370.md
+2025.03.12 16:54:31 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:54:33 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 4:54:33 PM scala.meta.internal.metals.StdReporter $anonfun$create$1
+GRAVE: QDox parse error in file:///Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java (full report at: /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_qdox-error_12-55-01-839.md)
+mar 12, 2025 4:54:33 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_16-54-33-562.md
+2025.03.12 16:54:33 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:54:35 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 4:54:35 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_16-54-35-655.md
+2025.03.12 16:54:36 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:54:36 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 4:54:37 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_16-54-37-345.md
+2025.03.12 16:54:36 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:54:38 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:54:38 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:54:38 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:54:38 WARN  Running javac-semanticdb failed for file:///Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Output:
+
+mar 12, 2025 4:54:38 PM scala.meta.internal.metals.StdReporter $anonfun$create$1
+GRAVE: QDox parse error in file:///Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java (full report at: /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_qdox-error_12-55-01-839.md)
+2025.03.12 16:54:38 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 4:54:38 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_16-54-38-987.md
+mar 12, 2025 4:54:39 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_16-54-39-064.md
+2025.03.12 16:54:39 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:54:39 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:54:39 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:54:39 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:54:39 WARN  Running javac-semanticdb failed for file:///Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Output:
+
+mar 12, 2025 4:54:40 PM scala.meta.internal.metals.StdReporter $anonfun$create$1
+GRAVE: QDox parse error in file:///Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java (full report at: /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_qdox-error_12-55-01-839.md)
+mar 12, 2025 4:54:40 PM scala.meta.internal.metals.StdReporter $anonfun$create$1
+GRAVE: QDox parse error in file:///Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java (full report at: /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_qdox-error_12-55-01-839.md)
+2025.03.12 16:54:40 WARN  no build target for: /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java
+mar 12, 2025 4:54:40 PM scala.meta.internal.metals.StdReporter $anonfun$create$1
+GRAVE: QDox parse error in file:///Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java (full report at: /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_qdox-error_12-55-01-839.md)
+2025.03.12 16:54:40 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/UserPrincipal.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:54:40 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:54:40 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 4:54:41 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_16-54-41-112.md
+2025.03.12 16:54:41 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 4:54:42 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_16-54-42-529.md
+mar 12, 2025 4:54:42 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_16-54-42-752.md
+2025.03.12 16:54:43 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:54:44 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 4:54:44 PM scala.meta.internal.metals.StdReporter $anonfun$create$1
+GRAVE: QDox parse error in file:///Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java (full report at: /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_qdox-error_12-55-01-839.md)
+2025.03.12 16:54:44 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 4:54:45 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_16-54-45-372.md
+2025.03.12 16:54:45 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:54:45 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 4:54:46 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_16-54-46-552.md
+2025.03.12 16:54:45 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:54:47 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:54:49 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/UserPrincipal.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:54:51 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:54:51 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/JwtAuthenticationFilter.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 4:54:52 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_16-54-52-050.md
+2025.03.12 16:54:52 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:54:55 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/security/SupabaseJwtService.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:55:03 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:55:03 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:55:05 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:55:05 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 4:55:05 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_16-55-05-736.md
+2025.03.12 16:55:05 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:55:05 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:55:08 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:55:08 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+2025.03.12 16:55:08 INFO  no build target found for /Users/stefano/Desktop/LexygraphLab/src/document-service/src/main/java/com/docprocessing/document/controller/DocumentController.java. Using presentation compiler with project's scala-library version: 3.3.4
+mar 12, 2025 4:55:09 PM scala.meta.internal.pc.CompilerAccess handleError
+GRAVE: A severe compiler error occurred, full details of the error can be found in the error report /Users/stefano/Desktop/LexygraphLab/.metals/.reports/metals-full/2025-03-12/r_compiler-error_16-55-09-685.md
+mar 12, 2025 4:55:29 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 12, 2025 4:55:33 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 12, 2025 4:56:04 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 12, 2025 4:56:48 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 12, 2025 4:56:56 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 12, 2025 4:57:18 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange
+mar 12, 2025 4:57:36 PM org.eclipse.lsp4j.jsonrpc.services.GenericEndpoint notify
+AVVERTENZA: Unsupported notification method: metals/windowStateDidChange

@@ -3,13 +3,13 @@ package com.docprocessing.document.controller;
 import com.docprocessing.document.model.DocumentSubmissionResponse;
 import com.docprocessing.document.model.Document;
 import com.docprocessing.document.model.ProcessingStatusResponse;
+import com.docprocessing.document.security.UserPrincipal;
 import com.docprocessing.document.service.DocumentService;
 import com.docprocessing.document.service.StorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -34,9 +34,10 @@ public class DocumentController {
             @RequestParam(value = "processingOptions", required = false) String processingOptions,
             @RequestParam(value = "priority", defaultValue = "NORMAL") String priority,
             @RequestParam(value = "language", defaultValue = "en") String language,
-            @AuthenticationPrincipal Jwt principal) {
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
             
-        String userId = principal.getSubject();
+        // Use the ID from the authenticated user
+        String userId = userPrincipal.getId();
         
         DocumentSubmissionResponse response = documentService.submitDocument(
             userId, file, name, description, collectionId, 
@@ -48,19 +49,32 @@ public class DocumentController {
     @GetMapping("/{documentId}")
     public ResponseEntity<Document> getDocument(
             @PathVariable UUID documentId,
-            @AuthenticationPrincipal Jwt principal) {
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
             
-        String userId = principal.getSubject();
+        String userId = userPrincipal.getId();
         Document document = documentService.getDocument(userId, documentId);
         return ResponseEntity.ok(document);
+    }
+    
+    @GetMapping
+    public ResponseEntity<?> listDocuments(
+            @RequestParam(value = "page", defaultValue = "1") int page,
+            @RequestParam(value = "limit", defaultValue = "20") int limit,
+            @RequestParam(value = "sort", defaultValue = "uploadedAt") String sort,
+            @RequestParam(value = "direction", defaultValue = "desc") String direction,
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
+            
+        String userId = userPrincipal.getId();
+        var result = documentService.findByUserId(userId, page, limit, sort, direction);
+        return ResponseEntity.ok(result);
     }
     
     @GetMapping("/{documentId}/status")
     public ResponseEntity<ProcessingStatusResponse> getDocumentStatus(
             @PathVariable UUID documentId,
-            @AuthenticationPrincipal Jwt principal) {
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
             
-        String userId = principal.getSubject();
+        String userId = userPrincipal.getId();
         ProcessingStatusResponse status = documentService.getDocumentStatus(userId, documentId);
         return ResponseEntity.ok(status);
     }
@@ -69,9 +83,9 @@ public class DocumentController {
     public ResponseEntity<?> getDocumentViewUrl(
             @PathVariable UUID documentId,
             @RequestParam(value = "expiresIn", defaultValue = "3600") Integer expiresIn,
-            @AuthenticationPrincipal Jwt principal) {
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
             
-        String userId = principal.getSubject();
+        String userId = userPrincipal.getId();
         var viewUrl = storageService.generateViewUrl(userId, documentId, expiresIn);
         return ResponseEntity.ok(viewUrl);
     }
@@ -80,9 +94,9 @@ public class DocumentController {
     public ResponseEntity<?> getDocumentDownloadUrl(
             @PathVariable UUID documentId,
             @RequestParam(value = "expiresIn", defaultValue = "3600") Integer expiresIn,
-            @AuthenticationPrincipal Jwt principal) {
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
             
-        String userId = principal.getSubject();
+        String userId = userPrincipal.getId();
         var downloadUrl = storageService.generateDownloadUrl(userId, documentId, expiresIn);
         return ResponseEntity.ok(downloadUrl);
     }
@@ -91,9 +105,9 @@ public class DocumentController {
     public ResponseEntity<Document> updateDocument(
             @PathVariable UUID documentId,
             @Valid @RequestBody Document documentUpdate,
-            @AuthenticationPrincipal Jwt principal) {
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
             
-        String userId = principal.getSubject();
+        String userId = userPrincipal.getId();
         Document updated = documentService.updateDocument(userId, documentId, documentUpdate);
         return ResponseEntity.ok(updated);
     }
@@ -101,9 +115,9 @@ public class DocumentController {
     @DeleteMapping("/{documentId}")
     public ResponseEntity<?> deleteDocument(
             @PathVariable UUID documentId,
-            @AuthenticationPrincipal Jwt principal) {
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
             
-        String userId = principal.getSubject();
+        String userId = userPrincipal.getId();
         documentService.deleteDocument(userId, documentId);
         return ResponseEntity.noContent().build();
     }
@@ -113,9 +127,9 @@ public class DocumentController {
             @PathVariable UUID documentId,
             @RequestParam(value = "page", required = false) Integer page,
             @RequestParam(value = "format", defaultValue = "plain") String format,
-            @AuthenticationPrincipal Jwt principal) {
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
             
-        String userId = principal.getSubject();
+        String userId = userPrincipal.getId();
         var text = documentService.getExtractedText(userId, documentId, page, format);
         return ResponseEntity.ok(text);
     }
@@ -124,9 +138,9 @@ public class DocumentController {
     public ResponseEntity<?> getDocumentSummary(
             @PathVariable UUID documentId,
             @RequestParam(value = "maxLength", defaultValue = "500") Integer maxLength,
-            @AuthenticationPrincipal Jwt principal) {
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
             
-        String userId = principal.getSubject();
+        String userId = userPrincipal.getId();
         var summary = documentService.getDocumentSummary(userId, documentId, maxLength);
         return ResponseEntity.ok(summary);
     }
@@ -135,9 +149,9 @@ public class DocumentController {
     public ResponseEntity<?> getDocumentEntities(
             @PathVariable UUID documentId,
             @RequestParam(value = "types", required = false) String[] types,
-            @AuthenticationPrincipal Jwt principal) {
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
             
-        String userId = principal.getSubject();
+        String userId = userPrincipal.getId();
         var entities = documentService.getDocumentEntities(userId, documentId, types);
         return ResponseEntity.ok(entities);
     }

@@ -19,6 +19,12 @@ read -sp "Enter Azure Computer Vision Key: " AZURE_CV_KEY
 echo
 read -sp "Enter OpenAI API Key: " OPENAI_API_KEY
 echo
+read -p "Enter Supabase Project URL (e.g., https://yourproject.supabase.co): " SUPABASE_URL
+echo
+
+# Derive Supabase JWT issuer and JWK URI
+SUPABASE_JWT_ISSUER="$SUPABASE_URL"
+SUPABASE_JWK_URI="${SUPABASE_URL}/.well-known/jwks.json"
 
 # Create SSM parameters
 aws ssm put-parameter --name "/docproc/$ENV/azure-cv-endpoint" \
@@ -36,6 +42,18 @@ aws ssm put-parameter --name "/docproc/$ENV/azure-cv-key" \
 aws ssm put-parameter --name "/docproc/$ENV/openai-api-key" \
   --value "$OPENAI_API_KEY" \
   --type "SecureString" \
+  --overwrite \
+  --region $REGION
+
+aws ssm put-parameter --name "/docproc/$ENV/supabase-jwt-issuer" \
+  --value "$SUPABASE_JWT_ISSUER" \
+  --type "String" \
+  --overwrite \
+  --region $REGION
+
+aws ssm put-parameter --name "/docproc/$ENV/supabase-jwk-uri" \
+  --value "$SUPABASE_JWK_URI" \
+  --type "String" \
   --overwrite \
   --region $REGION
 
