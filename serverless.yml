@@ -10,7 +10,6 @@ provider:
     STAGE: ${opt:stage, 'dev'}
     RAW_BUCKET: ${self:custom.environment.RAW_BUCKET}
     PROCESSED_BUCKET: ${self:custom.environment.PROCESSED_BUCKET}
-    THUMBNAILS_BUCKET: ${self:custom.environment.THUMBNAILS_BUCKET}
     DOCUMENTS_TABLE: ${self:custom.environment.DOCUMENTS_TABLE}
     COLLECTIONS_TABLE: ${self:custom.environment.COLLECTIONS_TABLE}
     DOC_PROCESSING_TABLE: ${self:custom.environment.DOC_PROCESSING_TABLE}

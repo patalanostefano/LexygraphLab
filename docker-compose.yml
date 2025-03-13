@@ -18,7 +18,6 @@ services:
       - SQS_ENDPOINT=http://localstack:4566
       - RAW_BUCKET=docproc-raw-documents-dev
       - PROCESSED_BUCKET=docproc-processed-documents-dev
-      - THUMBNAILS_BUCKET=docproc-thumbnails-dev
       - DOCUMENTS_TABLE=documents-dev
       - COLLECTIONS_TABLE=document-collections-dev
       - DOC_PROCESSING_TABLE=document-processing-dev

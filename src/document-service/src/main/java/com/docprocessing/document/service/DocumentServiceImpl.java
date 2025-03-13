@@ -87,6 +87,11 @@ public class DocumentServiceImpl implements DocumentService {
         
         return document;
     }
+
+    @Override
+    public DocumentBatchResponse findByUserId(String userId, int page, int limit, String sort, String direction) {
+            return documentRepository.findByUserId(userId, page, limit, sort, direction);
+        }
     
     @Override
     public ProcessingStatusResponse getDocumentStatus(String userId, UUID documentId) {
