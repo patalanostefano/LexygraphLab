@@ -160,10 +160,7 @@ resources:
       Properties:
         BucketName: ${self:custom.environment.PROCESSED_BUCKET}
         
-    ThumbnailsBucket:
-      Type: AWS::S3::Bucket
-      Properties:
-        BucketName: ${self:custom.environment.THUMBNAILS_BUCKET}
+    
         
     # DynamoDB Tables
     DocumentsTable:
@@ -274,9 +271,7 @@ resources:
     ProcessedBucketName:
       Description: "S3 bucket for processed documents"
       Value: !Ref ProcessedDocumentsBucket
-    ThumbnailsBucketName:
-      Description: "S3 bucket for document thumbnails"
-      Value: !Ref ThumbnailsBucket
+    
 
 custom:
   environment: ${file(env.${opt:stage, 'dev'}.yml)}
