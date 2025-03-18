@@ -10,7 +10,6 @@ provider:
     STAGE: ${opt:stage, 'dev'}
     RAW_BUCKET: ${self:custom.environment.RAW_BUCKET}
     PROCESSED_BUCKET: ${self:custom.environment.PROCESSED_BUCKET}
-    THUMBNAILS_BUCKET: ${self:custom.environment.THUMBNAILS_BUCKET}
     DOCUMENTS_TABLE: ${self:custom.environment.DOCUMENTS_TABLE}
     COLLECTIONS_TABLE: ${self:custom.environment.COLLECTIONS_TABLE}
     DOC_PROCESSING_TABLE: ${self:custom.environment.DOC_PROCESSING_TABLE}
@@ -161,10 +160,7 @@ resources:
       Properties:
         BucketName: ${self:custom.environment.PROCESSED_BUCKET}
         
-    ThumbnailsBucket:
-      Type: AWS::S3::Bucket
-      Properties:
-        BucketName: ${self:custom.environment.THUMBNAILS_BUCKET}
+    
         
     # DynamoDB Tables
     DocumentsTable:
@@ -275,9 +271,7 @@ resources:
     ProcessedBucketName:
       Description: "S3 bucket for processed documents"
       Value: !Ref ProcessedDocumentsBucket
-    ThumbnailsBucketName:
-      Description: "S3 bucket for document thumbnails"
-      Value: !Ref ThumbnailsBucket
+    
 
 custom:
   environment: ${file(env.${opt:stage, 'dev'}.yml)}

@@ -1,22 +1,23 @@
-FROM python:3.9-slim
+FROM public.ecr.aws/lambda/python:3.9
 
-WORKDIR /app
+# Install system dependencies for PyMuPDF
+RUN yum install -y \
+    gcc \
+    libffi-devel \
+    python3-devel \
+    freetype-devel \
+    libpng-devel \
+    libjpeg-devel \
+    && yum clean all
 
-# Copy requirements first for better layer caching
+# Copy requirements
 COPY requirements.txt .
+
+# Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Install additional dependencies for PDF processing
-RUN apt-get update && apt-get install -y \
-    poppler-utils \
-    libmagic1 \
-    && rm -rf /var/lib/apt/lists/*
+# Copy function code
+COPY app.py ${LAMBDA_TASK_ROOT}
 
-# Copy application code
-COPY . .
-
-# Set Python to run in unbuffered mode
-ENV PYTHONUNBUFFERED=1
-
-# Command to run when container starts
-CMD ["python", "app.py"]
+# Set the CMD to your handler
+CMD [ "app.lambda_handler" ]

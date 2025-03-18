@@ -1,21 +1,11 @@
-FROM python:3.9-slim
+FROM public.ecr.aws/lambda/python:3.9
 
-WORKDIR /app
-
-# Copy requirements first for better layer caching
+# Install dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install -r requirements.txt --target "${LAMBDA_TASK_ROOT}"
 
-# Install additional dependencies
-RUN apt-get update && apt-get install -y \
-    libmagic1 \
-    && rm -rf /var/lib/apt/lists/*
+# Copy function code
+COPY app.py ${LAMBDA_TASK_ROOT}
 
-# Copy application code
-COPY . .
-
-# Set Python to run in unbuffered mode
-ENV PYTHONUNBUFFERED=1
-
-# Command to run when container starts
-CMD ["python", "app.py"]
+# Set the CMD to your handler
+CMD [ "app.lambda_handler" ]

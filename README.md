@@ -157,3 +157,58 @@
 4. As a user, I can save pipeline templates for future use
 5. As a user, I can process batches of documents
 6. As a user, I can view detailed execution logs and results
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## TODO
+
+### authentication
+Right now directly integrated supabase into react using api but ready to host it on aws as a small ECR instance + aura db for credential storage, ready wrapper inside supabase-auth-service/lambda.js
+how:
+Connect to your Aurora database:
+
+psql -h [your-aurora-endpoint] -U supabaseadmin -d auth
+Enter your password when prompted
+Run the migration scripts in order:
+
+
+cd ./259ed54420a1f94ce525465ef73a3e78ddbdcb806e509507b5d62ba592702c09/usr/local/etc/auth/migrations/
+
+Apply the base schema
+psql -h [your-aurora-endpoint] -U supabaseadmin -d auth -f 00_init_auth_schema.up.sql
+
+Apply the MFA schema update
+psql -h [your-aurora-endpoint] -U supabaseadmin -d auth -f 20221003041349_add_mfa_schema.up.sql
+
+Build and Push Docker Image to ECR
+Create an ECR repository:
+
+
+aws ecr create-repository --repository-name supabase-auth-lambda --image-scanning-configuration scanOnPush=true
+Authenticate your Docker client to your registry:
+
+
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin YOUR_AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com
+Build your Docker image:
+
+
+docker build -t supabase-auth-lambda .
+Tag your image:
+
+
+docker tag supabase-auth-lambda:latest YOUR_AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/supabase-auth-lambda:latest
+Push the image to ECR:
+
+
+docker push YOUR_AWS_ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/supabase-auth-lambda:latest

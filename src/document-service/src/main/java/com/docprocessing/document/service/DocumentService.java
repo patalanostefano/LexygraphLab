@@ -17,7 +17,9 @@ public interface DocumentService {
                                              String language);
                                              
     Document getDocument(String userId, UUID documentId);
-    
+
+    DocumentBatchResponse findByUserId(String userId, int page, int limit, String sort, String direction);
+
     ProcessingStatusResponse getDocumentStatus(String userId, UUID documentId);
     
     Document updateDocument(String userId, UUID documentId, Document documentUpdate);

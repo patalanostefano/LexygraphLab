@@ -3,12 +3,12 @@ package com.docprocessing.document.controller;
 import com.docprocessing.document.model.Collection;
 import com.docprocessing.document.model.DocumentMetadata;
 import com.docprocessing.document.model.Pagination;
+import com.docprocessing.document.security.UserPrincipal;
 import com.docprocessing.document.service.CollectionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -27,13 +27,13 @@ public class CollectionController {
     public ResponseEntity<?> listCollections(
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "limit", defaultValue = "20") int limit,
-            @AuthenticationPrincipal Jwt principal) {
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
             
-        String userId = principal.getSubject();
+        String userId = userPrincipal.getId();
         var result = collectionService.listCollections(userId, page, limit);
         
         return ResponseEntity.ok(Map.of(
-            "collections", result.getDocuments(), // Changed from result.getCollections()
+            "collections", result.getDocuments(),
             "pagination", result.getPagination()
         ));
     }
@@ -41,9 +41,9 @@ public class CollectionController {
     @PostMapping
     public ResponseEntity<Collection> createCollection(
             @Valid @RequestBody Collection collection,
-            @AuthenticationPrincipal Jwt principal) {
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
             
-        String userId = principal.getSubject();
+        String userId = userPrincipal.getId();
         Collection created = collectionService.createCollection(userId, collection);
         
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
@@ -52,9 +52,9 @@ public class CollectionController {
     @GetMapping("/{collectionId}")
     public ResponseEntity<Collection> getCollection(
             @PathVariable UUID collectionId,
-            @AuthenticationPrincipal Jwt principal) {
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
             
-        String userId = principal.getSubject();
+        String userId = userPrincipal.getId();
         Collection collection = collectionService.getCollection(userId, collectionId);
         
         return ResponseEntity.ok(collection);
@@ -64,9 +64,9 @@ public class CollectionController {
     public ResponseEntity<Collection> updateCollection(
             @PathVariable UUID collectionId,
             @Valid @RequestBody Collection collection,
-            @AuthenticationPrincipal Jwt principal) {
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
             
-        String userId = principal.getSubject();
+        String userId = userPrincipal.getId();
         Collection updated = collectionService.updateCollection(userId, collectionId, collection);
         
         return ResponseEntity.ok(updated);
@@ -75,9 +75,9 @@ public class CollectionController {
     @DeleteMapping("/{collectionId}")
     public ResponseEntity<?> deleteCollection(
             @PathVariable UUID collectionId,
-            @AuthenticationPrincipal Jwt principal) {
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
             
-        String userId = principal.getSubject();
+        String userId = userPrincipal.getId();
         collectionService.deleteCollection(userId, collectionId);
         
         return ResponseEntity.noContent().build();
@@ -90,9 +90,9 @@ public class CollectionController {
             @RequestParam(value = "limit", defaultValue = "20") int limit,
             @RequestParam(value = "sort", defaultValue = "created_at") String sort,
             @RequestParam(value = "direction", defaultValue = "desc") String direction,
-            @AuthenticationPrincipal Jwt principal) {
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
             
-        String userId = principal.getSubject();
+        String userId = userPrincipal.getId();
         var result = collectionService.listCollectionDocuments(
             userId, collectionId, page, limit, sort, direction);
         
@@ -105,9 +105,9 @@ public class CollectionController {
     @GetMapping("/{collectionId}/thumbnail")
     public ResponseEntity<?> getCollectionThumbnail(
             @PathVariable UUID collectionId,
-            @AuthenticationPrincipal Jwt principal) {
+            @AuthenticationPrincipal UserPrincipal userPrincipal) {
             
-        String userId = principal.getSubject();
+        String userId = userPrincipal.getId();
         var thumbnailUrl = collectionService.getCollectionThumbnail(userId, collectionId);
         
         return ResponseEntity.ok(thumbnailUrl);
