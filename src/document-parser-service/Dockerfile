@@ -1,23 +1,19 @@
 FROM public.ecr.aws/lambda/python:3.9
 
-# Install system dependencies for PyMuPDF
-RUN yum install -y \
-    gcc \
-    libffi-devel \
-    python3-devel \
-    freetype-devel \
-    libpng-devel \
-    libjpeg-devel \
-    && yum clean all
+# Copy requirements file to Lambda task root
+COPY requirements.txt ${LAMBDA_TASK_ROOT}/
 
-# Copy requirements
-COPY requirements.txt .
+# Install system dependencies for PyMuPDF
+RUN yum update -y && \
+    yum install -y gcc make zlib-devel which && \
+    yum clean all
 
 # Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
-# Copy function code
-COPY app.py ${LAMBDA_TASK_ROOT}
+# Copy application code
+COPY *.py ${LAMBDA_TASK_ROOT}/
 
-# Set the CMD to your handler
+# Set the Lambda handler
 CMD [ "app.lambda_handler" ]

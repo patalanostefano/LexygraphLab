@@ -1,16 +1,23 @@
-FROM python:3.9-slim
+FROM public.ecr.aws/lambda/python:3.9
 
-WORKDIR /app
+# Copy requirements file to Lambda task root
+COPY requirements.txt ${LAMBDA_TASK_ROOT}/
 
-# Copy requirements first for better layer caching
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Make sure NLTK is in the requirements
+RUN echo "nltk==3.8.1" >> ${LAMBDA_TASK_ROOT}/requirements.txt
+
+# Install Python dependencies
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
+
+# Download NLTK data to a writeable location
+RUN python -m nltk.downloader -d /tmp/nltk_data punkt
+
+# Set NLTK data path
+ENV NLTK_DATA=/tmp/nltk_data
 
 # Copy application code
-COPY . .
+COPY *.py ${LAMBDA_TASK_ROOT}/
 
-# Set Python to run in unbuffered mode
-ENV PYTHONUNBUFFERED=1
-
-# Command to run when container starts
-CMD ["python", "app.py"]
+# Set the Lambda handler
+CMD [ "app.lambda_handler" ]

@@ -1,0 +1,94 @@
+service: valis-document-processing
+
+provider:
+  name: aws
+  region: ${opt:region, 'eu-central-1'}
+  stage: ${opt:stage, 'prod'}
+  environment:
+    STAGE: ${opt:stage, 'prod'}
+    RAW_BUCKET: ${self:custom.environment.RAW_BUCKET}
+    DOCUMENTS_TABLE: ${self:custom.environment.DOCUMENTS_TABLE}
+    COLLECTIONS_TABLE: ${self:custom.environment.COLLECTIONS_TABLE}
+    DOC_PROCESSING_TABLE: ${self:custom.environment.DOC_PROCESSING_TABLE}
+    PARSER_QUEUE: ${self:custom.environment.PARSER_QUEUE}
+    OCR_QUEUE: ${self:custom.environment.OCR_QUEUE}
+    TEXT_PROCESSING_QUEUE: ${self:custom.environment.TEXT_PROCESSING_QUEUE}
+    SUMMARIZER_QUEUE: ${self:custom.environment.SUMMARIZER_QUEUE}
+
+  ecr:
+    images:
+      document-parser:
+        path: ./document-parser-service
+        platform: linux/amd64
+      ocr-service:
+        path: ./ocr-service
+        platform: linux/amd64
+      text-processing:
+        path: ./text-processing-service
+        platform: linux/amd64
+      summarizer:
+        path: ./summarizer-service
+        platform: linux/amd64
+
+functions:
+  documentParser:
+    image:
+      name: document-parser
+      command:
+        - "app.lambda_handler"
+    memorySize: 1024
+    timeout: 120
+    events:
+      - sqs:
+          arn: ${self:custom.environment.PARSER_QUEUE}
+          batchSize: 1
+    environment:
+      POWERTOOLS_SERVICE_NAME: document-parser
+
+  ocrProcessor:
+    image:
+      name: ocr-service
+      command:
+        - "app.lambda_handler"
+    memorySize: 2048
+    timeout: 300
+    events:
+      - sqs:
+          arn: ${self:custom.environment.OCR_QUEUE}
+          batchSize: 1
+    environment:
+      POWERTOOLS_SERVICE_NAME: ocr-service
+
+  textProcessor:
+    image:
+      name: text-processing
+      command:
+        - "app.lambda_handler"
+    memorySize: 1536
+    timeout: 180
+    events:
+      - sqs:
+          arn: ${self:custom.environment.TEXT_PROCESSING_QUEUE}
+          batchSize: 1
+    environment:
+      POWERTOOLS_SERVICE_NAME: text-processing
+
+  summarizer:
+    image:
+      name: summarizer
+      command:
+        - "app.lambda_handler"
+    memorySize: 2048
+    timeout: 300
+    events:
+      - sqs:
+          arn: ${self:custom.environment.SUMMARIZER_QUEUE}
+          batchSize: 1
+    environment:
+      POWERTOOLS_SERVICE_NAME: summarizer
+
+custom:
+  environment: ${file(env.${opt:stage, 'prod'}.yml)}
+
+
+

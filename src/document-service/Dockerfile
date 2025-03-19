@@ -1,25 +1,28 @@
-FROM maven:3.8.6-openjdk-17 as build
-
-WORKDIR /app
-
-# Copy pom.xml first for better layer caching
-COPY pom.xml .
-RUN mvn dependency:go-offline
-
-# Copy source code and build
-COPY src ./src
-RUN mvn package -DskipTests
-
 FROM openjdk:17-slim
 
 WORKDIR /app
 
-# Copy built JAR from build stage
-COPY --from=build /app/target/*.jar app.jar
+# Copy the Maven POM file
+COPY pom.xml .
 
-# Set environment variables
-ENV SPRING_PROFILES_ACTIVE=prod
+# Copy the source code
+COPY src ./src
 
+# Copy Maven wrapper if present
+COPY .mvn ./.mvn
+COPY mvnw ./mvnw
+COPY mvnw.cmd ./mvnw.cmd
+
+# Build the application
+RUN if [ -f "./mvnw" ]; then \
+      chmod +x ./mvnw && ./mvnw package -DskipTests; \
+    else \
+      apt-get update && apt-get install -y maven && \
+      mvn package -DskipTests; \
+    fi
+
+# Run the Spring Boot application
+ENTRYPOINT ["java", "-jar", "target/*.jar"]
+
+# Expose the port the app runs on
 EXPOSE 8080
-
-ENTRYPOINT ["java", "-jar", "app.jar"]

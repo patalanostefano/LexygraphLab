@@ -1,0 +1,358 @@
+{
+  "/Users/stefano/Desktop/LexygraphLab/serverless.yml": {
+    "versionFramework": "4.9.0",
+    "servicePath": "/Users/stefano/Desktop/LexygraphLab/serverless.yml",
+    "serviceConfigFileName": "serverless.yml",
+    "service": {
+      "service": "valis",
+      "provider": {
+        "name": "aws",
+        "region": "eu-central-1",
+        "stage": "dev",
+        "deploymentBucket": {
+          "name": "doc-processing-deployments-${aws:accountId}"
+        },
+        "environment": {
+          "STAGE": "dev",
+          "RAW_BUCKET": "arn:aws:s3:::valis-documents-raw",
+          "DOCUMENTS_TABLE": "valis-documents",
+          "COLLECTIONS_TABLE": "valis-document-collections",
+          "DOC_PROCESSING_TABLE": "valis-document-processing",
+          "DOCUMENT_PARSER_QUEUE": "arn:aws:sqs:eu-central-1:078652648484:valis-documents-parser-queue",
+          "OCR_PROCESSING_QUEUE": "arn:aws:sqs:eu-central-1:078652648484:valis-documents-ocr-queue",
+          "TEXT_PROCESSING_QUEUE": "arn:aws:sqs:eu-central-1:078652648484:valis-documents-text-processing-queue",
+          "SUMMARIZER_QUEUE": "arn:aws:sqs:eu-central-1:078652648484:valis-documents-summarizer-queue",
+          "AUTH_JWT_ISSUER": "https://sjfdkgzmjaasjtavuhfu.supabase.co",
+          "AUTH_JWT_JWK_SET_URI": "NQwq0GPdFUc1caCNLEHg/qDnvnXqcfyoYV4U66wgD+dUEh/xYXEElSZqLsSyx6rLhXrW5YB+8KDX2UHu7gQUhg=="
+        },
+        "ecr": {
+          "images": {
+            "document-service": {
+              "path": "./document-service"
+            },
+            "document-parser": {
+              "path": "./document-parser-service"
+            },
+            "ocr-service": {
+              "path": "./ocr-service"
+            },
+            "text-processing": {
+              "path": "./text-processing-service"
+            },
+            "summarizer": {
+              "path": "./summarizer-service"
+            }
+          }
+        },
+        "iam": {
+          "role": {
+            "statements": [
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "s3:GetObject",
+                  "s3:PutObject",
+                  "s3:DeleteObject",
+                  "s3:ListBucket"
+                ],
+                "Resource": [
+                  "arn:aws:s3:::valis-documents-raw",
+                  "arn:aws:s3:::valis-documents-raw/*"
+                ]
+              },
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "dynamodb:Query",
+                  "dynamodb:Scan",
+                  "dynamodb:GetItem",
+                  "dynamodb:PutItem",
+                  "dynamodb:UpdateItem",
+                  "dynamodb:DeleteItem",
+                  "dynamodb:BatchWriteItem"
+                ],
+                "Resource": [
+                  "arn:aws:dynamodb:eu-central-1:${aws:accountId}:table/valis-documents",
+                  "arn:aws:dynamodb:eu-central-1:${aws:accountId}:table/valis-document-collections",
+                  "arn:aws:dynamodb:eu-central-1:${aws:accountId}:table/valis-document-processing",
+                  "arn:aws:dynamodb:eu-central-1:${aws:accountId}:table/valis-documents/index/*",
+                  "arn:aws:dynamodb:eu-central-1:${aws:accountId}:table/valis-document-collections/index/*",
+                  "arn:aws:dynamodb:eu-central-1:${aws:accountId}:table/valis-document-processing/index/*"
+                ]
+              },
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "sqs:SendMessage",
+                  "sqs:ReceiveMessage",
+                  "sqs:DeleteMessage",
+                  "sqs:GetQueueAttributes",
+                  "sqs:GetQueueUrl",
+                  "sqs:ListQueues"
+                ],
+                "Resource": [
+                  "arn:aws:sqs:eu-central-1:078652648484:valis-documents-parser-queue",
+                  "arn:aws:sqs:eu-central-1:078652648484:valis-documents-ocr-queue",
+                  "arn:aws:sqs:eu-central-1:078652648484:valis-documents-text-processing-queue",
+                  "arn:aws:sqs:eu-central-1:078652648484:valis-documents-summarizer-queue"
+                ]
+              },
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "logs:CreateLogGroup",
+                  "logs:CreateLogStream",
+                  "logs:PutLogEvents"
+                ],
+                "Resource": "arn:aws:logs:eu-central-1:${aws:accountId}:log-group:/aws/lambda/valis-*:*"
+              }
+            ]
+          }
+        }
+      },
+      "functions": {
+        "documentService": {
+          "image": {
+            "name": "document-service"
+          },
+          "memorySize": 1024,
+          "timeout": 30,
+          "events": [
+            {
+              "httpApi": {
+                "path": "/v1/documents/{proxy+}",
+                "method": "ANY"
+              }
+            }
+          ],
+          "environment": {
+            "SPRING_PROFILES_ACTIVE": "dev"
+          }
+        },
+        "documentParser": {
+          "image": {
+            "name": "document-parser"
+          },
+          "memorySize": 512,
+          "timeout": 60,
+          "events": [
+            {
+              "sqs": {
+                "arn": "arn:aws:sqs:eu-central-1:078652648484:valis-documents-parser-queue",
+                "batchSize": 1
+              }
+            }
+          ],
+          "environment": {
+            "SPRING_PROFILES_ACTIVE": "dev"
+          }
+        },
+        "ocrProcessor": {
+          "image": {
+            "name": "ocr-service"
+          },
+          "memorySize": 2048,
+          "timeout": 120,
+          "events": [
+            {
+              "sqs": {
+                "arn": "arn:aws:sqs:eu-central-1:078652648484:valis-documents-ocr-queue",
+                "batchSize": 1
+              }
+            }
+          ],
+          "environment": {
+            "SPRING_PROFILES_ACTIVE": "dev"
+          }
+        },
+        "textProcessor": {
+          "image": {
+            "name": "text-processing"
+          },
+          "memorySize": 1024,
+          "timeout": 60,
+          "events": [
+            {
+              "sqs": {
+                "arn": "arn:aws:sqs:eu-central-1:078652648484:valis-documents-text-processing-queue",
+                "batchSize": 1
+              }
+            }
+          ],
+          "environment": {
+            "SPRING_PROFILES_ACTIVE": "dev"
+          }
+        },
+        "summarizer": {
+          "image": {
+            "name": "summarizer"
+          },
+          "memorySize": 1536,
+          "timeout": 120,
+          "events": [
+            {
+              "sqs": {
+                "arn": "arn:aws:sqs:eu-central-1:078652648484:valis-documents-summarizer-queue",
+                "batchSize": 1
+              }
+            }
+          ],
+          "environment": {
+            "SPRING_PROFILES_ACTIVE": "dev"
+          }
+        }
+      },
+      "custom": {
+        "environment": {
+          "RAW_BUCKET": "arn:aws:s3:::valis-documents-raw",
+          "DOCUMENTS_TABLE": "valis-documents",
+          "COLLECTIONS_TABLE": "valis-document-collections",
+          "DOC_PROCESSING_TABLE": "valis-document-processing",
+          "OCR_QUEUE": "arn:aws:sqs:eu-central-1:078652648484:valis-documents-ocr-queue",
+          "TEXT_PROCESSING_QUEUE": "arn:aws:sqs:eu-central-1:078652648484:valis-documents-text-processing-queue",
+          "SUMMARIZER_QUEUE": "arn:aws:sqs:eu-central-1:078652648484:valis-documents-summarizer-queue",
+          "PARSER_QUEUE": "arn:aws:sqs:eu-central-1:078652648484:valis-documents-parser-queue",
+          "AZURE_CV_ENDPOINT": "${ssm:/docproc/prod/azure-cv-endpoint}",
+          "AZURE_CV_KEY": "${ssm:/docproc/prod/azure-cv-key~true}",
+          "AUTH_JWT_ISSUER": "https://sjfdkgzmjaasjtavuhfu.supabase.co",
+          "AUTH_JWT_JWK_SET_URI": "NQwq0GPdFUc1caCNLEHg/qDnvnXqcfyoYV4U66wgD+dUEh/xYXEElSZqLsSyx6rLhXrW5YB+8KDX2UHu7gQUhg=="
+        }
+      }
+    },
+    "provider": {
+      "name": "aws",
+      "region": "eu-central-1",
+      "stage": "dev",
+      "deploymentBucket": {
+        "name": "doc-processing-deployments-${aws:accountId}"
+      },
+      "environment": {
+        "STAGE": "dev",
+        "RAW_BUCKET": "arn:aws:s3:::valis-documents-raw",
+        "DOCUMENTS_TABLE": "valis-documents",
+        "COLLECTIONS_TABLE": "valis-document-collections",
+        "DOC_PROCESSING_TABLE": "valis-document-processing",
+        "DOCUMENT_PARSER_QUEUE": "arn:aws:sqs:eu-central-1:078652648484:valis-documents-parser-queue",
+        "OCR_PROCESSING_QUEUE": "arn:aws:sqs:eu-central-1:078652648484:valis-documents-ocr-queue",
+        "TEXT_PROCESSING_QUEUE": "arn:aws:sqs:eu-central-1:078652648484:valis-documents-text-processing-queue",
+        "SUMMARIZER_QUEUE": "arn:aws:sqs:eu-central-1:078652648484:valis-documents-summarizer-queue",
+        "AUTH_JWT_ISSUER": "https://sjfdkgzmjaasjtavuhfu.supabase.co",
+        "AUTH_JWT_JWK_SET_URI": "NQwq0GPdFUc1caCNLEHg/qDnvnXqcfyoYV4U66wgD+dUEh/xYXEElSZqLsSyx6rLhXrW5YB+8KDX2UHu7gQUhg=="
+      },
+      "ecr": {
+        "images": {
+          "document-service": {
+            "path": "./document-service"
+          },
+          "document-parser": {
+            "path": "./document-parser-service"
+          },
+          "ocr-service": {
+            "path": "./ocr-service"
+          },
+          "text-processing": {
+            "path": "./text-processing-service"
+          },
+          "summarizer": {
+            "path": "./summarizer-service"
+          }
+        }
+      },
+      "iam": {
+        "role": {
+          "statements": [
+            {
+              "Effect": "Allow",
+              "Action": [
+                "s3:GetObject",
+                "s3:PutObject",
+                "s3:DeleteObject",
+                "s3:ListBucket"
+              ],
+              "Resource": [
+                "arn:aws:s3:::valis-documents-raw",
+                "arn:aws:s3:::valis-documents-raw/*"
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "dynamodb:Query",
+                "dynamodb:Scan",
+                "dynamodb:GetItem",
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:BatchWriteItem"
+              ],
+              "Resource": [
+                "arn:aws:dynamodb:eu-central-1:${aws:accountId}:table/valis-documents",
+                "arn:aws:dynamodb:eu-central-1:${aws:accountId}:table/valis-document-collections",
+                "arn:aws:dynamodb:eu-central-1:${aws:accountId}:table/valis-document-processing",
+                "arn:aws:dynamodb:eu-central-1:${aws:accountId}:table/valis-documents/index/*",
+                "arn:aws:dynamodb:eu-central-1:${aws:accountId}:table/valis-document-collections/index/*",
+                "arn:aws:dynamodb:eu-central-1:${aws:accountId}:table/valis-document-processing/index/*"
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "sqs:SendMessage",
+                "sqs:ReceiveMessage",
+                "sqs:DeleteMessage",
+                "sqs:GetQueueAttributes",
+                "sqs:GetQueueUrl",
+                "sqs:ListQueues"
+              ],
+              "Resource": [
+                "arn:aws:sqs:eu-central-1:078652648484:valis-documents-parser-queue",
+                "arn:aws:sqs:eu-central-1:078652648484:valis-documents-ocr-queue",
+                "arn:aws:sqs:eu-central-1:078652648484:valis-documents-text-processing-queue",
+                "arn:aws:sqs:eu-central-1:078652648484:valis-documents-summarizer-queue"
+              ]
+            },
+            {
+              "Effect": "Allow",
+              "Action": [
+                "logs:CreateLogGroup",
+                "logs:CreateLogStream",
+                "logs:PutLogEvents"
+              ],
+              "Resource": "arn:aws:logs:eu-central-1:${aws:accountId}:log-group:/aws/lambda/valis-*:*"
+            }
+          ]
+        }
+      }
+    },
+    "dashboard": {
+      "isEnabledForService": false,
+      "requiredAuthentication": false,
+      "orgFeaturesInUse": null,
+      "orgObservabilityIntegrations": null,
+      "serviceAppId": null,
+      "serviceProvider": null,
+      "instanceParameters": null
+    },
+    "error": {
+      "message": "Failed to resolve variable '/docproc/prod/azure-cv-key~true' with resolver 'ssm' and provider 'default-aws-credential-resolver': ValidationException: Parameter name: can't be prefixed with \"ssm\" (case-insensitive). If formed as a path, it can consist of sub-paths divided by slash symbol; each sub-path can be formed as a mix of letters, numbers and the following 3 symbols .-_",
+      "stack": "Error: Failed to resolve variable '/docproc/prod/azure-cv-key~true' with resolver 'ssm' and provider 'default-aws-credential-resolver': ValidationException: Parameter name: can't be prefixed with \"ssm\" (case-insensitive). If formed as a path, it can consist of sub-paths divided by slash symbol; each sub-path can be formed as a mix of letters, numbers and the following 3 symbols .-_\n    at #resolveKey (file:///Users/stefano/.serverless/releases/4.9.0/package/dist/sf-core.js:550:25539)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async _ResolverManager.resolve (file:///Users/stefano/.serverless/releases/4.9.0/package/dist/sf-core.js:550:31529)\n    at async #handlePlaceholderNode (file:///Users/stefano/.serverless/releases/4.9.0/package/dist/sf-core.js:550:30074)\n    at async file:///Users/stefano/.serverless/releases/4.9.0/package/dist/sf-core.js:550:27946\n    at async processNodeAndHandleCompletion (file:///Users/stefano/.serverless/releases/4.9.0/package/dist/sf-core.js:550:16727)",
+      "code": "RESOLVER_RESOLVE_VARIABLE_ERROR"
+    },
+    "serviceRawFile": "service: valis\n\nprovider:\n  name: aws\n  region: ${opt:region, 'eu-central-1'}\n  stage: ${opt:stage, 'prod'}\n  deploymentBucket:\n    name: doc-processing-deployments-${aws:accountId}\n  environment:\n    STAGE: ${opt:stage, 'prod'}\n    RAW_BUCKET: ${self:custom.environment.RAW_BUCKET}\n    DOCUMENTS_TABLE: ${self:custom.environment.DOCUMENTS_TABLE}\n    COLLECTIONS_TABLE: ${self:custom.environment.COLLECTIONS_TABLE}\n    DOC_PROCESSING_TABLE: ${self:custom.environment.DOC_PROCESSING_TABLE}\n    DOCUMENT_PARSER_QUEUE: ${self:custom.environment.PARSER_QUEUE}\n    OCR_PROCESSING_QUEUE: ${self:custom.environment.OCR_QUEUE}\n    TEXT_PROCESSING_QUEUE: ${self:custom.environment.TEXT_PROCESSING_QUEUE}\n    SUMMARIZER_QUEUE: ${self:custom.environment.SUMMARIZER_QUEUE}\n    AUTH_JWT_ISSUER: ${self:custom.environment.AUTH_JWT_ISSUER}\n    AUTH_JWT_JWK_SET_URI: ${self:custom.environment.AUTH_JWT_JWK_SET_URI}\n\n  ecr:\n    images:\n      document-service:\n        path: ./document-service\n      document-parser:\n        path: ./document-parser-service\n      ocr-service:\n        path: ./ocr-service\n      text-processing:\n        path: ./text-processing-service\n      summarizer:\n        path: ./summarizer-service\n      \n\n  iam:\n    role:\n      statements:\n        - Effect: Allow\n          Action:\n            - s3:GetObject\n            - s3:PutObject\n            - s3:DeleteObject\n            - s3:ListBucket\n          Resource:\n            - ${self:custom.environment.RAW_BUCKET}\n            - ${self:custom.environment.RAW_BUCKET}/*\n        - Effect: Allow\n          Action:\n            - dynamodb:Query\n            - dynamodb:Scan\n            - dynamodb:GetItem\n            - dynamodb:PutItem\n            - dynamodb:UpdateItem\n            - dynamodb:DeleteItem\n            - dynamodb:BatchWriteItem\n          Resource:\n            - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.environment.DOCUMENTS_TABLE}\n            - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.environment.COLLECTIONS_TABLE}\n            - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.environment.DOC_PROCESSING_TABLE}\n            - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.environment.DOCUMENTS_TABLE}/index/*\n            - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.environment.COLLECTIONS_TABLE}/index/*\n            - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:custom.environment.DOC_PROCESSING_TABLE}/index/*\n        - Effect: Allow\n          Action:\n            - sqs:SendMessage\n            - sqs:ReceiveMessage\n            - sqs:DeleteMessage\n            - sqs:GetQueueAttributes\n            - sqs:GetQueueUrl\n            - sqs:ListQueues\n          Resource:\n            - ${self:custom.environment.PARSER_QUEUE}\n            - ${self:custom.environment.OCR_QUEUE}\n            - ${self:custom.environment.TEXT_PROCESSING_QUEUE}\n            - ${self:custom.environment.SUMMARIZER_QUEUE}\n        - Effect: Allow\n          Action:\n            - logs:CreateLogGroup\n            - logs:CreateLogStream\n            - logs:PutLogEvents\n          Resource: arn:aws:logs:${aws:region}:${aws:accountId}:log-group:/aws/lambda/${self:service}-*:*\n\nfunctions:\n  \n  documentService:\n    image: \n      name: document-service\n    memorySize: 1024\n    timeout: 30\n    events:\n      - httpApi:\n          path: /v1/documents/{proxy+}\n          method: ANY\n    environment:\n      SPRING_PROFILES_ACTIVE: ${opt:stage, 'prod'}\n\n  \n  documentParser:\n    image: \n      name: document-parser\n    memorySize: 512\n    timeout: 60\n    events:\n      - sqs:\n          arn: ${self:custom.environment.PARSER_QUEUE}\n          batchSize: 1\n    environment:\n      SPRING_PROFILES_ACTIVE: ${opt:stage, 'prod'}\n\n  ocrProcessor:\n    image: \n      name: ocr-service\n    memorySize: 2048 # Increased for OCR processing\n    timeout: 120\n    events:\n      - sqs:\n          arn: ${self:custom.environment.OCR_QUEUE}\n          batchSize: 1\n    environment:\n      SPRING_PROFILES_ACTIVE: ${opt:stage, 'prod'}\n\n  textProcessor:\n    image: \n      name: text-processing\n    memorySize: 1024\n    timeout: 60\n    events:\n      - sqs:\n          arn: ${self:custom.environment.TEXT_PROCESSING_QUEUE}\n          batchSize: 1\n    environment:\n      SPRING_PROFILES_ACTIVE: ${opt:stage, 'prod'}\n\n  summarizer:\n    image: \n      name: summarizer\n    memorySize: 1536 # Increased for NLP operations\n    timeout: 120\n    events:\n      - sqs:\n          arn: ${self:custom.environment.SUMMARIZER_QUEUE}\n          batchSize: 1\n    environment:\n      SPRING_PROFILES_ACTIVE: ${opt:stage, 'prod'}\n\ncustom:\n  environment: ${file(env.${opt:stage, 'prod'}.yml)}\n",
+    "command": [
+      "deploy"
+    ],
+    "options": {
+      "stage": "dev"
+    },
+    "orgId": "66e687b3-f12b-4cfc-8e3a-8ecbeb76dd0d",
+    "orgName": "lexygraphai",
+    "userId": "fb7f8bKKNS5hP61Z9N",
+    "userName": "lexygraphai",
+    "serviceProviderAwsCfStackId": null,
+    "serviceProviderAwsCfStackCreated": null,
+    "serviceProviderAwsCfStackUpdated": null,
+    "serviceProviderAwsCfStackStatus": null,
+    "serviceProviderAwsCfStackOutputs": null
+  }
+}

@@ -1,0 +1,449 @@
+{
+  "/Users/stefano/Desktop/LexygraphLab/src/serverless.yml": {
+    "versionFramework": "4.9.0",
+    "servicePath": "/Users/stefano/Desktop/LexygraphLab/src/serverless.yml",
+    "serviceConfigFileName": "serverless.yml",
+    "service": {
+      "service": "valis-document-processing",
+      "provider": {
+        "name": "aws",
+        "region": "eu-central-1",
+        "stage": "dev",
+        "environment": {
+          "STAGE": "dev",
+          "RAW_BUCKET": "arn:aws:s3:::valis-documents-raw",
+          "DOCUMENTS_TABLE": "valis-documents",
+          "COLLECTIONS_TABLE": "valis-document-collections",
+          "DOC_PROCESSING_TABLE": "valis-document-processing",
+          "PARSER_QUEUE": "arn:aws:sqs:eu-central-1:078652648484:valis-documents-parser-queue",
+          "OCR_QUEUE": "arn:aws:sqs:eu-central-1:078652648484:valis-documents-ocr-queue",
+          "TEXT_PROCESSING_QUEUE": "arn:aws:sqs:eu-central-1:078652648484:valis-documents-text-processing-queue",
+          "SUMMARIZER_QUEUE": "arn:aws:sqs:eu-central-1:078652648484:valis-documents-summarizer-queue"
+        },
+        "ecr": {
+          "images": {
+            "document-parser": {
+              "path": "./document-parser-service",
+              "platform": "linux/amd64"
+            },
+            "ocr-service": {
+              "path": "./ocr-service",
+              "platform": "linux/amd64"
+            },
+            "text-processing": {
+              "path": "./text-processing-service",
+              "platform": "linux/amd64"
+            },
+            "summarizer": {
+              "path": "./summarizer-service",
+              "platform": "linux/amd64"
+            }
+          }
+        },
+        "versionFunctions": true,
+        "compiledCloudFormationTemplate": {
+          "AWSTemplateFormatVersion": "2010-09-09",
+          "Description": "The AWS CloudFormation template for this Serverless application",
+          "Resources": {
+            "DocumentParserLogGroup": {
+              "Type": "AWS::Logs::LogGroup",
+              "Properties": {
+                "LogGroupName": "/aws/lambda/valis-document-processing-dev-documentParser"
+              }
+            },
+            "OcrProcessorLogGroup": {
+              "Type": "AWS::Logs::LogGroup",
+              "Properties": {
+                "LogGroupName": "/aws/lambda/valis-document-processing-dev-ocrProcessor"
+              }
+            },
+            "TextProcessorLogGroup": {
+              "Type": "AWS::Logs::LogGroup",
+              "Properties": {
+                "LogGroupName": "/aws/lambda/valis-document-processing-dev-textProcessor"
+              }
+            },
+            "SummarizerLogGroup": {
+              "Type": "AWS::Logs::LogGroup",
+              "Properties": {
+                "LogGroupName": "/aws/lambda/valis-document-processing-dev-summarizer"
+              }
+            },
+            "IamRoleLambdaExecution": {
+              "Type": "AWS::IAM::Role",
+              "Properties": {
+                "AssumeRolePolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Principal": {
+                        "Service": [
+                          "lambda.amazonaws.com"
+                        ]
+                      },
+                      "Action": [
+                        "sts:AssumeRole"
+                      ]
+                    }
+                  ]
+                },
+                "Policies": [
+                  {
+                    "PolicyName": {
+                      "Fn::Join": [
+                        "-",
+                        [
+                          "valis-document-processing",
+                          "dev",
+                          "lambda"
+                        ]
+                      ]
+                    },
+                    "PolicyDocument": {
+                      "Version": "2012-10-17",
+                      "Statement": [
+                        {
+                          "Effect": "Allow",
+                          "Action": [
+                            "logs:CreateLogStream",
+                            "logs:CreateLogGroup",
+                            "logs:TagResource"
+                          ],
+                          "Resource": [
+                            {
+                              "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/valis-document-processing-dev*:*"
+                            }
+                          ]
+                        },
+                        {
+                          "Effect": "Allow",
+                          "Action": [
+                            "logs:PutLogEvents"
+                          ],
+                          "Resource": [
+                            {
+                              "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/valis-document-processing-dev*:*:*"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  }
+                ],
+                "Path": "/",
+                "RoleName": {
+                  "Fn::Join": [
+                    "-",
+                    [
+                      "valis-document-processing",
+                      "dev",
+                      {
+                        "Ref": "AWS::Region"
+                      },
+                      "lambdaRole"
+                    ]
+                  ]
+                }
+              }
+            }
+          },
+          "Outputs": {
+            "ServerlessDeploymentBucketName": {
+              "Value": "serverless-framework-deployments-eu-central-1-30600e17-94a9"
+            }
+          }
+        }
+      },
+      "functions": {
+        "documentParser": {
+          "image": {
+            "name": "document-parser",
+            "command": [
+              "app.lambda_handler"
+            ]
+          },
+          "memorySize": 1024,
+          "timeout": 120,
+          "events": [
+            {
+              "sqs": {
+                "arn": "arn:aws:sqs:eu-central-1:078652648484:valis-documents-parser-queue",
+                "batchSize": 1
+              }
+            }
+          ],
+          "environment": {
+            "POWERTOOLS_SERVICE_NAME": "document-parser"
+          },
+          "name": "valis-document-processing-dev-documentParser",
+          "package": {}
+        },
+        "ocrProcessor": {
+          "image": {
+            "name": "ocr-service",
+            "command": [
+              "app.lambda_handler"
+            ]
+          },
+          "memorySize": 2048,
+          "timeout": 300,
+          "events": [
+            {
+              "sqs": {
+                "arn": "arn:aws:sqs:eu-central-1:078652648484:valis-documents-ocr-queue",
+                "batchSize": 1
+              }
+            }
+          ],
+          "environment": {
+            "POWERTOOLS_SERVICE_NAME": "ocr-service"
+          },
+          "name": "valis-document-processing-dev-ocrProcessor",
+          "package": {}
+        },
+        "textProcessor": {
+          "image": {
+            "name": "text-processing",
+            "command": [
+              "app.lambda_handler"
+            ]
+          },
+          "memorySize": 1536,
+          "timeout": 180,
+          "events": [
+            {
+              "sqs": {
+                "arn": "arn:aws:sqs:eu-central-1:078652648484:valis-documents-text-processing-queue",
+                "batchSize": 1
+              }
+            }
+          ],
+          "environment": {
+            "POWERTOOLS_SERVICE_NAME": "text-processing"
+          },
+          "name": "valis-document-processing-dev-textProcessor",
+          "package": {}
+        },
+        "summarizer": {
+          "image": {
+            "name": "summarizer",
+            "command": [
+              "app.lambda_handler"
+            ]
+          },
+          "memorySize": 2048,
+          "timeout": 300,
+          "events": [
+            {
+              "sqs": {
+                "arn": "arn:aws:sqs:eu-central-1:078652648484:valis-documents-summarizer-queue",
+                "batchSize": 1
+              }
+            }
+          ],
+          "environment": {
+            "POWERTOOLS_SERVICE_NAME": "summarizer"
+          },
+          "name": "valis-document-processing-dev-summarizer",
+          "package": {}
+        }
+      },
+      "custom": {
+        "environment": {
+          "RAW_BUCKET": "arn:aws:s3:::valis-documents-raw",
+          "DOCUMENTS_TABLE": "valis-documents",
+          "COLLECTIONS_TABLE": "valis-document-collections",
+          "DOC_PROCESSING_TABLE": "valis-document-processing",
+          "OCR_QUEUE": "arn:aws:sqs:eu-central-1:078652648484:valis-documents-ocr-queue",
+          "TEXT_PROCESSING_QUEUE": "arn:aws:sqs:eu-central-1:078652648484:valis-documents-text-processing-queue",
+          "SUMMARIZER_QUEUE": "arn:aws:sqs:eu-central-1:078652648484:valis-documents-summarizer-queue",
+          "PARSER_QUEUE": "arn:aws:sqs:eu-central-1:078652648484:valis-documents-parser-queue",
+          "AUTH_JWT_ISSUER": "https://sjfdkgzmjaasjtavuhfu.supabase.co",
+          "AUTH_JWT_JWK_SET_URI": "NQwq0GPdFUc1caCNLEHg/qDnvnXqcfyoYV4U66wgD+dUEh/xYXEElSZqLsSyx6rLhXrW5YB+8KDX2UHu7gQUhg=="
+        }
+      }
+    },
+    "provider": {
+      "name": "aws",
+      "region": "eu-central-1",
+      "stage": "dev",
+      "environment": {
+        "STAGE": "dev",
+        "RAW_BUCKET": "arn:aws:s3:::valis-documents-raw",
+        "DOCUMENTS_TABLE": "valis-documents",
+        "COLLECTIONS_TABLE": "valis-document-collections",
+        "DOC_PROCESSING_TABLE": "valis-document-processing",
+        "PARSER_QUEUE": "arn:aws:sqs:eu-central-1:078652648484:valis-documents-parser-queue",
+        "OCR_QUEUE": "arn:aws:sqs:eu-central-1:078652648484:valis-documents-ocr-queue",
+        "TEXT_PROCESSING_QUEUE": "arn:aws:sqs:eu-central-1:078652648484:valis-documents-text-processing-queue",
+        "SUMMARIZER_QUEUE": "arn:aws:sqs:eu-central-1:078652648484:valis-documents-summarizer-queue"
+      },
+      "ecr": {
+        "images": {
+          "document-parser": {
+            "path": "./document-parser-service",
+            "platform": "linux/amd64"
+          },
+          "ocr-service": {
+            "path": "./ocr-service",
+            "platform": "linux/amd64"
+          },
+          "text-processing": {
+            "path": "./text-processing-service",
+            "platform": "linux/amd64"
+          },
+          "summarizer": {
+            "path": "./summarizer-service",
+            "platform": "linux/amd64"
+          }
+        }
+      },
+      "versionFunctions": true,
+      "compiledCloudFormationTemplate": {
+        "AWSTemplateFormatVersion": "2010-09-09",
+        "Description": "The AWS CloudFormation template for this Serverless application",
+        "Resources": {
+          "DocumentParserLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/valis-document-processing-dev-documentParser"
+            }
+          },
+          "OcrProcessorLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/valis-document-processing-dev-ocrProcessor"
+            }
+          },
+          "TextProcessorLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/valis-document-processing-dev-textProcessor"
+            }
+          },
+          "SummarizerLogGroup": {
+            "Type": "AWS::Logs::LogGroup",
+            "Properties": {
+              "LogGroupName": "/aws/lambda/valis-document-processing-dev-summarizer"
+            }
+          },
+          "IamRoleLambdaExecution": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+              "AssumeRolePolicyDocument": {
+                "Version": "2012-10-17",
+                "Statement": [
+                  {
+                    "Effect": "Allow",
+                    "Principal": {
+                      "Service": [
+                        "lambda.amazonaws.com"
+                      ]
+                    },
+                    "Action": [
+                      "sts:AssumeRole"
+                    ]
+                  }
+                ]
+              },
+              "Policies": [
+                {
+                  "PolicyName": {
+                    "Fn::Join": [
+                      "-",
+                      [
+                        "valis-document-processing",
+                        "dev",
+                        "lambda"
+                      ]
+                    ]
+                  },
+                  "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "logs:CreateLogStream",
+                          "logs:CreateLogGroup",
+                          "logs:TagResource"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/valis-document-processing-dev*:*"
+                          }
+                        ]
+                      },
+                      {
+                        "Effect": "Allow",
+                        "Action": [
+                          "logs:PutLogEvents"
+                        ],
+                        "Resource": [
+                          {
+                            "Fn::Sub": "arn:${AWS::Partition}:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/lambda/valis-document-processing-dev*:*:*"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ],
+              "Path": "/",
+              "RoleName": {
+                "Fn::Join": [
+                  "-",
+                  [
+                    "valis-document-processing",
+                    "dev",
+                    {
+                      "Ref": "AWS::Region"
+                    },
+                    "lambdaRole"
+                  ]
+                ]
+              }
+            }
+          }
+        },
+        "Outputs": {
+          "ServerlessDeploymentBucketName": {
+            "Value": "serverless-framework-deployments-eu-central-1-30600e17-94a9"
+          }
+        }
+      }
+    },
+    "dashboard": {
+      "isEnabledForService": false,
+      "requiredAuthentication": false,
+      "orgFeaturesInUse": null,
+      "orgObservabilityIntegrations": null,
+      "serviceAppId": null,
+      "serviceProvider": null,
+      "instanceParameters": null
+    },
+    "error": {
+      "message": "Encountered error during executing: docker build -t serverless-valis-document-processing-dev:text-processing -f /Users/stefano/Desktop/LexygraphLab/src/text-processing-service/Dockerfile /Users/stefano/Desktop/LexygraphLab/src/text-processing-service --platform=linux/amd64\nOutput of the command:\n#1 [internal] load build definition from Dockerfile\n#1 sha256:8e9100afe2d98fe75da83cc2b8f8d3691b070656d92c8eaf110dda597b635fab\n#1 transferring dockerfile: 632B 0.1s done\n#1 DONE 0.1s\n\n#2 [internal] load .dockerignore\n#2 sha256:da3195c025a2f8c09454a2576a44dc5261b69b320f003681ef2212f0dd918d8e\n#2 transferring context: 2B 0.0s done\n#2 DONE 0.0s\n\n#3 [internal] load metadata for public.ecr.aws/lambda/python:3.9\n#3 sha256:833dd0d20048fb200a9cdd3c16ad5e1331ade0a00c362d1abd58477de594622f\n#3 DONE 0.0s\n\n#4 [1/6] FROM public.ecr.aws/lambda/python:3.9\n#4 sha256:8bbc43a6fc3a732fd3c33643b2c19a456147f1a9a817561581f505e46f77c30b\n#4 CACHED\n\n#5 [internal] load build context\n#5 sha256:ca906686818666a7ae1947e3e4be20b0f6d14736d2a7cacbc3a7d7d5ef93c640\n#5 transferring context: 64B done\n#5 DONE 0.0s\n\n#6 [2/6] COPY requirements.txt /var/task/\n#6 sha256:a533355aa84791a219addf6d37a3bf9bd544aead5b92ddbc988cddbbfe434e89\n#6 DONE 0.1s\n\n#7 [3/6] RUN pip install --no-cache-dir --upgrade pip &&     pip install --no-cache-dir -r requirements.txt\n#7 sha256:98bda0ddb741108a4457bac0873590b4ea215f1075017314b5443ae40b884eb0\n#7 4.092 Requirement already satisfied: pip in /var/lang/lib/python3.9/site-packages (23.0.1)\n#7 4.613 Collecting pip\n#7 4.859   Downloading pip-25.0.1-py3-none-any.whl (1.8 MB)\n#7 5.743      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.8/1.8 MB 2.1 MB/s eta 0:00:00\n#7 5.853 Installing collected packages: pip\n#7 5.855   Attempting uninstall: pip\n#7 5.857     Found existing installation: pip 23.0.1\n#7 6.474     Uninstalling pip-23.0.1:\n#7 7.930       Successfully uninstalled pip-23.0.1\n#7 15.04 Successfully installed pip-25.0.1\n#7 15.05 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv\n#7 18.82 Collecting https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.6.0/en_core_web_sm-3.6.0.tar.gz (from -r requirements.txt (line 5))\n#7 21.04   Downloading https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.6.0/en_core_web_sm-3.6.0.tar.gz (12.8 MB)\n#7 26.57      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 12.8/12.8 MB 2.4 MB/s eta 0:00:00\n#7 28.69   Installing build dependencies: started\n#7 43.26   Installing build dependencies: finished with status 'done'\n#7 43.27   Getting requirements to build wheel: started\n#7 44.45   Getting requirements to build wheel: finished with status 'done'\n#7 44.46   Preparing metadata (pyproject.toml): started\n#7 45.55   Preparing metadata (pyproject.toml): finished with status 'done'\n#7 49.64 Collecting boto3==1.28.38 (from -r requirements.txt (line 1))\n#7 49.86   Downloading boto3-1.28.38-py3-none-any.whl.metadata (6.7 kB)\n#7 50.03 Collecting python-dotenv==1.0.0 (from -r requirements.txt (line 2))\n#7 50.10   Downloading python_dotenv-1.0.0-py3-none-any.whl.metadata (21 kB)\n#7 50.30 Collecting nltk==3.8.1 (from -r requirements.txt (line 3))\n#7 50.37   Downloading nltk-3.8.1-py3-none-any.whl.metadata (2.8 kB)\n#7 51.36 Collecting spacy==3.6.1 (from -r requirements.txt (line 4))\n#7 51.55   Downloading spacy-3.6.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (25 kB)\n#7 55.63 Collecting botocore<1.32.0,>=1.31.38 (from boto3==1.28.38->-r requirements.txt (line 1))\n#7 55.74   Downloading botocore-1.31.85-py3-none-any.whl.metadata (6.1 kB)\n#7 55.89 Collecting jmespath<2.0.0,>=0.7.1 (from boto3==1.28.38->-r requirements.txt (line 1))\n#7 55.95   Downloading jmespath-1.0.1-py3-none-any.whl.metadata (7.6 kB)\n#7 56.08 Collecting s3transfer<0.7.0,>=0.6.0 (from boto3==1.28.38->-r requirements.txt (line 1))\n#7 56.17   Downloading s3transfer-0.6.2-py3-none-any.whl.metadata (1.8 kB)\n#7 56.34 Collecting click (from nltk==3.8.1->-r requirements.txt (line 3))\n#7 56.41   Downloading click-8.1.8-py3-none-any.whl.metadata (2.3 kB)\n#7 56.58 Collecting joblib (from nltk==3.8.1->-r requirements.txt (line 3))\n#7 56.64   Downloading joblib-1.4.2-py3-none-any.whl.metadata (5.4 kB)\n#7 59.87 Collecting regex>=2021.8.3 (from nltk==3.8.1->-r requirements.txt (line 3))\n#7 59.93   Downloading regex-2024.11.6-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (40 kB)\n#7 61.01 Collecting tqdm (from nltk==3.8.1->-r requirements.txt (line 3))\n#7 61.27   Downloading tqdm-4.67.1-py3-none-any.whl.metadata (57 kB)\n#7 61.64 Collecting spacy-legacy<3.1.0,>=3.0.11 (from spacy==3.6.1->-r requirements.txt (line 4))\n#7 61.82   Downloading spacy_legacy-3.0.12-py2.py3-none-any.whl.metadata (2.8 kB)\n#7 62.01 Collecting spacy-loggers<2.0.0,>=1.0.0 (from spacy==3.6.1->-r requirements.txt (line 4))\n#7 62.24   Downloading spacy_loggers-1.0.5-py3-none-any.whl.metadata (23 kB)\n#7 62.79 Collecting murmurhash<1.1.0,>=0.28.0 (from spacy==3.6.1->-r requirements.txt (line 4))\n#7 63.06   Downloading murmurhash-1.0.12-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (2.1 kB)\n#7 63.33 Collecting cymem<2.1.0,>=2.0.2 (from spacy==3.6.1->-r requirements.txt (line 4))\n#7 63.69   Downloading cymem-2.0.11-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (8.5 kB)\n#7 64.35 Collecting preshed<3.1.0,>=3.0.2 (from spacy==3.6.1->-r requirements.txt (line 4))\n#7 64.79   Downloading preshed-3.0.9-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (2.2 kB)\n#7 65.50 Collecting thinc<8.2.0,>=8.1.8 (from spacy==3.6.1->-r requirements.txt (line 4))\n#7 65.59   Downloading thinc-8.1.12-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (15 kB)\n#7 65.83 Collecting wasabi<1.2.0,>=0.9.1 (from spacy==3.6.1->-r requirements.txt (line 4))\n#7 66.05   Downloading wasabi-1.1.3-py3-none-any.whl.metadata (28 kB)\n#7 66.55 Collecting srsly<3.0.0,>=2.4.3 (from spacy==3.6.1->-r requirements.txt (line 4))\n#7 66.78   Downloading srsly-2.5.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (19 kB)\n#7 67.29 Collecting catalogue<2.1.0,>=2.0.6 (from spacy==3.6.1->-r requirements.txt (line 4))\n#7 67.61   Downloading catalogue-2.0.10-py3-none-any.whl.metadata (14 kB)\n#7 67.76 Collecting typer<0.10.0,>=0.3.0 (from spacy==3.6.1->-r requirements.txt (line 4))\n#7 67.84   Downloading typer-0.9.4-py3-none-any.whl.metadata (14 kB)\n#7 67.96 Collecting pathy>=0.10.0 (from spacy==3.6.1->-r requirements.txt (line 4))\n#7 68.01   Downloading pathy-0.11.0-py3-none-any.whl.metadata (16 kB)\n#7 68.14 Collecting smart-open<7.0.0,>=5.2.1 (from spacy==3.6.1->-r requirements.txt (line 4))\n#7 68.21   Downloading smart_open-6.4.0-py3-none-any.whl.metadata (21 kB)\n#7 69.93 Collecting numpy>=1.15.0 (from spacy==3.6.1->-r requirements.txt (line 4))\n#7 71.23   Downloading numpy-2.0.2-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (60 kB)\n#7 71.79 Collecting requests<3.0.0,>=2.13.0 (from spacy==3.6.1->-r requirements.txt (line 4))\n#7 72.11   Downloading requests-2.32.3-py3-none-any.whl.metadata (4.6 kB)\n#7 77.57 Collecting pydantic!=1.8,!=1.8.1,<3.0.0,>=1.7.4 (from spacy==3.6.1->-r requirements.txt (line 4))\n#7 77.80   Downloading pydantic-2.10.6-py3-none-any.whl.metadata (30 kB)\n#7 78.16 Collecting jinja2 (from spacy==3.6.1->-r requirements.txt (line 4))\n#7 78.29   Downloading jinja2-3.1.6-py3-none-any.whl.metadata (2.9 kB)\n#7 78.37 Requirement already satisfied: setuptools in /var/lang/lib/python3.9/site-packages (from spacy==3.6.1->-r requirements.txt (line 4)) (58.1.0)\n#7 78.93 Collecting packaging>=20.0 (from spacy==3.6.1->-r requirements.txt (line 4))\n#7 78.99   Downloading packaging-24.2-py3-none-any.whl.metadata (3.2 kB)\n#7 79.27 Collecting langcodes<4.0.0,>=3.2.0 (from spacy==3.6.1->-r requirements.txt (line 4))\n#7 79.45   Downloading langcodes-3.5.0-py3-none-any.whl.metadata (29 kB)\n#7 80.03 Collecting python-dateutil<3.0.0,>=2.1 (from botocore<1.32.0,>=1.31.38->boto3==1.28.38->-r requirements.txt (line 1))\n#7 80.11   Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl.metadata (8.4 kB)\n#7 80.42 Collecting urllib3<1.27,>=1.25.4 (from botocore<1.32.0,>=1.31.38->boto3==1.28.38->-r requirements.txt (line 1))\n#7 80.53   Downloading urllib3-1.26.20-py2.py3-none-any.whl.metadata (50 kB)\n#7 80.95 Collecting language-data>=1.2 (from langcodes<4.0.0,>=3.2.0->spacy==3.6.1->-r requirements.txt (line 4))\n#7 81.06   Downloading language_data-1.3.0-py3-none-any.whl.metadata (4.3 kB)\n#7 81.53 Collecting pathlib-abc==0.1.1 (from pathy>=0.10.0->spacy==3.6.1->-r requirements.txt (line 4))\n#7 81.60   Downloading pathlib_abc-0.1.1-py3-none-any.whl.metadata (18 kB)\n#7 81.92 Collecting annotated-types>=0.6.0 (from pydantic!=1.8,!=1.8.1,<3.0.0,>=1.7.4->spacy==3.6.1->-r requirements.txt (line 4))\n#7 82.02   Downloading annotated_types-0.7.0-py3-none-any.whl.metadata (15 kB)\n#7 94.58 Collecting pydantic-core==2.27.2 (from pydantic!=1.8,!=1.8.1,<3.0.0,>=1.7.4->spacy==3.6.1->-r requirements.txt (line 4))\n#7 94.67   Downloading pydantic_core-2.27.2-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (6.6 kB)\n#7 95.02 Collecting typing-extensions>=4.12.2 (from pydantic!=1.8,!=1.8.1,<3.0.0,>=1.7.4->spacy==3.6.1->-r requirements.txt (line 4))\n#7 95.13   Downloading typing_extensions-4.12.2-py3-none-any.whl.metadata (3.0 kB)\n#7 96.22 Collecting charset-normalizer<4,>=2 (from requests<3.0.0,>=2.13.0->spacy==3.6.1->-r requirements.txt (line 4))\n#7 96.41   Downloading charset_normalizer-3.4.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (35 kB)\n#7 96.77 Collecting idna<4,>=2.5 (from requests<3.0.0,>=2.13.0->spacy==3.6.1->-r requirements.txt (line 4))\n#7 96.81   Downloading idna-3.10-py3-none-any.whl.metadata (10 kB)\n#7 97.43 Collecting certifi>=2017.4.17 (from requests<3.0.0,>=2.13.0->spacy==3.6.1->-r requirements.txt (line 4))\n#7 97.52   Downloading certifi-2025.1.31-py3-none-any.whl.metadata (2.5 kB)\n#7 109.3 Collecting blis<0.8.0,>=0.7.8 (from thinc<8.2.0,>=8.1.8->spacy==3.6.1->-r requirements.txt (line 4))\n#7 109.4   Downloading blis-0.7.11-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (7.4 kB)\n#7 109.7 Collecting confection<1.0.0,>=0.0.1 (from thinc<8.2.0,>=8.1.8->spacy==3.6.1->-r requirements.txt (line 4))\n#7 109.8   Downloading confection-0.1.5-py3-none-any.whl.metadata (19 kB)\n#7 110.8 Collecting MarkupSafe>=2.0 (from jinja2->spacy==3.6.1->-r requirements.txt (line 4))\n#7 110.8   Downloading MarkupSafe-3.0.2-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.0 kB)\n#7 111.8 Collecting marisa-trie>=1.1.0 (from language-data>=1.2->langcodes<4.0.0,>=3.2.0->spacy==3.6.1->-r requirements.txt (line 4))\n#7 112.0   Downloading marisa_trie-1.2.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (9.0 kB)\n#7 112.1 Collecting six>=1.5 (from python-dateutil<3.0.0,>=2.1->botocore<1.32.0,>=1.31.38->boto3==1.28.38->-r requirements.txt (line 1))\n#7 112.4   Downloading six-1.17.0-py2.py3-none-any.whl.metadata (1.7 kB)\n#7 112.6 Downloading boto3-1.28.38-py3-none-any.whl (135 kB)\n#7 112.8 Downloading python_dotenv-1.0.0-py3-none-any.whl (19 kB)\n#7 112.9 Downloading nltk-3.8.1-py3-none-any.whl (1.5 MB)\n#7 113.9    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.5/1.5 MB 1.8 MB/s eta 0:00:00\n#7 114.0 Downloading spacy-3.6.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (6.6 MB)\n#7 115.4    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 6.6/6.6 MB 4.8 MB/s eta 0:00:00\n#7 115.5 Downloading botocore-1.31.85-py3-none-any.whl (11.3 MB)\n#7 117.8    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11.3/11.3 MB 4.8 MB/s eta 0:00:00\n#7 117.9 Downloading catalogue-2.0.10-py3-none-any.whl (17 kB)\n#7 118.0 Downloading cymem-2.0.11-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (208 kB)\n#7 118.1 Downloading jmespath-1.0.1-py3-none-any.whl (20 kB)\n#7 118.2 Downloading langcodes-3.5.0-py3-none-any.whl (182 kB)\n#7 118.3 Downloading murmurhash-1.0.12-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl (124 kB)\n#7 118.4 Downloading numpy-2.0.2-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (19.5 MB)\n#7 124.3    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 19.5/19.5 MB 3.3 MB/s eta 0:00:00\n#7 124.4 Downloading packaging-24.2-py3-none-any.whl (65 kB)\n#7 124.5 Downloading pathy-0.11.0-py3-none-any.whl (47 kB)\n#7 124.5 Downloading pathlib_abc-0.1.1-py3-none-any.whl (23 kB)\n#7 124.6 Downloading preshed-3.0.9-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl (157 kB)\n#7 124.7 Downloading pydantic-2.10.6-py3-none-any.whl (431 kB)\n#7 124.9 Downloading pydantic_core-2.27.2-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (2.0 MB)\n#7 125.6    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.0/2.0 MB 3.0 MB/s eta 0:00:00\n#7 125.7 Downloading regex-2024.11.6-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (780 kB)\n#7 125.8    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 780.9/780.9 kB 5.2 MB/s eta 0:00:00\n#7 125.9 Downloading requests-2.32.3-py3-none-any.whl (64 kB)\n#7 125.9 Downloading s3transfer-0.6.2-py3-none-any.whl (79 kB)\n#7 126.2 Downloading smart_open-6.4.0-py3-none-any.whl (57 kB)\n#7 126.2 Downloading spacy_legacy-3.0.12-py2.py3-none-any.whl (29 kB)\n#7 126.2 Downloading spacy_loggers-1.0.5-py3-none-any.whl (22 kB)\n#7 126.2 Downloading srsly-2.5.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (1.1 MB)\n#7 126.4    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.1/1.1 MB 5.9 MB/s eta 0:00:00\n#7 126.5 Downloading thinc-8.1.12-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (935 kB)\n#7 127.3    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 935.1/935.1 kB 922.3 kB/s eta 0:00:00\n#7 127.4 Downloading tqdm-4.67.1-py3-none-any.whl (78 kB)\n#7 127.6 Downloading typer-0.9.4-py3-none-any.whl (45 kB)\n#7 127.7 Downloading click-8.1.8-py3-none-any.whl (98 kB)\n#7 127.7 Downloading wasabi-1.1.3-py3-none-any.whl (27 kB)\n#7 127.8 Downloading jinja2-3.1.6-py3-none-any.whl (134 kB)\n#7 128.1 Downloading joblib-1.4.2-py3-none-any.whl (301 kB)\n#7 128.2 Downloading annotated_types-0.7.0-py3-none-any.whl (13 kB)\n#7 128.3 Downloading blis-0.7.11-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (10.2 MB)\n#7 130.5    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 10.2/10.2 MB 4.5 MB/s eta 0:00:00\n#7 130.6 Downloading certifi-2025.1.31-py3-none-any.whl (166 kB)\n#7 130.7 Downloading charset_normalizer-3.4.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (146 kB)\n#7 130.9 Downloading confection-0.1.5-py3-none-any.whl (35 kB)\n#7 131.0 Downloading idna-3.10-py3-none-any.whl (70 kB)\n#7 131.1 Downloading language_data-1.3.0-py3-none-any.whl (5.4 MB)\n#7 132.2    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.4/5.4 MB 5.0 MB/s eta 0:00:00\n#7 132.3 Downloading MarkupSafe-3.0.2-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (20 kB)\n#7 132.4 Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl (229 kB)\n#7 132.5 Downloading typing_extensions-4.12.2-py3-none-any.whl (37 kB)\n#7 132.6 Downloading urllib3-1.26.20-py2.py3-none-any.whl (144 kB)\n#7 132.8 Downloading marisa_trie-1.2.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (1.3 MB)\n#7 133.1    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.3/1.3 MB 3.7 MB/s eta 0:00:00\n#7 133.1 Downloading six-1.17.0-py2.py3-none-any.whl (11 kB)\n#7 134.9 Building wheels for collected packages: en_core_web_sm\n#7 134.9   Building wheel for en_core_web_sm (pyproject.toml): started\n#7 144.2   Building wheel for en_core_web_sm (pyproject.toml): finished with status 'done'\n#7 144.6   Created wheel for en_core_web_sm: filename=en_core_web_sm-3.6.0-py3-none-any.whl size=12803343 sha256=b3b1992f41e127e1595c0d0faae22ee3f32148982882dcad6cda0b111ff864cf\n#7 144.6   Stored in directory: /tmp/pip-ephem-wheel-cache-grcqo0y9/wheels/26/67/5b/1c065c8bce26b09c1b3c3e0682e8335940227b545cb572a74e\n#7 144.7 Successfully built en_core_web_sm\n#7 147.0 Installing collected packages: cymem, wasabi, urllib3, typing-extensions, tqdm, spacy-loggers, spacy-legacy, smart-open, six, regex, python-dotenv, pathlib-abc, packaging, numpy, murmurhash, MarkupSafe, marisa-trie, joblib, jmespath, idna, click, charset-normalizer, certifi, catalogue, annotated-types, typer, srsly, requests, python-dateutil, pydantic-core, preshed, nltk, language-data, jinja2, blis, pydantic, pathy, langcodes, botocore, s3transfer, confection, thinc, boto3, spacy, en_core_web_sm\n#7 267.8 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.\n#7 267.8 Successfully installed MarkupSafe-3.0.2 annotated-types-0.7.0 blis-0.7.11 boto3-1.28.38 botocore-1.31.85 catalogue-2.0.10 certifi-2025.1.31 charset-normalizer-3.4.1 click-8.1.8 confection-0.1.5 cymem-2.0.11 en_core_web_sm-3.6.0 idna-3.10 jinja2-3.1.6 jmespath-1.0.1 joblib-1.4.2 langcodes-3.5.0 language-data-1.3.0 marisa-trie-1.2.1 murmurhash-1.0.12 nltk-3.8.1 numpy-2.0.2 packaging-24.2 pathlib-abc-0.1.1 pathy-0.11.0 preshed-3.0.9 pydantic-2.10.6 pydantic-core-2.27.2 python-dateutil-2.9.0.post0 python-dotenv-1.0.0 regex-2024.11.6 requests-2.32.3 s3transfer-0.6.2 six-1.17.0 smart-open-6.4.0 spacy-3.6.1 spacy-legacy-3.0.12 spacy-loggers-1.0.5 srsly-2.5.1 thinc-8.1.12 tqdm-4.67.1 typer-0.9.4 typing-extensions-4.12.2 urllib3-1.26.20 wasabi-1.1.3\n#7 DONE 281.0s\n\n#8 [4/6] RUN python -m nltk.downloader -d /tmp/nltk_data punkt\n#8 sha256:d8a94cc48f7433a3c83b22b336d778cbe1c6e11e520c90616a8ef1c5a6b78c70\n#8 14.96 /var/lang/lib/python3.9/runpy.py:127: RuntimeWarning: 'nltk.downloader' found in sys.modules after import of package 'nltk', but prior to execution of 'nltk.downloader'; this may result in unpredictable behaviour\n#8 14.96   warn(RuntimeWarning(msg))\n#8 16.06 [nltk_data] Downloading package punkt to /tmp/nltk_data...\n#8 19.65 [nltk_data]   Unzipping tokenizers/punkt.zip.\n#8 DONE 29.1s\n\n#9 [5/6] RUN python -m spacy download en_core_web_sm\n#9 sha256:8bfd43119545eb7b0caa1d315cb9c375e40802593fdb19356ba360c7cc84f861\n#9 13.36 Traceback (most recent call last):\n#9 13.36   File \"/var/lang/lib/python3.9/runpy.py\", line 188, in _run_module_as_main\n#9 13.36     mod_name, mod_spec, code = _get_module_details(mod_name, _Error)\n#9 13.36   File \"/var/lang/lib/python3.9/runpy.py\", line 147, in _get_module_details\n#9 13.43     return _get_module_details(pkg_main_name, error)\n#9 13.43   File \"/var/lang/lib/python3.9/runpy.py\", line 111, in _get_module_details\n#9 13.43     __import__(pkg_name)\n#9 13.43   File \"/var/lang/lib/python3.9/site-packages/spacy/__init__.py\", line 6, in <module>\n#9 13.43     from .errors import setup_default_warnings\n#9 13.43   File \"/var/lang/lib/python3.9/site-packages/spacy/errors.py\", line 3, in <module>\n#9 13.43     from .compat import Literal\n#9 13.43   File \"/var/lang/lib/python3.9/site-packages/spacy/compat.py\", line 39, in <module>\n#9 13.43     from thinc.api import Optimizer  # noqa: F401\n#9 13.43   File \"/var/lang/lib/python3.9/site-packages/thinc/api.py\", line 1, in <module>\n#9 13.43     from .backends import (\n#9 13.43   File \"/var/lang/lib/python3.9/site-packages/thinc/backends/__init__.py\", line 17, in <module>\n#9 13.43     from .cupy_ops import CupyOps\n#9 13.43   File \"/var/lang/lib/python3.9/site-packages/thinc/backends/cupy_ops.py\", line 16, in <module>\n#9 13.43     from .numpy_ops import NumpyOps\n#9 13.43   File \"thinc/backends/numpy_ops.pyx\", line 1, in init thinc.backends.numpy_ops\n#9 13.43 ValueError: numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject\n#9 ERROR: executor failed running [/bin/sh -c python -m spacy download en_core_web_sm]: exit code: 1\n------\n > [5/6] RUN python -m spacy download en_core_web_sm:\n------\nexecutor failed running [/bin/sh -c python -m spacy download en_core_web_sm]: exit code: 1\n",
+      "stack": "ServerlessError2: Encountered error during executing: docker build -t serverless-valis-document-processing-dev:text-processing -f /Users/stefano/Desktop/LexygraphLab/src/text-processing-service/Dockerfile /Users/stefano/Desktop/LexygraphLab/src/text-processing-service --platform=linux/amd64\nOutput of the command:\n#1 [internal] load build definition from Dockerfile\n#1 sha256:8e9100afe2d98fe75da83cc2b8f8d3691b070656d92c8eaf110dda597b635fab\n#1 transferring dockerfile: 632B 0.1s done\n#1 DONE 0.1s\n\n#2 [internal] load .dockerignore\n#2 sha256:da3195c025a2f8c09454a2576a44dc5261b69b320f003681ef2212f0dd918d8e\n#2 transferring context: 2B 0.0s done\n#2 DONE 0.0s\n\n#3 [internal] load metadata for public.ecr.aws/lambda/python:3.9\n#3 sha256:833dd0d20048fb200a9cdd3c16ad5e1331ade0a00c362d1abd58477de594622f\n#3 DONE 0.0s\n\n#4 [1/6] FROM public.ecr.aws/lambda/python:3.9\n#4 sha256:8bbc43a6fc3a732fd3c33643b2c19a456147f1a9a817561581f505e46f77c30b\n#4 CACHED\n\n#5 [internal] load build context\n#5 sha256:ca906686818666a7ae1947e3e4be20b0f6d14736d2a7cacbc3a7d7d5ef93c640\n#5 transferring context: 64B done\n#5 DONE 0.0s\n\n#6 [2/6] COPY requirements.txt /var/task/\n#6 sha256:a533355aa84791a219addf6d37a3bf9bd544aead5b92ddbc988cddbbfe434e89\n#6 DONE 0.1s\n\n#7 [3/6] RUN pip install --no-cache-dir --upgrade pip &&     pip install --no-cache-dir -r requirements.txt\n#7 sha256:98bda0ddb741108a4457bac0873590b4ea215f1075017314b5443ae40b884eb0\n#7 4.092 Requirement already satisfied: pip in /var/lang/lib/python3.9/site-packages (23.0.1)\n#7 4.613 Collecting pip\n#7 4.859   Downloading pip-25.0.1-py3-none-any.whl (1.8 MB)\n#7 5.743      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.8/1.8 MB 2.1 MB/s eta 0:00:00\n#7 5.853 Installing collected packages: pip\n#7 5.855   Attempting uninstall: pip\n#7 5.857     Found existing installation: pip 23.0.1\n#7 6.474     Uninstalling pip-23.0.1:\n#7 7.930       Successfully uninstalled pip-23.0.1\n#7 15.04 Successfully installed pip-25.0.1\n#7 15.05 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv\n#7 18.82 Collecting https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.6.0/en_core_web_sm-3.6.0.tar.gz (from -r requirements.txt (line 5))\n#7 21.04   Downloading https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.6.0/en_core_web_sm-3.6.0.tar.gz (12.8 MB)\n#7 26.57      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 12.8/12.8 MB 2.4 MB/s eta 0:00:00\n#7 28.69   Installing build dependencies: started\n#7 43.26   Installing build dependencies: finished with status 'done'\n#7 43.27   Getting requirements to build wheel: started\n#7 44.45   Getting requirements to build wheel: finished with status 'done'\n#7 44.46   Preparing metadata (pyproject.toml): started\n#7 45.55   Preparing metadata (pyproject.toml): finished with status 'done'\n#7 49.64 Collecting boto3==1.28.38 (from -r requirements.txt (line 1))\n#7 49.86   Downloading boto3-1.28.38-py3-none-any.whl.metadata (6.7 kB)\n#7 50.03 Collecting python-dotenv==1.0.0 (from -r requirements.txt (line 2))\n#7 50.10   Downloading python_dotenv-1.0.0-py3-none-any.whl.metadata (21 kB)\n#7 50.30 Collecting nltk==3.8.1 (from -r requirements.txt (line 3))\n#7 50.37   Downloading nltk-3.8.1-py3-none-any.whl.metadata (2.8 kB)\n#7 51.36 Collecting spacy==3.6.1 (from -r requirements.txt (line 4))\n#7 51.55   Downloading spacy-3.6.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (25 kB)\n#7 55.63 Collecting botocore<1.32.0,>=1.31.38 (from boto3==1.28.38->-r requirements.txt (line 1))\n#7 55.74   Downloading botocore-1.31.85-py3-none-any.whl.metadata (6.1 kB)\n#7 55.89 Collecting jmespath<2.0.0,>=0.7.1 (from boto3==1.28.38->-r requirements.txt (line 1))\n#7 55.95   Downloading jmespath-1.0.1-py3-none-any.whl.metadata (7.6 kB)\n#7 56.08 Collecting s3transfer<0.7.0,>=0.6.0 (from boto3==1.28.38->-r requirements.txt (line 1))\n#7 56.17   Downloading s3transfer-0.6.2-py3-none-any.whl.metadata (1.8 kB)\n#7 56.34 Collecting click (from nltk==3.8.1->-r requirements.txt (line 3))\n#7 56.41   Downloading click-8.1.8-py3-none-any.whl.metadata (2.3 kB)\n#7 56.58 Collecting joblib (from nltk==3.8.1->-r requirements.txt (line 3))\n#7 56.64   Downloading joblib-1.4.2-py3-none-any.whl.metadata (5.4 kB)\n#7 59.87 Collecting regex>=2021.8.3 (from nltk==3.8.1->-r requirements.txt (line 3))\n#7 59.93   Downloading regex-2024.11.6-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (40 kB)\n#7 61.01 Collecting tqdm (from nltk==3.8.1->-r requirements.txt (line 3))\n#7 61.27   Downloading tqdm-4.67.1-py3-none-any.whl.metadata (57 kB)\n#7 61.64 Collecting spacy-legacy<3.1.0,>=3.0.11 (from spacy==3.6.1->-r requirements.txt (line 4))\n#7 61.82   Downloading spacy_legacy-3.0.12-py2.py3-none-any.whl.metadata (2.8 kB)\n#7 62.01 Collecting spacy-loggers<2.0.0,>=1.0.0 (from spacy==3.6.1->-r requirements.txt (line 4))\n#7 62.24   Downloading spacy_loggers-1.0.5-py3-none-any.whl.metadata (23 kB)\n#7 62.79 Collecting murmurhash<1.1.0,>=0.28.0 (from spacy==3.6.1->-r requirements.txt (line 4))\n#7 63.06   Downloading murmurhash-1.0.12-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (2.1 kB)\n#7 63.33 Collecting cymem<2.1.0,>=2.0.2 (from spacy==3.6.1->-r requirements.txt (line 4))\n#7 63.69   Downloading cymem-2.0.11-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (8.5 kB)\n#7 64.35 Collecting preshed<3.1.0,>=3.0.2 (from spacy==3.6.1->-r requirements.txt (line 4))\n#7 64.79   Downloading preshed-3.0.9-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (2.2 kB)\n#7 65.50 Collecting thinc<8.2.0,>=8.1.8 (from spacy==3.6.1->-r requirements.txt (line 4))\n#7 65.59   Downloading thinc-8.1.12-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (15 kB)\n#7 65.83 Collecting wasabi<1.2.0,>=0.9.1 (from spacy==3.6.1->-r requirements.txt (line 4))\n#7 66.05   Downloading wasabi-1.1.3-py3-none-any.whl.metadata (28 kB)\n#7 66.55 Collecting srsly<3.0.0,>=2.4.3 (from spacy==3.6.1->-r requirements.txt (line 4))\n#7 66.78   Downloading srsly-2.5.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (19 kB)\n#7 67.29 Collecting catalogue<2.1.0,>=2.0.6 (from spacy==3.6.1->-r requirements.txt (line 4))\n#7 67.61   Downloading catalogue-2.0.10-py3-none-any.whl.metadata (14 kB)\n#7 67.76 Collecting typer<0.10.0,>=0.3.0 (from spacy==3.6.1->-r requirements.txt (line 4))\n#7 67.84   Downloading typer-0.9.4-py3-none-any.whl.metadata (14 kB)\n#7 67.96 Collecting pathy>=0.10.0 (from spacy==3.6.1->-r requirements.txt (line 4))\n#7 68.01   Downloading pathy-0.11.0-py3-none-any.whl.metadata (16 kB)\n#7 68.14 Collecting smart-open<7.0.0,>=5.2.1 (from spacy==3.6.1->-r requirements.txt (line 4))\n#7 68.21   Downloading smart_open-6.4.0-py3-none-any.whl.metadata (21 kB)\n#7 69.93 Collecting numpy>=1.15.0 (from spacy==3.6.1->-r requirements.txt (line 4))\n#7 71.23   Downloading numpy-2.0.2-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (60 kB)\n#7 71.79 Collecting requests<3.0.0,>=2.13.0 (from spacy==3.6.1->-r requirements.txt (line 4))\n#7 72.11   Downloading requests-2.32.3-py3-none-any.whl.metadata (4.6 kB)\n#7 77.57 Collecting pydantic!=1.8,!=1.8.1,<3.0.0,>=1.7.4 (from spacy==3.6.1->-r requirements.txt (line 4))\n#7 77.80   Downloading pydantic-2.10.6-py3-none-any.whl.metadata (30 kB)\n#7 78.16 Collecting jinja2 (from spacy==3.6.1->-r requirements.txt (line 4))\n#7 78.29   Downloading jinja2-3.1.6-py3-none-any.whl.metadata (2.9 kB)\n#7 78.37 Requirement already satisfied: setuptools in /var/lang/lib/python3.9/site-packages (from spacy==3.6.1->-r requirements.txt (line 4)) (58.1.0)\n#7 78.93 Collecting packaging>=20.0 (from spacy==3.6.1->-r requirements.txt (line 4))\n#7 78.99   Downloading packaging-24.2-py3-none-any.whl.metadata (3.2 kB)\n#7 79.27 Collecting langcodes<4.0.0,>=3.2.0 (from spacy==3.6.1->-r requirements.txt (line 4))\n#7 79.45   Downloading langcodes-3.5.0-py3-none-any.whl.metadata (29 kB)\n#7 80.03 Collecting python-dateutil<3.0.0,>=2.1 (from botocore<1.32.0,>=1.31.38->boto3==1.28.38->-r requirements.txt (line 1))\n#7 80.11   Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl.metadata (8.4 kB)\n#7 80.42 Collecting urllib3<1.27,>=1.25.4 (from botocore<1.32.0,>=1.31.38->boto3==1.28.38->-r requirements.txt (line 1))\n#7 80.53   Downloading urllib3-1.26.20-py2.py3-none-any.whl.metadata (50 kB)\n#7 80.95 Collecting language-data>=1.2 (from langcodes<4.0.0,>=3.2.0->spacy==3.6.1->-r requirements.txt (line 4))\n#7 81.06   Downloading language_data-1.3.0-py3-none-any.whl.metadata (4.3 kB)\n#7 81.53 Collecting pathlib-abc==0.1.1 (from pathy>=0.10.0->spacy==3.6.1->-r requirements.txt (line 4))\n#7 81.60   Downloading pathlib_abc-0.1.1-py3-none-any.whl.metadata (18 kB)\n#7 81.92 Collecting annotated-types>=0.6.0 (from pydantic!=1.8,!=1.8.1,<3.0.0,>=1.7.4->spacy==3.6.1->-r requirements.txt (line 4))\n#7 82.02   Downloading annotated_types-0.7.0-py3-none-any.whl.metadata (15 kB)\n#7 94.58 Collecting pydantic-core==2.27.2 (from pydantic!=1.8,!=1.8.1,<3.0.0,>=1.7.4->spacy==3.6.1->-r requirements.txt (line 4))\n#7 94.67   Downloading pydantic_core-2.27.2-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (6.6 kB)\n#7 95.02 Collecting typing-extensions>=4.12.2 (from pydantic!=1.8,!=1.8.1,<3.0.0,>=1.7.4->spacy==3.6.1->-r requirements.txt (line 4))\n#7 95.13   Downloading typing_extensions-4.12.2-py3-none-any.whl.metadata (3.0 kB)\n#7 96.22 Collecting charset-normalizer<4,>=2 (from requests<3.0.0,>=2.13.0->spacy==3.6.1->-r requirements.txt (line 4))\n#7 96.41   Downloading charset_normalizer-3.4.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (35 kB)\n#7 96.77 Collecting idna<4,>=2.5 (from requests<3.0.0,>=2.13.0->spacy==3.6.1->-r requirements.txt (line 4))\n#7 96.81   Downloading idna-3.10-py3-none-any.whl.metadata (10 kB)\n#7 97.43 Collecting certifi>=2017.4.17 (from requests<3.0.0,>=2.13.0->spacy==3.6.1->-r requirements.txt (line 4))\n#7 97.52   Downloading certifi-2025.1.31-py3-none-any.whl.metadata (2.5 kB)\n#7 109.3 Collecting blis<0.8.0,>=0.7.8 (from thinc<8.2.0,>=8.1.8->spacy==3.6.1->-r requirements.txt (line 4))\n#7 109.4   Downloading blis-0.7.11-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (7.4 kB)\n#7 109.7 Collecting confection<1.0.0,>=0.0.1 (from thinc<8.2.0,>=8.1.8->spacy==3.6.1->-r requirements.txt (line 4))\n#7 109.8   Downloading confection-0.1.5-py3-none-any.whl.metadata (19 kB)\n#7 110.8 Collecting MarkupSafe>=2.0 (from jinja2->spacy==3.6.1->-r requirements.txt (line 4))\n#7 110.8   Downloading MarkupSafe-3.0.2-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.0 kB)\n#7 111.8 Collecting marisa-trie>=1.1.0 (from language-data>=1.2->langcodes<4.0.0,>=3.2.0->spacy==3.6.1->-r requirements.txt (line 4))\n#7 112.0   Downloading marisa_trie-1.2.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (9.0 kB)\n#7 112.1 Collecting six>=1.5 (from python-dateutil<3.0.0,>=2.1->botocore<1.32.0,>=1.31.38->boto3==1.28.38->-r requirements.txt (line 1))\n#7 112.4   Downloading six-1.17.0-py2.py3-none-any.whl.metadata (1.7 kB)\n#7 112.6 Downloading boto3-1.28.38-py3-none-any.whl (135 kB)\n#7 112.8 Downloading python_dotenv-1.0.0-py3-none-any.whl (19 kB)\n#7 112.9 Downloading nltk-3.8.1-py3-none-any.whl (1.5 MB)\n#7 113.9    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.5/1.5 MB 1.8 MB/s eta 0:00:00\n#7 114.0 Downloading spacy-3.6.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (6.6 MB)\n#7 115.4    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 6.6/6.6 MB 4.8 MB/s eta 0:00:00\n#7 115.5 Downloading botocore-1.31.85-py3-none-any.whl (11.3 MB)\n#7 117.8    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 11.3/11.3 MB 4.8 MB/s eta 0:00:00\n#7 117.9 Downloading catalogue-2.0.10-py3-none-any.whl (17 kB)\n#7 118.0 Downloading cymem-2.0.11-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (208 kB)\n#7 118.1 Downloading jmespath-1.0.1-py3-none-any.whl (20 kB)\n#7 118.2 Downloading langcodes-3.5.0-py3-none-any.whl (182 kB)\n#7 118.3 Downloading murmurhash-1.0.12-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl (124 kB)\n#7 118.4 Downloading numpy-2.0.2-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (19.5 MB)\n#7 124.3    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 19.5/19.5 MB 3.3 MB/s eta 0:00:00\n#7 124.4 Downloading packaging-24.2-py3-none-any.whl (65 kB)\n#7 124.5 Downloading pathy-0.11.0-py3-none-any.whl (47 kB)\n#7 124.5 Downloading pathlib_abc-0.1.1-py3-none-any.whl (23 kB)\n#7 124.6 Downloading preshed-3.0.9-cp39-cp39-manylinux_2_5_x86_64.manylinux1_x86_64.manylinux_2_17_x86_64.manylinux2014_x86_64.whl (157 kB)\n#7 124.7 Downloading pydantic-2.10.6-py3-none-any.whl (431 kB)\n#7 124.9 Downloading pydantic_core-2.27.2-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (2.0 MB)\n#7 125.6    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.0/2.0 MB 3.0 MB/s eta 0:00:00\n#7 125.7 Downloading regex-2024.11.6-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (780 kB)\n#7 125.8    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 780.9/780.9 kB 5.2 MB/s eta 0:00:00\n#7 125.9 Downloading requests-2.32.3-py3-none-any.whl (64 kB)\n#7 125.9 Downloading s3transfer-0.6.2-py3-none-any.whl (79 kB)\n#7 126.2 Downloading smart_open-6.4.0-py3-none-any.whl (57 kB)\n#7 126.2 Downloading spacy_legacy-3.0.12-py2.py3-none-any.whl (29 kB)\n#7 126.2 Downloading spacy_loggers-1.0.5-py3-none-any.whl (22 kB)\n#7 126.2 Downloading srsly-2.5.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (1.1 MB)\n#7 126.4    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.1/1.1 MB 5.9 MB/s eta 0:00:00\n#7 126.5 Downloading thinc-8.1.12-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (935 kB)\n#7 127.3    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 935.1/935.1 kB 922.3 kB/s eta 0:00:00\n#7 127.4 Downloading tqdm-4.67.1-py3-none-any.whl (78 kB)\n#7 127.6 Downloading typer-0.9.4-py3-none-any.whl (45 kB)\n#7 127.7 Downloading click-8.1.8-py3-none-any.whl (98 kB)\n#7 127.7 Downloading wasabi-1.1.3-py3-none-any.whl (27 kB)\n#7 127.8 Downloading jinja2-3.1.6-py3-none-any.whl (134 kB)\n#7 128.1 Downloading joblib-1.4.2-py3-none-any.whl (301 kB)\n#7 128.2 Downloading annotated_types-0.7.0-py3-none-any.whl (13 kB)\n#7 128.3 Downloading blis-0.7.11-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (10.2 MB)\n#7 130.5    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 10.2/10.2 MB 4.5 MB/s eta 0:00:00\n#7 130.6 Downloading certifi-2025.1.31-py3-none-any.whl (166 kB)\n#7 130.7 Downloading charset_normalizer-3.4.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (146 kB)\n#7 130.9 Downloading confection-0.1.5-py3-none-any.whl (35 kB)\n#7 131.0 Downloading idna-3.10-py3-none-any.whl (70 kB)\n#7 131.1 Downloading language_data-1.3.0-py3-none-any.whl (5.4 MB)\n#7 132.2    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.4/5.4 MB 5.0 MB/s eta 0:00:00\n#7 132.3 Downloading MarkupSafe-3.0.2-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (20 kB)\n#7 132.4 Downloading python_dateutil-2.9.0.post0-py2.py3-none-any.whl (229 kB)\n#7 132.5 Downloading typing_extensions-4.12.2-py3-none-any.whl (37 kB)\n#7 132.6 Downloading urllib3-1.26.20-py2.py3-none-any.whl (144 kB)\n#7 132.8 Downloading marisa_trie-1.2.1-cp39-cp39-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (1.3 MB)\n#7 133.1    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.3/1.3 MB 3.7 MB/s eta 0:00:00\n#7 133.1 Downloading six-1.17.0-py2.py3-none-any.whl (11 kB)\n#7 134.9 Building wheels for collected packages: en_core_web_sm\n#7 134.9   Building wheel for en_core_web_sm (pyproject.toml): started\n#7 144.2   Building wheel for en_core_web_sm (pyproject.toml): finished with status 'done'\n#7 144.6   Created wheel for en_core_web_sm: filename=en_core_web_sm-3.6.0-py3-none-any.whl size=12803343 sha256=b3b1992f41e127e1595c0d0faae22ee3f32148982882dcad6cda0b111ff864cf\n#7 144.6   Stored in directory: /tmp/pip-ephem-wheel-cache-grcqo0y9/wheels/26/67/5b/1c065c8bce26b09c1b3c3e0682e8335940227b545cb572a74e\n#7 144.7 Successfully built en_core_web_sm\n#7 147.0 Installing collected packages: cymem, wasabi, urllib3, typing-extensions, tqdm, spacy-loggers, spacy-legacy, smart-open, six, regex, python-dotenv, pathlib-abc, packaging, numpy, murmurhash, MarkupSafe, marisa-trie, joblib, jmespath, idna, click, charset-normalizer, certifi, catalogue, annotated-types, typer, srsly, requests, python-dateutil, pydantic-core, preshed, nltk, language-data, jinja2, blis, pydantic, pathy, langcodes, botocore, s3transfer, confection, thinc, boto3, spacy, en_core_web_sm\n#7 267.8 WARNING: Running pip as the 'root' user can result in broken permissions and conflicting behaviour with the system package manager, possibly rendering your system unusable. It is recommended to use a virtual environment instead: https://pip.pypa.io/warnings/venv. Use the --root-user-action option if you know what you are doing and want to suppress this warning.\n#7 267.8 Successfully installed MarkupSafe-3.0.2 annotated-types-0.7.0 blis-0.7.11 boto3-1.28.38 botocore-1.31.85 catalogue-2.0.10 certifi-2025.1.31 charset-normalizer-3.4.1 click-8.1.8 confection-0.1.5 cymem-2.0.11 en_core_web_sm-3.6.0 idna-3.10 jinja2-3.1.6 jmespath-1.0.1 joblib-1.4.2 langcodes-3.5.0 language-data-1.3.0 marisa-trie-1.2.1 murmurhash-1.0.12 nltk-3.8.1 numpy-2.0.2 packaging-24.2 pathlib-abc-0.1.1 pathy-0.11.0 preshed-3.0.9 pydantic-2.10.6 pydantic-core-2.27.2 python-dateutil-2.9.0.post0 python-dotenv-1.0.0 regex-2024.11.6 requests-2.32.3 s3transfer-0.6.2 six-1.17.0 smart-open-6.4.0 spacy-3.6.1 spacy-legacy-3.0.12 spacy-loggers-1.0.5 srsly-2.5.1 thinc-8.1.12 tqdm-4.67.1 typer-0.9.4 typing-extensions-4.12.2 urllib3-1.26.20 wasabi-1.1.3\n#7 DONE 281.0s\n\n#8 [4/6] RUN python -m nltk.downloader -d /tmp/nltk_data punkt\n#8 sha256:d8a94cc48f7433a3c83b22b336d778cbe1c6e11e520c90616a8ef1c5a6b78c70\n#8 14.96 /var/lang/lib/python3.9/runpy.py:127: RuntimeWarning: 'nltk.downloader' found in sys.modules after import of package 'nltk', but prior to execution of 'nltk.downloader'; this may result in unpredictable behaviour\n#8 14.96   warn(RuntimeWarning(msg))\n#8 16.06 [nltk_data] Downloading package punkt to /tmp/nltk_data...\n#8 19.65 [nltk_data]   Unzipping tokenizers/punkt.zip.\n#8 DONE 29.1s\n\n#9 [5/6] RUN python -m spacy download en_core_web_sm\n#9 sha256:8bfd43119545eb7b0caa1d315cb9c375e40802593fdb19356ba360c7cc84f861\n#9 13.36 Traceback (most recent call last):\n#9 13.36   File \"/var/lang/lib/python3.9/runpy.py\", line 188, in _run_module_as_main\n#9 13.36     mod_name, mod_spec, code = _get_module_details(mod_name, _Error)\n#9 13.36   File \"/var/lang/lib/python3.9/runpy.py\", line 147, in _get_module_details\n#9 13.43     return _get_module_details(pkg_main_name, error)\n#9 13.43   File \"/var/lang/lib/python3.9/runpy.py\", line 111, in _get_module_details\n#9 13.43     __import__(pkg_name)\n#9 13.43   File \"/var/lang/lib/python3.9/site-packages/spacy/__init__.py\", line 6, in <module>\n#9 13.43     from .errors import setup_default_warnings\n#9 13.43   File \"/var/lang/lib/python3.9/site-packages/spacy/errors.py\", line 3, in <module>\n#9 13.43     from .compat import Literal\n#9 13.43   File \"/var/lang/lib/python3.9/site-packages/spacy/compat.py\", line 39, in <module>\n#9 13.43     from thinc.api import Optimizer  # noqa: F401\n#9 13.43   File \"/var/lang/lib/python3.9/site-packages/thinc/api.py\", line 1, in <module>\n#9 13.43     from .backends import (\n#9 13.43   File \"/var/lang/lib/python3.9/site-packages/thinc/backends/__init__.py\", line 17, in <module>\n#9 13.43     from .cupy_ops import CupyOps\n#9 13.43   File \"/var/lang/lib/python3.9/site-packages/thinc/backends/cupy_ops.py\", line 16, in <module>\n#9 13.43     from .numpy_ops import NumpyOps\n#9 13.43   File \"thinc/backends/numpy_ops.pyx\", line 1, in init thinc.backends.numpy_ops\n#9 13.43 ValueError: numpy.dtype size changed, may indicate binary incompatibility. Expected 96 from C header, got 88 from PyObject\n#9 ERROR: executor failed running [/bin/sh -c python -m spacy download en_core_web_sm]: exit code: 1\n------\n > [5/6] RUN python -m spacy download en_core_web_sm:\n------\nexecutor failed running [/bin/sh -c python -m spacy download en_core_web_sm]: exit code: 1\n\n    at Object.defineProperties.resolveImageUriAndShaFromPath.promise (file:///Users/stefano/.serverless/releases/4.9.0/package/dist/sf-core.js:596:2284)",
+      "code": "DOCKER_BUILD_ERROR"
+    },
+    "serviceRawFile": "service: valis-document-processing\n\nprovider:\n  name: aws\n  region: ${opt:region, 'eu-central-1'}\n  stage: ${opt:stage, 'prod'}\n  environment:\n    STAGE: ${opt:stage, 'prod'}\n    RAW_BUCKET: ${self:custom.environment.RAW_BUCKET}\n    DOCUMENTS_TABLE: ${self:custom.environment.DOCUMENTS_TABLE}\n    COLLECTIONS_TABLE: ${self:custom.environment.COLLECTIONS_TABLE}\n    DOC_PROCESSING_TABLE: ${self:custom.environment.DOC_PROCESSING_TABLE}\n    PARSER_QUEUE: ${self:custom.environment.PARSER_QUEUE}\n    OCR_QUEUE: ${self:custom.environment.OCR_QUEUE}\n    TEXT_PROCESSING_QUEUE: ${self:custom.environment.TEXT_PROCESSING_QUEUE}\n    SUMMARIZER_QUEUE: ${self:custom.environment.SUMMARIZER_QUEUE}\n\n  ecr:\n    images:\n      document-parser:\n        path: ./document-parser-service\n        platform: linux/amd64\n      ocr-service:\n        path: ./ocr-service\n        platform: linux/amd64\n      text-processing:\n        path: ./text-processing-service\n        platform: linux/amd64\n      summarizer:\n        path: ./summarizer-service\n        platform: linux/amd64\n\nfunctions:\n  documentParser:\n    image:\n      name: document-parser\n      command:\n        - \"app.lambda_handler\"\n    memorySize: 1024\n    timeout: 120\n    events:\n      - sqs:\n          arn: ${self:custom.environment.PARSER_QUEUE}\n          batchSize: 1\n    environment:\n      POWERTOOLS_SERVICE_NAME: document-parser\n\n  ocrProcessor:\n    image:\n      name: ocr-service\n      command:\n        - \"app.lambda_handler\"\n    memorySize: 2048\n    timeout: 300\n    events:\n      - sqs:\n          arn: ${self:custom.environment.OCR_QUEUE}\n          batchSize: 1\n    environment:\n      POWERTOOLS_SERVICE_NAME: ocr-service\n\n  textProcessor:\n    image:\n      name: text-processing\n      command:\n        - \"app.lambda_handler\"\n    memorySize: 1536\n    timeout: 180\n    events:\n      - sqs:\n          arn: ${self:custom.environment.TEXT_PROCESSING_QUEUE}\n          batchSize: 1\n    environment:\n      POWERTOOLS_SERVICE_NAME: text-processing\n\n  summarizer:\n    image:\n      name: summarizer\n      command:\n        - \"app.lambda_handler\"\n    memorySize: 2048\n    timeout: 300\n    events:\n      - sqs:\n          arn: ${self:custom.environment.SUMMARIZER_QUEUE}\n          batchSize: 1\n    environment:\n      POWERTOOLS_SERVICE_NAME: summarizer\n\ncustom:\n  environment: ${file(env.${opt:stage, 'prod'}.yml)}\n\n\n\n",
+    "command": [
+      "deploy"
+    ],
+    "options": {
+      "stage": "dev"
+    },
+    "orgId": "66e687b3-f12b-4cfc-8e3a-8ecbeb76dd0d",
+    "orgName": "lexygraphai",
+    "userId": "fb7f8bKKNS5hP61Z9N",
+    "userName": "lexygraphai",
+    "serviceProviderAwsAccountId": "078652648484",
+    "serviceProviderAwsCfStackId": null,
+    "serviceProviderAwsCfStackCreated": null,
+    "serviceProviderAwsCfStackUpdated": null,
+    "serviceProviderAwsCfStackStatus": null,
+    "serviceProviderAwsCfStackOutputs": null
+  }
+}
