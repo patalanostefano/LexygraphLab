@@ -198,7 +198,7 @@ const FormRow = ({ label, children }) => {
 // Main Profile Component
 const ProfileSection = () => {
   const theme = useTheme();
-  const { toggleColorMode } = useContext(ThemeContext);
+  const { toggleColorMode, systemThemeEnabled, setSystemThemeEnabled } = useContext(ThemeContext);
   const navigate = useNavigate();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -260,6 +260,14 @@ const ProfileSection = () => {
     darkMode: theme.palette.mode === 'dark',
   });
   
+  // Aggiorniamo lo stato darkMode quando cambia il tema
+  useEffect(() => {
+    setSettings(prev => ({
+      ...prev,
+      darkMode: theme.palette.mode === 'dark'
+    }));
+  }, [theme.palette.mode]);
+  
   // Handler for tab change
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue);
@@ -291,6 +299,8 @@ const ProfileSection = () => {
     
     if (setting === 'darkMode') {
       toggleColorMode();
+      // Quando cambiamo manualmente il tema, disabilita la sincronizzazione automatica
+      setSystemThemeEnabled(false);
     }
   };
   
@@ -773,7 +783,7 @@ const ProfileSection = () => {
                 </Table>
                 
                 <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
-                  <Button 
+             <Button 
                     startIcon={<HistoryIcon />}
                     variant="outlined"
                   >
@@ -788,134 +798,134 @@ const ProfileSection = () => {
           <TabPanel value={tabValue} index={2}>
             <ProfileCard>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
-  <Typography variant="h6" fontWeight="bold">Gruppi di lavoro</Typography>
-  <Button 
-    variant="contained" 
-    startIcon={<AddIcon />}
-    onClick={() => setNewWorkspaceDialog(true)}
-  >
-    Nuovo gruppo
-  </Button>
-</Box>
-    
-<Grid container spacing={3}>
-  {workspaces.map((workspace) => (
-    <Grid item xs={12} sm={6} md={4} key={workspace.id}>
-      <WorkspaceCard onClick={() => handleOpenWorkspaceDetail(workspace)}>
-        <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-          <Box 
-            sx={{ 
-              width: 48, 
-              height: 48, 
-              borderRadius: '12px', 
-              bgcolor: alpha(theme.palette.primary.main, 0.1),
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            <GroupsIcon fontSize="large" color="primary" />
-          </Box>
-          <Chip 
-            size="small" 
-            label={workspace.role} 
-            color="primary" 
-            variant={workspace.role === 'Proprietario' ? 'filled' : 'outlined'}
-          />
-        </Box>
-        
-        <Typography variant="h6" fontWeight="bold" sx={{ mb: 1 }}>{workspace.name}</Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-          {workspace.members.length} {workspace.members.length === 1 ? 'membro' : 'membri'}
-        </Typography>
-        
-        <Typography variant="caption" color="text.secondary">
-          {getSharedProjects(workspace.id).length} progetti condivisi
-        </Typography>
-        
-        <Box sx={{ display: 'flex', mt: 'auto', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Box sx={{ display: 'flex' }}>
-            {workspace.members.slice(0, 3).map((member, i) => (
-              <Avatar 
-                key={i} 
-                sx={{ 
-                  width: 28, 
-                  height: 28, 
-                  fontSize: '0.75rem',
-                  bgcolor: theme.palette.primary.main,
-                  border: `2px solid ${theme.palette.background.paper}`,
-                  marginLeft: i > 0 ? -1 : 0
-                }}
-              >
-                {member.charAt(0).toUpperCase()}
-              </Avatar>
-            ))}
-            {workspace.members.length > 3 && (
-              <Avatar 
-                sx={{ 
-                  width: 28, 
-                  height: 28, 
-                  fontSize: '0.75rem',
-                  bgcolor: alpha(theme.palette.text.secondary, 0.1),
-                  color: theme.palette.text.secondary,
-                  border: `2px solid ${theme.palette.background.paper}`,
-                  marginLeft: -1
-                }}
-              >
-                +{workspace.members.length - 3}
-              </Avatar>
-            )}
-          </Box>
-          
-          <IconButton size="small">
-            <KeyboardArrowRightIcon />
-          </IconButton>
-        </Box>
-      </WorkspaceCard>
-    </Grid>
-  ))}
-  
-  <Grid item xs={12} sm={6} md={4}>
-    <WorkspaceCard 
-      onClick={() => setNewWorkspaceDialog(true)} 
-      sx={{ 
-        border: `2px dashed ${alpha(theme.palette.primary.main, 0.3)}`,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: 'transparent',
-        boxShadow: 'none',
-        color: theme.palette.primary.main
-      }}
-    >
-      <Box sx={{ textAlign: 'center' }}>
-        <Box 
-          sx={{ 
-            width: 64, 
-            height: 64, 
-            borderRadius: '50%', 
-            bgcolor: alpha(theme.palette.primary.main, 0.1),
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            margin: '0 auto',
-            mb: 2
-          }}
-        >
-          <AddIcon fontSize="large" />
-        </Box>
-        <Typography variant="subtitle1" fontWeight="medium">Crea nuovo gruppo</Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-          Collabora con il tuo team
-        </Typography>
-      </Box>
-    </WorkspaceCard>
-  </Grid>
-</Grid>
+                <Typography variant="h6" fontWeight="bold">Gruppi di lavoro</Typography>
+                <Button 
+                  variant="contained" 
+                  startIcon={<AddIcon />}
+                  onClick={() => setNewWorkspaceDialog(true)}
+                >
+                  Nuovo gruppo
+                </Button>
+              </Box>
+              
+              <Grid container spacing={3}>
+                {workspaces.map((workspace) => (
+                  <Grid item xs={12} sm={6} md={4} key={workspace.id}>
+                    <WorkspaceCard onClick={() => handleOpenWorkspaceDetail(workspace)}>
+                      <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <Box 
+                          sx={{ 
+                            width: 48, 
+                            height: 48, 
+                            borderRadius: '12px', 
+                            bgcolor: alpha(theme.palette.primary.main, 0.1),
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                        >
+                          <GroupsIcon fontSize="large" color="primary" />
+                        </Box>
+                        <Chip 
+                          size="small" 
+                          label={workspace.role} 
+                          color="primary" 
+                          variant={workspace.role === 'Proprietario' ? 'filled' : 'outlined'}
+                        />
+                      </Box>
+                      
+                      <Typography variant="h6" fontWeight="bold" sx={{ mb: 1 }}>{workspace.name}</Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                        {workspace.members.length} {workspace.members.length === 1 ? 'membro' : 'membri'}
+                      </Typography>
+                      
+                      <Typography variant="caption" color="text.secondary">
+                        {getSharedProjects(workspace.id).length} progetti condivisi
+                      </Typography>
+                      
+                      <Box sx={{ display: 'flex', mt: 'auto', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Box sx={{ display: 'flex' }}>
+                          {workspace.members.slice(0, 3).map((member, i) => (
+                            <Avatar 
+                              key={i} 
+                              sx={{ 
+                                width: 28, 
+                                height: 28, 
+                                fontSize: '0.75rem',
+                                bgcolor: theme.palette.primary.main,
+                                border: `2px solid ${theme.palette.background.paper}`,
+                                marginLeft: i > 0 ? -1 : 0
+                              }}
+                            >
+                              {member.charAt(0).toUpperCase()}
+                            </Avatar>
+                          ))}
+                          {workspace.members.length > 3 && (
+                            <Avatar 
+                              sx={{ 
+                                width: 28, 
+                                height: 28, 
+                                fontSize: '0.75rem',
+                                bgcolor: alpha(theme.palette.text.secondary, 0.1),
+                                color: theme.palette.text.secondary,
+                                border: `2px solid ${theme.palette.background.paper}`,
+                                marginLeft: -1
+                              }}
+                            >
+                              +{workspace.members.length - 3}
+                            </Avatar>
+                          )}
+                        </Box>
+                        
+                        <IconButton size="small">
+                          <KeyboardArrowRightIcon />
+                        </IconButton>
+                      </Box>
+                    </WorkspaceCard>
+                  </Grid>
+                ))}
+                
+                <Grid item xs={12} sm={6} md={4}>
+                  <WorkspaceCard 
+                    onClick={() => setNewWorkspaceDialog(true)} 
+                    sx={{ 
+                      border: `2px dashed ${alpha(theme.palette.primary.main, 0.3)}`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      backgroundColor: 'transparent',
+                      boxShadow: 'none',
+                      color: theme.palette.primary.main
+                    }}
+                  >
+                    <Box sx={{ textAlign: 'center' }}>
+                      <Box 
+                        sx={{ 
+                          width: 64, 
+                          height: 64, 
+                          borderRadius: '50%', 
+                          bgcolor: alpha(theme.palette.primary.main, 0.1),
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          margin: '0 auto',
+                          mb: 2
+                        }}
+                      >
+                        <AddIcon fontSize="large" />
+                      </Box>
+                      <Typography variant="subtitle1" fontWeight="medium">Crea nuovo gruppo</Typography>
+                      <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                        Collabora con il tuo team
+                      </Typography>
+                    </Box>
+                  </WorkspaceCard>
+                </Grid>
+              </Grid>
             </ProfileCard>
           </TabPanel>
           
-          {/* Settings Tab */}
+          {/* Settings Tab - Aggiunto controllo per tema automatico */}
           <TabPanel value={tabValue} index={3}>
             <ProfileCard>
               <Typography variant="h6" fontWeight="bold" sx={{ mb: 4 }}>Impostazioni applicazione</Typography>
@@ -953,6 +963,25 @@ const ProfileSection = () => {
                       edge="end"
                       checked={settings.darkMode}
                       onChange={(e) => handleSettingChange('darkMode', e.target.checked)}
+                    />
+                  </ListItemSecondaryAction>
+                </ListItem>
+
+                <Divider variant="inset" component="li" />
+                
+                <ListItem>
+                  <ListItemIcon>
+                    {settings.darkMode ? <DarkModeIcon /> : <LightModeIcon />}
+                  </ListItemIcon>
+                  <ListItemText 
+                    primary="Usa tema del sistema" 
+                    secondary="Segui automaticamente le impostazioni di sistema"
+                  />
+                  <ListItemSecondaryAction>
+                    <Switch 
+                      edge="end"
+                      checked={systemThemeEnabled}
+                      onChange={(e) => setSystemThemeEnabled(e.target.checked)}
                     />
                   </ListItemSecondaryAction>
                 </ListItem>

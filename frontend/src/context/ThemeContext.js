@@ -6,17 +6,60 @@ import { CssBaseline } from '@mui/material';
 export const ThemeContext = createContext({
   toggleColorMode: () => {},
   theme: null,
+  systemThemeEnabled: true,
+  setSystemThemeEnabled: () => {}
 });
 
 export const ThemeContextProvider = ({ children }) => {
+  // Aggiungiamo uno state per permettere all'utente di abilitare/disabilitare 
+  // la sincronizzazione automatica con il tema di sistema
+  const [systemThemeEnabled, setSystemThemeEnabled] = useState(() => {
+    const savedPreference = localStorage.getItem('systemThemeEnabled');
+    return savedPreference === null ? true : savedPreference === 'true';
+  });
+
   const [mode, setMode] = useState(() => {
     // Recupera il tema dalle impostazioni locali o usa le preferenze del sistema
     const savedMode = localStorage.getItem('themeMode');
-    if (savedMode) {
+    if (savedMode && !systemThemeEnabled) {
       return savedMode;
     }
     return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   });
+
+  // Effetto per ascoltare i cambiamenti delle preferenze di tema del sistema
+  useEffect(() => {
+    if (!systemThemeEnabled) return; // Non ascoltare se la funzione è disabilitata
+    
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    
+    const handleSystemThemeChange = (e) => {
+      setMode(e.matches ? 'dark' : 'light');
+    };
+    
+    // Aggiungi il listener con supporto per browser più vecchi
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handleSystemThemeChange);
+    } else {
+      // Fallback per browser meno recenti
+      mediaQuery.addListener(handleSystemThemeChange);
+    }
+    
+    // Pulizia all'unmount
+    return () => {
+      if (mediaQuery.removeEventListener) {
+        mediaQuery.removeEventListener('change', handleSystemThemeChange);
+      } else {
+        // Fallback per browser meno recenti
+        mediaQuery.removeListener(handleSystemThemeChange);
+      }
+    };
+  }, [systemThemeEnabled]);
+
+  // Effetto per salvare la preferenza systemThemeEnabled
+  useEffect(() => {
+    localStorage.setItem('systemThemeEnabled', systemThemeEnabled);
+  }, [systemThemeEnabled]);
 
   const colorMode = useMemo(
     () => ({
@@ -26,9 +69,25 @@ export const ThemeContextProvider = ({ children }) => {
           localStorage.setItem('themeMode', newMode);
           return newMode;
         });
+        
+        // Se l'utente cambia manualmente il tema, disabilitiamo l'auto-rilevamento
+        if (systemThemeEnabled) {
+          setSystemThemeEnabled(false);
+        }
       },
+      systemThemeEnabled,
+      setSystemThemeEnabled: (value) => {
+        setSystemThemeEnabled(value);
+        
+        // Se riattiva la sincronizzazione con il sistema, aggiorna immediatamente il tema
+        if (value === true) {
+          const prefersDarkMode = window.matchMedia && 
+                                  window.matchMedia('(prefers-color-scheme: dark)').matches;
+          setMode(prefersDarkMode ? 'dark' : 'light');
+        }
+      }
     }),
-    [],
+    [systemThemeEnabled],
   );
 
   // Aggiungi attributo data-theme al body
@@ -284,7 +343,7 @@ export const ThemeContextProvider = ({ children }) => {
   );
 
   return (
-    <ThemeContext.Provider value={{ ...colorMode, theme }}>
+    <ThemeContext.Provider value={{ ...colorMode, theme, systemThemeEnabled, setSystemThemeEnabled }}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
         {children}
