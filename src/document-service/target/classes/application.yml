@@ -1,85 +1,36 @@
-# Server configuration
 server:
-  port: 8082
+  port: 8080
   servlet:
-    context-path: /
-  error:
-    include-message: always
-    include-binding-errors: always
+    context-path: /v1
 
-# Spring configuration
 spring:
-  application:
-    name: document-service
-  
-  # Disable default database
-  autoconfigure:
-    exclude: org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
-  
-  # File upload limits
   servlet:
     multipart:
       max-file-size: 100MB
       max-request-size: 100MB
 
-# AWS Configuration
-aws:
-  region: ${AWS_REGION:us-east-1}
-  s3:
-    bucket: ${S3_BUCKET_NAME:lexygraphai-documents}
-  dynamodb:
-    endpoint: ${DYNAMODB_ENDPOINT:http://localstack:4566}
-    document-table: ${DOCUMENT_TABLE:lexygraphai-documents}
-    chunk-table: ${CHUNK_TABLE:lexygraphai-document-chunks}
-    collection-table: ${COLLECTION_TABLE:lexygraphai-collections}
-    procedure-table: ${PROCEDURE_TABLE:lexygraphai-procedures}
-    workflow-table: ${WORKFLOW_TABLE:lexygraphai-workflows}
+# Production environment configuration
+RAW_BUCKET: arn:aws:s3:::valis-documents-raw
+DOCUMENTS_TABLE: valis-documents
+COLLECTIONS_TABLE: valis-document-collections
+DOC_PROCESSING_TABLE: valis-document-processing
+OCR_QUEUE: arn:aws:sqs:eu-central-1:078652648484:valis-documents-ocr-queue
+TEXT_PROCESSING_QUEUE: arn:aws:sqs:eu-central-1:078652648484:valis-documents-text-processing-queue
+SUMMARIZER_QUEUE: arn:aws:sqs:eu-central-1:078652648484:valis-documents-summarizer-queue
+PARSER_QUEUE: arn:aws:sqs:eu-central-1:078652648484:valis-documents-parser-queue
 
-# Document service specific configuration
-document:
-  storage:
-    type: s3
-  processing:
-    chunk-size: 2000
-    chunk-overlap: 200
-    auto-summarize: true
-
-# Security configuration
-security:
+# Auth configuration for Supabase
+auth:
   jwt:
-    secret: ${JWT_SECRET:lexygraphai-document-service-jwt-secret-key-for-signing-tokens}
-    expiration: 86400000  # 24 hours in milliseconds
+    issuer: https://sjfdkgzmjaasjtavuhfu.supabase.co
+    jwk-set-uri: https://sjfdkgzmjaasjtavuhfu.supabase.co/auth/v1/jwks
 
-# Integration with other services
-service:
-  text-processing:
-    url: ${TEXT_PROCESSING_SERVICE_URL:http://text-processing-service:8083/api/v1}
-  workflow:
-    url: ${WORKFLOW_SERVICE_URL:http://workflow-service:8084/api/v1}
-
-# Actuator configuration
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info,metrics,prometheus
-  endpoint:
-    health:
-      show-details: always
-
-# OpenAPI documentation
-springdoc:
-  api-docs:
-    path: /api-docs
-  swagger-ui:
-    path: /swagger-ui.html
-    operations-sorter: method
-  packages-to-scan: com.lexygraphai.document.controller
+# AWS configuration
+aws:
+  region: eu-central-1
 
 # Logging configuration
 logging:
   level:
-    root: INFO
-    com.lexygraphai: DEBUG
-    com.amazonaws: WARN
-    software.amazon.awssdk: WARN
+    com.docprocessing: INFO
+    org.springframework: WARN

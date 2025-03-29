@@ -1,8 +1,6 @@
 package com.docprocessing.document.controller;
 
 import com.docprocessing.document.model.Collection;
-import com.docprocessing.document.model.DocumentMetadata;
-import com.docprocessing.document.model.Pagination;
 import com.docprocessing.document.security.UserPrincipal;
 import com.docprocessing.document.service.CollectionService;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +10,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -88,7 +85,7 @@ public class CollectionController {
             @PathVariable UUID collectionId,
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "limit", defaultValue = "20") int limit,
-            @RequestParam(value = "sort", defaultValue = "created_at") String sort,
+            @RequestParam(value = "sort", defaultValue = "createdAt") String sort,
             @RequestParam(value = "direction", defaultValue = "desc") String direction,
             @AuthenticationPrincipal UserPrincipal userPrincipal) {
             
@@ -100,16 +97,5 @@ public class CollectionController {
             "documents", result.getDocuments(),
             "pagination", result.getPagination()
         ));
-    }
-    
-    @GetMapping("/{collectionId}/thumbnail")
-    public ResponseEntity<?> getCollectionThumbnail(
-            @PathVariable UUID collectionId,
-            @AuthenticationPrincipal UserPrincipal userPrincipal) {
-            
-        String userId = userPrincipal.getId();
-        var thumbnailUrl = collectionService.getCollectionThumbnail(userId, collectionId);
-        
-        return ResponseEntity.ok(thumbnailUrl);
     }
 }

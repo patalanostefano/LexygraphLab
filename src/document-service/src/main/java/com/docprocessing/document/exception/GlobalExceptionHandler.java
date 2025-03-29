@@ -1,59 +1,35 @@
 package com.docprocessing.document.exception;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-
-import java.util.HashMap;
-import java.util.Map;
+import org.springframework.web.context.request.WebRequest;
 
 @ControllerAdvice
-@Slf4j
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(DocumentNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleDocumentNotFoundException(DocumentNotFoundException ex) {
-        log.error("Document not found", ex);
+    public ResponseEntity<ApiError> handleDocumentNotFoundException(
+            DocumentNotFoundException ex, WebRequest request) {
         
-        Map<String, Object> response = new HashMap<>();
-        response.put("code", "DOCUMENT_NOT_FOUND");
-        response.put("message", ex.getMessage());
-        
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        ApiError error = new ApiError("DOCUMENT_NOT_FOUND", ex.getMessage());
+        return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
     
-    @ExceptionHandler(CollectionNotFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleCollectionNotFoundException(CollectionNotFoundException ex) {
-        log.error("Collection not found", ex);
+    @ExceptionHandler(UnauthorizedAccessException.class)
+    public ResponseEntity<ApiError> handleUnauthorizedAccessException(
+            UnauthorizedAccessException ex, WebRequest request) {
         
-        Map<String, Object> response = new HashMap<>();
-        response.put("code", "COLLECTION_NOT_FOUND");
-        response.put("message", ex.getMessage());
-        
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-    }
-    
-    @ExceptionHandler(NotAuthorizedException.class)
-    public ResponseEntity<Map<String, Object>> handleNotAuthorizedException(NotAuthorizedException ex) {
-        log.error("Not authorized", ex);
-        
-        Map<String, Object> response = new HashMap<>();
-        response.put("code", "NOT_AUTHORIZED");
-        response.put("message", ex.getMessage());
-        
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+        ApiError error = new ApiError("UNAUTHORIZED_ACCESS", ex.getMessage());
+        return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
     }
     
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleGenericException(Exception ex) {
-        log.error("Unexpected error", ex);
+    public ResponseEntity<ApiError> handleGlobalException(
+            Exception ex, WebRequest request) {
         
-        Map<String, Object> response = new HashMap<>();
-        response.put("code", "INTERNAL_SERVER_ERROR");
-        response.put("message", "An unexpected error occurred");
-        
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        ApiError error = new ApiError("INTERNAL_SERVER_ERROR", "An unexpected error occurred");
+        return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 }

@@ -1,0 +1,4 @@
+com/docprocessing/document/security/JwtAuthConverter.class
+com/docprocessing/document/model/Position.class
+com/docprocessing/document/model/DocumentMetadata.class
+com/docprocessing/document/model/ExtractedTextResponse.class

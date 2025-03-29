@@ -1,7 +1,7 @@
 package com.docprocessing.document.controller;
 
-import com.docprocessing.document.model.DocumentSubmissionResponse;
 import com.docprocessing.document.model.Document;
+import com.docprocessing.document.model.DocumentSubmissionResponse;
 import com.docprocessing.document.model.ProcessingStatusResponse;
 import com.docprocessing.document.security.UserPrincipal;
 import com.docprocessing.document.service.DocumentService;
@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import java.util.Map;
 import java.util.UUID;
 
 @RestController
@@ -36,7 +37,6 @@ public class DocumentController {
             @RequestParam(value = "language", defaultValue = "en") String language,
             @AuthenticationPrincipal UserPrincipal userPrincipal) {
             
-        // Use the ID from the authenticated user
         String userId = userPrincipal.getId();
         
         DocumentSubmissionResponse response = documentService.submitDocument(
@@ -60,13 +60,16 @@ public class DocumentController {
     public ResponseEntity<?> listDocuments(
             @RequestParam(value = "page", defaultValue = "1") int page,
             @RequestParam(value = "limit", defaultValue = "20") int limit,
-            @RequestParam(value = "sort", defaultValue = "uploadedAt") String sort,
+            @RequestParam(value = "sort", defaultValue = "createdAt") String sort,
             @RequestParam(value = "direction", defaultValue = "desc") String direction,
             @AuthenticationPrincipal UserPrincipal userPrincipal) {
             
         String userId = userPrincipal.getId();
         var result = documentService.findByUserId(userId, page, limit, sort, direction);
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(Map.of(
+            "documents", result.getDocuments(),
+            "pagination", result.getPagination()
+        ));
     }
     
     @GetMapping("/{documentId}/status")
