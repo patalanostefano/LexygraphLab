@@ -18,7 +18,7 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import HelpIcon from '@mui/icons-material/Help';
 import { useNavigate } from 'react-router-dom';
 import { ThemeContext } from '../../../../../LexygraphLab-fedf0d2dd232066d92eb7a8e8a9d4787cfd35c36/LexygraphLab-fedf0d2dd232066d92eb7a8e8a9d4787cfd35c36/frontend/src/context/ThemeContext';
-import { useAuth } from '../../../../../LexygraphLab-fedf0d2dd232066d92eb7a8e8a9d4787cfd35c36/LexygraphLab-fedf0d2dd232066d92eb7a8e8a9d4787cfd35c36/frontend/src/context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 
 // Logo VALIS esattamente come nell'immagine con effetti hover animati
 const ValisLogo = ({ theme }) => (
