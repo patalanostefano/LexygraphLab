@@ -1,67 +1,86 @@
-// src/context/AuthContext.js - versione semplificata
-import React, { createContext, useState, useEffect, useContext } from 'react';
+// src/context/AuthContext.js
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../config/supabaseClient';
 
-// Crea il context con valori di default
-export const AuthContext = createContext({
-  session: null,
-  user: null,
-  loading: true,
-  isAuthenticated: false,
-  signOut: () => {}
-});
+const AuthContext = createContext();
 
-// Hook personalizzato per utilizzare il context
-export const useAuth = () => useContext(AuthContext);
-
-// Provider per l'autenticazione
-export const AuthProvider = ({ children }) => {
-  // Stati per gestire l'autenticazione
-  const [session, setSession] = useState(null);
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [session, setSession] = useState(null);
 
   useEffect(() => {
-    // Funzione per recuperare la sessione
+    // Get session on load
     const getSession = async () => {
-      try {
-        const { data, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error('Errore durante il recupero della sessione:', error);
-        } else if (data && data.session) {
-          setSession(data.session);
-        }
-        
-        setLoading(false);
-      } catch (error) {
-        console.error('Errore:', error);
-        setLoading(false);
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        console.error('Error getting session:', error);
       }
+      
+      setSession(session);
+      setUser(session?.user ?? null);
+      setLoading(false);
     };
     
     getSession();
-    
-    // Listener per i cambiamenti di autenticazione
-    const { data } = supabase.auth.onAuthStateChange((event, session) => {
-      setSession(session);
-      setLoading(false);
-    });
-    
-    return () => {
-      if (data && data.subscription) {
-        data.subscription.unsubscribe();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        setLoading(false);
       }
+    );
+
+    return () => {
+      subscription.unsubscribe();
     };
   }, []);
-  
-  // Valori da fornire al context
+
   const value = {
+    user,
     session,
-    user: session?.user || null,
     loading,
-    isAuthenticated: !!session,
-    signOut: () => supabase.auth.signOut()
+    signIn: async (options) => {
+      if (options.provider) {
+        // Social login with correct redirect URL
+        return await supabase.auth.signInWithOAuth({
+          provider: options.provider,
+          options: {
+            redirectTo: window.location.origin + '/auth/callback',
+          }
+        });
+      } else {
+        // Email password login
+        return await supabase.auth.signInWithPassword({
+          email: options.email,
+          password: options.password
+        });
+      }
+    },
+    signOut: () => supabase.auth.signOut(),
+    getToken: async () => {
+      const { data, error } = await supabase.auth.getSession();
+      if (error) {
+        throw error;
+      }
+      return data.session?.access_token;
+    }
   };
-  
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
 };
