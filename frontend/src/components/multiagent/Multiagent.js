@@ -128,7 +128,6 @@ import {
 // Importa il servizio DocumentService
 import DocumentService from '../../../../../../valis/src/services/DocumentService';
 
-    alignItems: 'center', 
 import { ThemeContext } from '../../../../../../valis/src/context/ThemeContext';
 
 // Definisci il DocumentDrawer usando styled
