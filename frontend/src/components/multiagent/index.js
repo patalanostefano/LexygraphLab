@@ -1,5 +1,5 @@
 // Esporta il componente principale Multiagent come default
-import Multiagent from './Multiagent';
+import Multiagent from '../../../../../../LexygraphLab-fedf0d2dd232066d92eb7a8e8a9d4787cfd35c36/LexygraphLab-fedf0d2dd232066d92eb7a8e8a9d4787cfd35c36/frontend/src/components/multiagent/Multiagent';
 export default Multiagent;
 
 // Esporta altri componenti per un utilizzo più flessibile se necessario
