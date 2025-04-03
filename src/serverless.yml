@@ -14,6 +14,8 @@ provider:
     OCR_QUEUE: ${self:custom.environment.OCR_QUEUE}
     TEXT_PROCESSING_QUEUE: ${self:custom.environment.TEXT_PROCESSING_QUEUE}
     SUMMARIZER_QUEUE: ${self:custom.environment.SUMMARIZER_QUEUE}
+    AUTH_JWT_ISSUER: ${self:custom.environment.AUTH_JWT_ISSUER}
+    AUTH_JWT_JWK_SET_URI: ${self:custom.environment.AUTH_JWT_JWK_SET_URI}
 
   ecr:
     images:
@@ -29,8 +31,50 @@ provider:
       summarizer:
         path: ./summarizer-service
         platform: linux/amd64
+      document-service:
+        path: ./document-service
+        platform: linux/amd64
 
 functions:
+  # Document Service API Gateway Handler - Single function for all document & collection endpoints
+  documentApi:
+    image:
+      name: document-service
+    memorySize: 1024
+    timeout: 30
+    events:
+      # Handle documents endpoints
+      - http:
+          path: /documents
+          method: ANY
+          cors: true
+      - http:
+          path: /documents/{proxy+}
+          method: ANY
+          cors: true
+      # Handle collections endpoints
+      - http:
+          path: /collections
+          method: ANY
+          cors: true
+      - http:
+          path: /collections/{proxy+}
+          method: ANY
+          cors: true
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      RAW_BUCKET: ${self:custom.environment.RAW_BUCKET}
+      DOCUMENTS_TABLE: ${self:custom.environment.DOCUMENTS_TABLE}
+      COLLECTIONS_TABLE: ${self:custom.environment.COLLECTIONS_TABLE}
+      DOC_PROCESSING_TABLE: ${self:custom.environment.DOC_PROCESSING_TABLE}
+      PARSER_QUEUE: ${self:custom.environment.PARSER_QUEUE}
+      OCR_QUEUE: ${self:custom.environment.OCR_QUEUE}
+      TEXT_PROCESSING_QUEUE: ${self:custom.environment.TEXT_PROCESSING_QUEUE}
+      SUMMARIZER_QUEUE: ${self:custom.environment.SUMMARIZER_QUEUE}
+      AUTH_JWT_ISSUER: ${self:custom.environment.AUTH_JWT_ISSUER}
+      AUTH_JWT_JWK_SET_URI: ${self:custom.environment.AUTH_JWT_JWK_SET_URI}
+
+  # Processing Pipeline Functions
   documentParser:
     image:
       name: document-parser
@@ -44,6 +88,11 @@ functions:
           batchSize: 1
     environment:
       POWERTOOLS_SERVICE_NAME: document-parser
+      RAW_BUCKET: ${self:custom.environment.RAW_BUCKET}
+      DOCUMENTS_TABLE: ${self:custom.environment.DOCUMENTS_TABLE}
+      DOC_PROCESSING_TABLE: ${self:custom.environment.DOC_PROCESSING_TABLE}
+      TEXT_PROCESSING_QUEUE: ${self:custom.environment.TEXT_PROCESSING_QUEUE}
+      OCR_QUEUE: ${self:custom.environment.OCR_QUEUE}
 
   ocrProcessor:
     image:
@@ -51,13 +100,17 @@ functions:
       command:
         - "app.lambda_handler"
     memorySize: 2048
-    timeout: 300
+    timeout: 120
     events:
       - sqs:
           arn: ${self:custom.environment.OCR_QUEUE}
           batchSize: 1
     environment:
       POWERTOOLS_SERVICE_NAME: ocr-service
+      RAW_BUCKET: ${self:custom.environment.RAW_BUCKET}
+      DOCUMENTS_TABLE: ${self:custom.environment.DOCUMENTS_TABLE}
+      DOC_PROCESSING_TABLE: ${self:custom.environment.DOC_PROCESSING_TABLE}
+      TEXT_PROCESSING_QUEUE: ${self:custom.environment.TEXT_PROCESSING_QUEUE}
 
   textProcessor:
     image:
@@ -65,13 +118,18 @@ functions:
       command:
         - "app.lambda_handler"
     memorySize: 1536
-    timeout: 180
+    timeout: 120
     events:
       - sqs:
           arn: ${self:custom.environment.TEXT_PROCESSING_QUEUE}
           batchSize: 1
     environment:
       POWERTOOLS_SERVICE_NAME: text-processing
+      RAW_BUCKET: ${self:custom.environment.RAW_BUCKET}
+      DOCUMENTS_TABLE: ${self:custom.environment.DOCUMENTS_TABLE}
+      DOC_PROCESSING_TABLE: ${self:custom.environment.DOC_PROCESSING_TABLE}
+      COLLECTIONS_TABLE: ${self:custom.environment.COLLECTIONS_TABLE}
+      SUMMARIZER_QUEUE: ${self:custom.environment.SUMMARIZER_QUEUE}
 
   summarizer:
     image:
@@ -79,16 +137,27 @@ functions:
       command:
         - "app.lambda_handler"
     memorySize: 2048
-    timeout: 300
+    timeout: 120  # Change from 300 to 120 seconds to match SQS visibility timeout
     events:
       - sqs:
           arn: ${self:custom.environment.SUMMARIZER_QUEUE}
           batchSize: 1
     environment:
       POWERTOOLS_SERVICE_NAME: summarizer
-
+      DOCUMENTS_TABLE: ${self:custom.environment.DOCUMENTS_TABLE}
+      DOC_PROCESSING_TABLE: ${self:custom.environment.DOC_PROCESSING_TABLE}
+      COLLECTIONS_TABLE: ${self:custom.environment.COLLECTIONS_TABLE}
+    
 custom:
   environment: ${file(env.${opt:stage, 'prod'}.yml)}
 
-
-
+# Output the API Gateway URL for reference
+outputs:
+  ApiGatewayUrl:
+    Description: "URL of the Valis Document Processing API"
+    Value: 
+      Fn::Join:
+        - ""
+        - - "https://"
+          - Ref: ApiGatewayRestApi
+          - ".execute-api.${self:provider.region}.amazonaws.com/${self:provider.stage}"

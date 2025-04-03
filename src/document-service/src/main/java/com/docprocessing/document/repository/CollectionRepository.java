@@ -1,189 +1,58 @@
 package com.docprocessing.document.repository;
 
-import software.amazon.awssdk.enhanced.dynamodb.Key;
-import software.amazon.awssdk.enhanced.dynamodb.DynamoDbIndex;
-import software.amazon.awssdk.enhanced.dynamodb.model.Page;
-import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
-import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
 import com.docprocessing.document.model.Collection;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedClient;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbTable;
+import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.TableSchema;
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecondaryPartitionKey;
-import software.amazon.awssdk.core.pagination.sync.SdkIterable;
+import software.amazon.awssdk.enhanced.dynamodb.model.QueryConditional;
+import software.amazon.awssdk.enhanced.dynamodb.model.QueryEnhancedRequest;
 
-import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Repository
+@RequiredArgsConstructor
 public class CollectionRepository {
 
-    @Value("${COLLECTIONS_TABLE}")
+    private final DynamoDbEnhancedClient dynamoDbEnhancedClient;
+    
+    @Value("${aws.dynamodb.collections-table}")
     private String tableName;
     
-    private final DynamoDbEnhancedClient dynamoDbClient;
-    
-    public CollectionRepository(DynamoDbEnhancedClient dynamoDbClient) {
-        this.dynamoDbClient = dynamoDbClient;
+    private DynamoDbTable<Collection> getTable() {
+        return dynamoDbEnhancedClient.table(tableName, TableSchema.fromBean(Collection.class));
     }
     
-    public void save(Collection collection) {
-        DynamoDbTable<CollectionItem> table = getTable();
-        
-        // Convert to DynamoDB item
-        CollectionItem item = mapToItem(collection);
-        table.putItem(item);
-    }
-    
-    public Optional<Collection> findById(UUID collectionId) {
-        DynamoDbTable<CollectionItem> table = getTable();
-        
-        Key key = Key.builder()
-                .partitionValue(collectionId.toString())
-                .build();
-                
-        CollectionItem item = table.getItem(key);
-        
-        if (item == null) {
-            return Optional.empty();
-        }
-        
-        return Optional.of(mapFromItem(item));
-    }
-    
-    public List<Collection> findByOwnerId(String ownerId, int page, int limit) {
-        DynamoDbTable<CollectionItem> table = getTable();
-        
-        // Create index
-        DynamoDbIndex<CollectionItem> ownerIdIndex = table.index("OwnerIdIndex");
-        
-        // Query parameters
-        QueryEnhancedRequest request = QueryEnhancedRequest.builder()
-                .queryConditional(QueryConditional.keyEqualTo(Key.builder()
-                        .partitionValue(ownerId)
-                        .build()))
-                .limit(limit)
-                .build();
-        
-        // Calculate offset
-        int offset = (page - 1) * limit;
-        
-        // Execute query
-        SdkIterable<Page<CollectionItem>> pages = ownerIdIndex.query(request);
-        
-        // Process results
-        List<Collection> results = new ArrayList<>();
-        int currentOffset = 0;
-        
-        for (Page<CollectionItem> p : pages) {
-            for (CollectionItem item : p.items()) {
-                if (currentOffset >= offset && results.size() < limit) {
-                    results.add(mapFromItem(item));
-                }
-                currentOffset++;
-                
-                if (results.size() >= limit) {
-                    break;
-                }
-            }
-            
-            if (results.size() >= limit) {
-                break;
-            }
-        }
-        
-        return results;
-    }
-    
-    public int countByOwnerId(String ownerId) {
-        // In a real implementation, you would use a query with count
-        // For simplicity, we're returning a mock count
-        return 5;
-    }
-    
-    public void delete(UUID collectionId) {
-        DynamoDbTable<CollectionItem> table = getTable();
-        
-        Key key = Key.builder()
-                .partitionValue(collectionId.toString())
-                .build();
-                
-        table.deleteItem(key);
-    }
-    
-    private DynamoDbTable<CollectionItem> getTable() {
-        return dynamoDbClient.table(tableName, TableSchema.fromBean(CollectionItem.class));
-    }
-    
-    private CollectionItem mapToItem(Collection collection) {
-        CollectionItem item = new CollectionItem();
-        item.setId(collection.getId().toString());
-        item.setName(collection.getName());
-        item.setDescription(collection.getDescription());
-        item.setOwnerId(collection.getOwnerId());
-        item.setDocumentCount(collection.getDocumentCount());
-        item.setCreatedAt(collection.getCreatedAt().toString());
-        item.setUpdatedAt(collection.getUpdatedAt().toString());
-        item.setThumbnailUrl(collection.getThumbnailUrl());
-        
-        return item;
-    }
-    
-    private Collection mapFromItem(CollectionItem item) {
-        Collection collection = new Collection();
-        collection.setId(UUID.fromString(item.getId()));
-        collection.setName(item.getName());
-        collection.setDescription(item.getDescription());
-        collection.setOwnerId(item.getOwnerId());
-        collection.setDocumentCount(item.getDocumentCount());
-        // Parse dates from strings
-        collection.setCreatedAt(LocalDateTime.parse(item.getCreatedAt()));
-        collection.setUpdatedAt(LocalDateTime.parse(item.getUpdatedAt()));
-        collection.setThumbnailUrl(item.getThumbnailUrl());
-        
+    public Collection save(Collection collection) {
+        getTable().putItem(collection);
         return collection;
     }
     
-    // DynamoDB item class
-    @DynamoDbBean
-    public static class CollectionItem {
-        private String id;
-        private String name;
-        private String description;
-        private String ownerId;
-        private Integer documentCount;
-        private String createdAt;
-        private String updatedAt;
-        private String thumbnailUrl;
-        
-        @DynamoDbPartitionKey
-        public String getId() { return id; }
-        public void setId(String id) { this.id = id; }
-        
-        public String getName() { return name; }
-        public void setName(String name) { this.name = name; }
-        
-        public String getDescription() { return description; }
-        public void setDescription(String description) { this.description = description; }
-        
-        @DynamoDbSecondaryPartitionKey(indexNames = "OwnerIdIndex")
-        public String getOwnerId() { return ownerId; }
-        public void setOwnerId(String ownerId) { this.ownerId = ownerId; }
-        
-        public Integer getDocumentCount() { return documentCount; }
-        public void setDocumentCount(Integer documentCount) { this.documentCount = documentCount; }
-        
-        public String getCreatedAt() { return createdAt; }
-        public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
-        
-        public String getUpdatedAt() { return updatedAt; }
-        public void setUpdatedAt(String updatedAt) { this.updatedAt = updatedAt; }
-        
-        public String getThumbnailUrl() { return thumbnailUrl; }
-        public void setThumbnailUrl(String thumbnailUrl) { this.thumbnailUrl = thumbnailUrl; }
+    public Optional<Collection> findById(String id) {
+        return Optional.ofNullable(getTable().getItem(Key.builder().partitionValue(id).build()));
     }
+    
+    public void delete(Collection collection) {
+        getTable().deleteItem(collection);
+    }
+    
+    public List<Collection> findByUserId(String userId) {
+        QueryEnhancedRequest request = QueryEnhancedRequest.builder()
+                .queryConditional(QueryConditional.keyEqualTo(Key.builder().partitionValue(userId).build()))
+                .limit(100) // Limiting to 100 items for lambda efficiency
+                .build();
+        
+        List<Collection> result = new ArrayList<>();
+        getTable().index("UserIdIndex").query(request).forEach(page -> 
+            page.items().forEach(result::add)
+        );
+        
+        return result;
+    }
+    
 }

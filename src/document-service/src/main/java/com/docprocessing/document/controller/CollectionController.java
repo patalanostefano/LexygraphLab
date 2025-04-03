@@ -1,101 +1,103 @@
 package com.docprocessing.document.controller;
 
-import com.docprocessing.document.model.Collection;
-import com.docprocessing.document.security.UserPrincipal;
+import com.docprocessing.document.dto.CollectionDto.*;
 import com.docprocessing.document.service.CollectionService;
+import com.docprocessing.document.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
-import java.util.Map;
-import java.util.UUID;
+import javax.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("/collections")
 @RequiredArgsConstructor
+@Slf4j
 public class CollectionController {
 
     private final CollectionService collectionService;
+    private final JwtUtil jwtUtil;
     
     @GetMapping
-    public ResponseEntity<?> listCollections(
-            @RequestParam(value = "page", defaultValue = "1") int page,
-            @RequestParam(value = "limit", defaultValue = "20") int limit,
-            @AuthenticationPrincipal UserPrincipal userPrincipal) {
-            
-        String userId = userPrincipal.getId();
-        var result = collectionService.listCollections(userId, page, limit);
+    public ResponseEntity<CollectionListResponse> listCollections(HttpServletRequest request) {
+        String userId = extractUserId(request);
+        log.info("Listing collections for user {}", userId);
         
-        return ResponseEntity.ok(Map.of(
-            "collections", result.getDocuments(),
-            "pagination", result.getPagination()
-        ));
+        CollectionListResponse response = collectionService.getUserCollections(userId);
+        return ResponseEntity.ok(response);
     }
     
     @PostMapping
-    public ResponseEntity<Collection> createCollection(
-            @Valid @RequestBody Collection collection,
-            @AuthenticationPrincipal UserPrincipal userPrincipal) {
-            
-        String userId = userPrincipal.getId();
-        Collection created = collectionService.createCollection(userId, collection);
+    public ResponseEntity<CollectionResponse> createCollection(
+            HttpServletRequest request,
+            @RequestBody CollectionRequest collectionRequest) {
         
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        String userId = extractUserId(request);
+        log.info("Creating collection for user {}: {}", userId, collectionRequest.getName());
+        
+        CollectionResponse collection = collectionService.createCollection(userId, collectionRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(collection);
     }
     
     @GetMapping("/{collectionId}")
-    public ResponseEntity<Collection> getCollection(
-            @PathVariable UUID collectionId,
-            @AuthenticationPrincipal UserPrincipal userPrincipal) {
-            
-        String userId = userPrincipal.getId();
-        Collection collection = collectionService.getCollection(userId, collectionId);
+    public ResponseEntity<CollectionResponse> getCollection(
+            HttpServletRequest request,
+            @PathVariable String collectionId) {
         
+        String userId = extractUserId(request);
+        log.info("Getting collection {} for user {}", collectionId, userId);
+        
+        CollectionResponse collection = collectionService.getCollection(userId, collectionId);
         return ResponseEntity.ok(collection);
     }
     
     @PutMapping("/{collectionId}")
-    public ResponseEntity<Collection> updateCollection(
-            @PathVariable UUID collectionId,
-            @Valid @RequestBody Collection collection,
-            @AuthenticationPrincipal UserPrincipal userPrincipal) {
-            
-        String userId = userPrincipal.getId();
-        Collection updated = collectionService.updateCollection(userId, collectionId, collection);
+    public ResponseEntity<CollectionResponse> updateCollection(
+            HttpServletRequest request,
+            @PathVariable String collectionId,
+            @RequestBody CollectionUpdateRequest collectionRequest) {
         
-        return ResponseEntity.ok(updated);
+        String userId = extractUserId(request);
+        log.info("Updating collection {} for user {}", collectionId, userId);
+        
+        CollectionResponse collection = collectionService.updateCollection(userId, collectionId, collectionRequest);
+        return ResponseEntity.ok(collection);
     }
     
     @DeleteMapping("/{collectionId}")
-    public ResponseEntity<?> deleteCollection(
-            @PathVariable UUID collectionId,
-            @AuthenticationPrincipal UserPrincipal userPrincipal) {
-            
-        String userId = userPrincipal.getId();
-        collectionService.deleteCollection(userId, collectionId);
+    public ResponseEntity<Void> deleteCollection(
+            HttpServletRequest request,
+            @PathVariable String collectionId) {
         
+        String userId = extractUserId(request);
+        log.info("Deleting collection {} for user {}", collectionId, userId);
+        
+        collectionService.deleteCollection(userId, collectionId);
         return ResponseEntity.noContent().build();
     }
     
     @GetMapping("/{collectionId}/documents")
-    public ResponseEntity<?> listCollectionDocuments(
-            @PathVariable UUID collectionId,
-            @RequestParam(value = "page", defaultValue = "1") int page,
-            @RequestParam(value = "limit", defaultValue = "20") int limit,
-            @RequestParam(value = "sort", defaultValue = "createdAt") String sort,
-            @RequestParam(value = "direction", defaultValue = "desc") String direction,
-            @AuthenticationPrincipal UserPrincipal userPrincipal) {
-            
-        String userId = userPrincipal.getId();
-        var result = collectionService.listCollectionDocuments(
-            userId, collectionId, page, limit, sort, direction);
+    public ResponseEntity<CollectionDocumentsResponse> listCollectionDocuments(
+            HttpServletRequest request,
+            @PathVariable String collectionId) {
         
-        return ResponseEntity.ok(Map.of(
-            "documents", result.getDocuments(),
-            "pagination", result.getPagination()
-        ));
+        String userId = extractUserId(request);
+        log.info("Listing documents for collection {} for user {}", collectionId, userId);
+        
+        CollectionDocumentsResponse response = collectionService.getCollectionDocuments(userId, collectionId);
+        return ResponseEntity.ok(response);
+    }
+    
+    private String extractUserId(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        String userId = jwtUtil.extractUserIdFromToken(authHeader);
+        
+        if (userId == null) {
+            throw new RuntimeException("User ID could not be extracted from token");
+        }
+        
+        return userId;
     }
 }
