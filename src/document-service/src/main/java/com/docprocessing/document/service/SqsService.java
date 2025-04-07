@@ -1,5 +1,7 @@
-package com.docprocessing.document.service;
 
+package com.docprocessing.document.service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +18,7 @@ import java.util.UUID;
 @RequiredArgsConstructor
 @Slf4j
 public class SqsService {
-
+    private static final Logger log = LoggerFactory.getLogger(SqsService.class);
     private final SqsClient sqsClient;
     private final ObjectMapper objectMapper;
     

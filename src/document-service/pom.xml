@@ -20,6 +20,7 @@
     <properties>
         <java.version>11</java.version>
         <aws.sdk.version>2.20.43</aws.sdk.version>
+        <lombok.version>1.18.22</lombok.version>
     </properties>
     
     <dependencies>
@@ -57,7 +58,14 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <optional>true</optional>
+            <version>${lombok.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        
+        <!-- SLF4J for logging -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
         </dependency>
         
         <!-- JWT Parser -->

@@ -42,9 +42,71 @@ public class Collection {
         return createdAt;
     }
     
-    // Factory method to create a new collection
+    // Manual builder implementation since Lombok isn't working properly
+    public static CollectionBuilder manualBuilder() {
+        return new CollectionBuilder();
+    }
+    
+    public static class CollectionBuilder {
+        private String id;
+        private String userId;
+        private String name;
+        private String description;
+        private Integer documentCount;
+        private Instant createdAt;
+        private Instant updatedAt;
+        
+        public CollectionBuilder id(String id) {
+            this.id = id;
+            return this;
+        }
+        
+        public CollectionBuilder userId(String userId) {
+            this.userId = userId;
+            return this;
+        }
+        
+        public CollectionBuilder name(String name) {
+            this.name = name;
+            return this;
+        }
+        
+        public CollectionBuilder description(String description) {
+            this.description = description;
+            return this;
+        }
+        
+        public CollectionBuilder documentCount(Integer documentCount) {
+            this.documentCount = documentCount;
+            return this;
+        }
+        
+        public CollectionBuilder createdAt(Instant createdAt) {
+            this.createdAt = createdAt;
+            return this;
+        }
+        
+        public CollectionBuilder updatedAt(Instant updatedAt) {
+            this.updatedAt = updatedAt;
+            return this;
+        }
+        
+        public Collection build() {
+            Collection collection = new Collection();
+            collection.setId(id);
+            collection.setUserId(userId);
+            collection.setName(name);
+            collection.setDescription(description);
+            collection.setDocumentCount(documentCount);
+            collection.setCreatedAt(createdAt);
+            collection.setUpdatedAt(updatedAt);
+            return collection;
+        }
+    }
+    
+    // Factory method to create a new collection - modified to use manualBuilder
     public static Collection createNew(String userId, String name, String description) {
-        return Collection.builder()
+        return Collection.manualBuilder()
                 .id(UUID.randomUUID().toString())
                 .userId(userId)
                 .name(name)

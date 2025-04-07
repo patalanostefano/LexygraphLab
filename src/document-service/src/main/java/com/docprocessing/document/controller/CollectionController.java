@@ -1,3 +1,5 @@
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 package com.docprocessing.document.controller;
 
 import com.docprocessing.document.dto.CollectionDto.*;
@@ -16,7 +18,7 @@ import javax.servlet.http.HttpServletRequest;
 @RequiredArgsConstructor
 @Slf4j
 public class CollectionController {
-
+    private static final Logger log = LoggerFactory.getLogger(CollectionController.class);
     private final CollectionService collectionService;
     private final JwtUtil jwtUtil;
     

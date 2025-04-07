@@ -1,5 +1,7 @@
-package com.docprocessing.document.controller;
 
+package com.docprocessing.document.controller;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.docprocessing.document.dto.DocumentDto.*;
 import com.docprocessing.document.service.DocumentService;
 import com.docprocessing.document.util.JwtUtil;
@@ -19,7 +21,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class DocumentController {
-
+    private static final Logger log = LoggerFactory.getLogger(DocumentController.class);
     private final DocumentService documentService;
     private final JwtUtil jwtUtil;
     

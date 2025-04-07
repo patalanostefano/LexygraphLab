@@ -1,5 +1,7 @@
-package com.docprocessing.document.util;
 
+package com.docprocessing.document.util;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -13,7 +15,7 @@ import java.util.Base64;
 @Component
 @Slf4j
 public class JwtUtil {
-    
+    private static final Logger log = LoggerFactory.getLogger(JwtUtil.class);    
     // This simplified version just extracts the user ID from JWT
     public String extractUserIdFromToken(String authHeader) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {

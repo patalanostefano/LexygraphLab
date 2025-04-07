@@ -1,5 +1,6 @@
 package com.docprocessing.document.service;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.docprocessing.document.dto.CollectionDto.*;
 import com.docprocessing.document.dto.DocumentDto.DocumentMetadataResponse;
 import com.docprocessing.document.exception.CollectionNotFoundException;

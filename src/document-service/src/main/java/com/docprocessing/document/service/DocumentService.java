@@ -1,5 +1,6 @@
 package com.docprocessing.document.service;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.docprocessing.document.dto.DocumentDto.*;
 import com.docprocessing.document.exception.DocumentNotFoundException;
 import com.docprocessing.document.model.Document;
@@ -22,7 +23,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @Slf4j
 public class DocumentService {
-
+    private static final Logger log = LoggerFactory.getLogger(DocumentService.class);
     private final DocumentRepository documentRepository;
     private final S3Service s3Service;
     private final SqsService sqsService;
