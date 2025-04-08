@@ -321,4 +321,3 @@ function Sidebar({ open, onClose, activeSection = 'dashboard', onSectionChange }
 export default Sidebar;
 
 
-TOPO merda
