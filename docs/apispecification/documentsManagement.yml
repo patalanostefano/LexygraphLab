@@ -89,8 +89,6 @@ paths:
                     type: string
                     format: date-time
 
-  
-
   /collections:
     get:
       summary: List all collections for the authenticated user
@@ -514,6 +512,118 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SummaryResponse'
+
+  /documents/{documentId}/generate-summary:
+    post:
+      summary: Generate or refresh a document summary on-demand
+      operationId: generateDocumentSummary
+      tags:
+        - documents
+        - extraction
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                maxLength:
+                  type: integer
+                  description: Maximum length of summary in characters
+                  default: 500
+                forceRegenerate:
+                  type: boolean
+                  description: Force regeneration even if summary exists
+                  default: false
+      responses:
+        '200':
+          description: Generated summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SummaryResponse'
+        '202':
+          description: Summary generation accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  documentId:
+                    type: string
+                    format: uuid
+                  status:
+                    type: string
+                    enum: [ACCEPTED]
+                  statusCheckUrl:
+                    type: string
+                    format: uri
+
+  /documents/{documentId}/extract-entities:
+    post:
+      summary: Extract entities from document on-demand
+      operationId: extractDocumentEntities
+      tags:
+        - documents
+        - extraction
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: documentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                forceRegenerate:
+                  type: boolean
+                  description: Force regeneration even if entities exist
+                  default: false
+                entityTypes:
+                  type: array
+                  items:
+                    type: string
+                    enum: [PERSON, ORGANIZATION, LOCATION, DATE, PRODUCT, EVENT]
+                  description: Specific entity types to extract (all if omitted)
+      responses:
+        '200':
+          description: Extracted entities
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EntitiesResponse'
+        '202':
+          description: Entity extraction accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  documentId:
+                    type: string
+                    format: uuid
+                  status:
+                    type: string
+                    enum: [ACCEPTED]
+                  statusCheckUrl:
+                    type: string
+                    format: uri
 
   /documents/{documentId}/entities:
     get:

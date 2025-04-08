@@ -1,27 +1,23 @@
 // valis/src/pages/Dashboard.js
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { 
   Box, 
   Typography, 
   Button,
-  Grid,
   useMediaQuery,
   alpha,
   IconButton,
   Tooltip,
   Container,
-  Paper,
   Fade,
-  Grow
+  styled
 } from '@mui/material';
-import { styled, useTheme } from '@mui/material/styles';
+import { useTheme } from '@mui/material/styles';
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
-import HubIcon from '@mui/icons-material/Hub';
-import SearchIcon from '@mui/icons-material/Search';
 import HelpIcon from '@mui/icons-material/Help';
 import { useNavigate } from 'react-router-dom';
-import { ThemeContext } from '../context/ThemeContext';
+import { ThemeContext } from '../../../../../LexygraphLab-fedf0d2dd232066d92eb7a8e8a9d4787cfd35c36/LexygraphLab-fedf0d2dd232066d92eb7a8e8a9d4787cfd35c36/frontend/src/context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 
 // Logo VALIS esattamente come nell'immagine con effetti hover animati
@@ -104,8 +100,8 @@ const ValisLogo = ({ theme }) => (
 
 // Header Action Button - Dimensione aumentata
 const HeaderActionButton = styled(IconButton)(({ theme }) => ({
-  width: 46, // Aumentato da 40
-  height: 46, // Aumentato da 40
+  width: 46, 
+  height: 46, 
   backgroundColor: theme.palette.mode === 'dark' ? alpha('#1C1C3C', 0.6) : alpha('#FFFFFF', 0.8),
   backdropFilter: 'blur(8px)',
   border: `1px solid ${theme.palette.mode === 'dark' ? alpha('#FFFFFF', 0.1) : alpha('#7C4DFF', 0.1)}`,
@@ -125,7 +121,7 @@ const HeaderActionButton = styled(IconButton)(({ theme }) => ({
       : '0 3px 8px rgba(124, 77, 255, 0.08), 0 0 0 1px rgba(124, 77, 255, 0.05)',
   },
   '& .MuiSvgIcon-root': {
-    fontSize: 22, // Aumentato da 20
+    fontSize: 22,
     color: theme.palette.mode === 'dark' ? theme.palette.primary.light : theme.palette.primary.main,
     transition: 'transform 0.2s ease',
   },
@@ -177,246 +173,326 @@ const TypingEffect = ({ messages, typingSpeed = 40, deleteSpeed = 20, delayAfter
   return <span>{displayText}</span>;
 };
 
-// Feature Card - Advanced 3D Design
-const FeatureCard = styled(Paper)(({ theme, bgColor, focusColor }) => ({
-  height: '100%',
-  width: '100%',
-  maxWidth: 380,
-  minHeight: 480,
-  padding: 0,
+// Componente pulsante futuristico con bordi luminosi - versione aggiornata
+const FuturisticButton = styled(Button)(({ theme }) => ({
+  position: 'relative',
+  padding: '16px 48px', // Dimensioni aumentate ma non come prima
+  fontSize: '1.4rem',
+  fontWeight: 700,
+  letterSpacing: '0.8px',
+  textTransform: 'none',
+  color: theme.palette.mode === 'dark' ? '#FFFFFF' : '#7C4DFF', // Colore testo luminoso per contrasto
+  background: theme.palette.mode === 'dark' ? alpha('#1C1C3C', 0.7) : alpha('#FFFFFF', 0.9), // Sfondo trasparente
+  border: 'none',
+  borderRadius: '18px',
   overflow: 'hidden',
-  borderRadius: 20,
-  backgroundColor: theme.palette.mode === 'dark' ? alpha('#1C1C3C', 0.8) : alpha('#FFFFFF', 0.95),
-  position: 'relative',
-  boxShadow: theme.palette.mode === 'dark' 
-    ? '0 20px 40px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(154, 124, 255, 0.1)' 
-    : '0 20px 40px rgba(124, 77, 255, 0.15), 0 0 0 1px rgba(124, 77, 255, 0.1)',
-  transform: 'perspective(1000px) rotateX(0deg) rotateY(0deg)',
-  transition: 'all 0.5s cubic-bezier(0.17, 0.67, 0.83, 0.67)',
-  transformStyle: 'preserve-3d',
-  willChange: 'transform, box-shadow',
+  minWidth: '220px', // Leggermente più grande
+  minHeight: '64px', // Leggermente più grande
+  transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+  
+  // Effetto bordo luminoso
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    inset: 0,
+    borderRadius: '18px',
+    padding: '2px', // Larghezza del bordo
+    background: 'linear-gradient(45deg, #7C4DFF, #956AFF, #B79CFF, #956AFF, #7C4DFF)',
+    backgroundSize: '300% 300%',
+    animation: 'borderAnimation 8s linear infinite',
+    WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
+    WebkitMaskComposite: 'xor',
+    maskComposite: 'exclude',
+    opacity: 0.6, // Opacità ridotta di default
+    transition: 'all 0.4s ease',
+  },
+  
+  // Sfondo trasparente
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    inset: '3px', // Distanza dal bordo
+    borderRadius: '16px',
+    zIndex: -1,
+    transition: 'all 0.4s ease',
+  },
+  
+  // Effetto hover - solo il bordo si illumina
   '&:hover': {
-    transform: 'perspective(1000px) rotateX(2deg) translateY(-10px)',
+    transform: 'translateY(-3px)',
     boxShadow: theme.palette.mode === 'dark' 
-      ? `0 30px 60px rgba(0, 0, 0, 0.4), 0 0 30px ${alpha(focusColor || theme.palette.primary.main, 0.4)}` 
-      : `0 30px 60px rgba(124, 77, 255, 0.2), 0 0 30px ${alpha(focusColor || theme.palette.primary.main, 0.3)}`,
+      ? '0 10px 25px -5px rgba(124, 77, 255, 0.4)' 
+      : '0 10px 25px -5px rgba(124, 77, 255, 0.25)',
+    
+    '& .button-glow': {
+      opacity: 0.9,
+      transform: 'scale(1.2)',
+    },
+    
+    '& .button-scanner': {
+      opacity: 0.8,
+      transform: 'translateX(120%)',
+    },
+    
+    '&::before': {
+      opacity: 1, // Il bordo diventa più luminoso
+      boxShadow: '0 0 15px rgba(124, 77, 255, 0.5)', // Glow attorno al bordo
+      animation: 'borderAnimation 3s linear infinite', // Animazione più veloce
+    },
   },
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: '100%',
-    background: theme.palette.mode === 'dark' 
-      ? `linear-gradient(135deg, ${alpha(bgColor || '#7C4DFF', 0.3)} 0%, transparent 100%)` 
-      : `linear-gradient(135deg, ${alpha(bgColor || '#7C4DFF', 0.2)} 0%, transparent 100%)`,
-    zIndex: 0,
+  
+  // Effetto click
+  '&:active': {
+    transform: 'translateY(-1px) scale(0.98)',
+    '& .button-glow': {
+      opacity: 1,
+      transform: 'scale(0.9)',
+    },
+  },
+  
+  // Animazione del bordo
+  '@keyframes borderAnimation': {
+    '0%': { backgroundPosition: '0% 50%' },
+    '50%': { backgroundPosition: '100% 50%' },
+    '100%': { backgroundPosition: '0% 50%' },
   },
 }));
 
-// Card Content Wrapper
-const CardContent = styled(Box)(({ theme }) => ({
-  height: '100%',
+// Componente per il pulsante Inizia con effetti avanzati
+const DynamicStartButton = ({ onClick, isTransitioning }) => {
+  const theme = useTheme();
+  const [animation, setAnimation] = useState(false);
+  const buttonRef = useRef(null);
+  
+  // Triggerare animazione al caricamento del componente
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setAnimation(true);
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, []);
+  
+  // Gestisce l'effetto di pulse quando il pulsante appare
+  useEffect(() => {
+    if (animation && buttonRef.current) {
+      buttonRef.current.animate([
+        { transform: 'scale(0.9)', opacity: 0.7 },
+        { transform: 'scale(1.05)', opacity: 1 },
+        { transform: 'scale(1)', opacity: 1 }
+      ], {
+        duration: 800,
+        easing: 'cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+        fill: 'forwards'
+      });
+    }
+  }, [animation]);
+  
+  // Effetto click con ripple
+  const handleClick = (e) => {
+    // Crea l'effetto di ripple
+    const button = e.currentTarget;
+    const circle = document.createElement('span');
+    const diameter = Math.max(button.clientWidth, button.clientHeight);
+    const radius = diameter / 2;
+    
+    const rect = button.getBoundingClientRect();
+    const x = e.clientX - rect.left - radius;
+    const y = e.clientY - rect.top - radius;
+    
+    circle.style.width = circle.style.height = `${diameter}px`;
+    circle.style.left = `${x}px`;
+    circle.style.top = `${y}px`;
+    circle.style.position = 'absolute';
+    circle.style.borderRadius = '50%';
+    circle.style.backgroundColor = 'rgba(255, 255, 255, 0.4)';
+    circle.style.transform = 'scale(0)';
+    circle.style.animation = 'ripple 0.6s linear';
+    circle.style.pointerEvents = 'none';
+    
+    button.appendChild(circle);
+    
+    // Transizione animata prima di navigare
+    if (onClick) onClick(e);
+  };
+  
+  return (
+    <Box sx={{ 
+      position: 'relative',
+      // Se in transizione, animazione di uscita
+      ...(isTransitioning && {
+        animation: 'buttonExit 0.6s forwards cubic-bezier(0.65, 0, 0.35, 1)',
+        '@keyframes buttonExit': {
+          '0%': { 
+            transform: 'scale(1) translateY(0)', 
+            opacity: 1 
+          },
+          '60%': { 
+            transform: 'scale(1.1) translateY(-10px)', 
+            opacity: 0.7
+          },
+          '100%': { 
+            transform: 'scale(0.9) translateY(-20px)', 
+            opacity: 0 
+          },
+        }
+      })
+    }}>
+      {/* Effetto glow sottostante */}
+      <Box
+        className="button-glow"
+        sx={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          width: '180px',
+          height: '180px',
+          transform: 'translate(-50%, -50%) scale(0.9)',
+          borderRadius: '50%',
+          background: theme.palette.mode === 'dark'
+            ? 'radial-gradient(circle, rgba(124, 77, 255, 0.15) 0%, rgba(0, 0, 0, 0) 70%)'
+            : 'radial-gradient(circle, rgba(124, 77, 255, 0.1) 0%, rgba(255, 255, 255, 0) 70%)',
+          opacity: 0.5,
+          transition: 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+          filter: 'blur(8px)',
+          zIndex: 0,
+        }}
+      />
+      
+      <FuturisticButton
+        ref={buttonRef}
+        onClick={handleClick}
+        disableRipple
+      >
+        {/* Effetto scanner che attraversa il pulsante */}
+        <Box
+          className="button-scanner"
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: '-50%',
+            width: '30%',
+            height: '100%',
+            background: 'linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0) 100%)',
+            transform: 'translateX(-100%)',
+            opacity: 0.5,
+            transition: 'transform 0.8s ease, opacity 0.3s ease',
+            zIndex: 3,
+            pointerEvents: 'none',
+          }}
+        />
+        
+        {/* Testo con effetto luminoso */}
+        <Typography 
+          sx={{ 
+            position: 'relative',
+            zIndex: 2,
+            fontWeight: 700,
+            textShadow: theme.palette.mode === 'dark' 
+              ? '0 0 10px rgba(124, 77, 255, 0.6)' 
+              : 'none',
+            fontFamily: '"Inter", system-ui, sans-serif',
+          }}
+        >
+          Inizia
+        </Typography>
+        
+        {/* Particelle ambientali */}
+        {animation && [...Array(6)].map((_, i) => (
+          <Box
+            key={i}
+            sx={{
+              position: 'absolute',
+              width: `${Math.random() * 3 + 1}px`,
+              height: `${Math.random() * 3 + 1}px`,
+              backgroundColor: theme.palette.mode === 'dark' 
+                ? 'rgba(255, 255, 255, 0.6)' 
+                : 'rgba(124, 77, 255, 0.6)',
+              borderRadius: '50%',
+              top: `${Math.random() * 100}%`,
+              left: `${Math.random() * 100}%`,
+              filter: 'blur(1px)',
+              opacity: Math.random() * 0.5 + 0.3,
+              animation: `float${i} ${Math.random() * 3 + 2}s infinite ease-in-out`,
+              zIndex: 1,
+              '@keyframes float0': {
+                '0%, 100%': { transform: 'translate(0, 0)' },
+                '50%': { transform: 'translate(5px, -5px)' },
+              },
+              '@keyframes float1': {
+                '0%, 100%': { transform: 'translate(0, 0)' },
+                '50%': { transform: 'translate(-7px, -3px)' },
+              },
+              '@keyframes float2': {
+                '0%, 100%': { transform: 'translate(0, 0)' },
+                '50%': { transform: 'translate(5px, 5px)' },
+              },
+              '@keyframes float3': {
+                '0%, 100%': { transform: 'translate(0, 0)' },
+                '50%': { transform: 'translate(-5px, 5px)' },
+              },
+              '@keyframes float4': {
+                '0%, 100%': { transform: 'translate(0, 0)' },
+                '50%': { transform: 'translate(8px, -2px)' },
+              },
+              '@keyframes float5': {
+                '0%, 100%': { transform: 'translate(0, 0)' },
+                '50%': { transform: 'translate(-6px, -2px)' },
+              },
+            }}
+          />
+        ))}
+        
+        {/* Stilizzazione keyframes per l'effetto ripple */}
+        <Box sx={{
+          '@keyframes ripple': {
+            to: {
+              opacity: 0,
+              transform: 'scale(3)',
+            },
+          },
+        }} />
+      </FuturisticButton>
+    </Box>
+  );
+};
+
+// Componente per l'effetto di transizione pagina
+const PageTransition = styled(Box)(({ theme, active }) => ({
+  position: 'fixed',
+  top: 0,
+  left: 0,
   width: '100%',
-  position: 'relative',
-  zIndex: 2,
-  display: 'flex',
-  flexDirection: 'column',
-  padding: theme.spacing(4),
+  height: '100%',
+  pointerEvents: active ? 'all' : 'none',
+  zIndex: 9999,
+  opacity: active ? 1 : 0,
+  transition: 'opacity 0.3s ease',
 }));
 
-// Card Icon Wrapper
-const CardIconWrapper = styled(Box)(({ theme, color }) => ({
-  width: 70,
-  height: 70,
-  borderRadius: '50%',
-  backgroundColor: alpha(color || theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.2 : 0.1),
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  marginBottom: theme.spacing(2),
-  position: 'relative',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: -5,
-    left: -5,
-    right: -5,
-    bottom: -5,
-    border: `2px solid ${alpha(color || theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.3 : 0.2)}`,
-    borderRadius: '50%',
-    opacity: 0.7,
-  },
-  '& svg': {
-    fontSize: 32,
-    color: color || theme.palette.primary.main,
-    filter: `drop-shadow(0 4px 6px ${alpha(color || theme.palette.primary.main, 0.4)})`,
-  }
-}));
-
-// Card Background Decoration
-const CardDecoration = styled(Box)(({ theme, color }) => ({
+// Effetto circolare che si espande
+const CircleExpand = styled(Box)(({ theme, active, originX, originY }) => ({
   position: 'absolute',
-  right: -80,
-  bottom: -80,
-  width: 300,
-  height: 300,
+  top: originY || '50%',
+  left: originX || '50%',
+  width: active ? '300vw' : '0',
+  height: active ? '300vh' : '0',
   borderRadius: '50%',
-  background: `radial-gradient(circle, ${alpha(color || theme.palette.primary.main, 0.15)} 0%, transparent 70%)`,
-  zIndex: 0,
+  background: 'linear-gradient(135deg, #7C4DFF, #956AFF)',
+  transform: 'translate(-50%, -50%)',
+  transition: active 
+    ? 'all 1.5s cubic-bezier(0.19, 1, 0.22, 1)' 
+    : 'all 0.6s cubic-bezier(0.55, 0.085, 0.68, 0.53)',
+  boxShadow: active 
+    ? '0 0 100px 50px rgba(124, 77, 255, 0.3)' 
+    : 'none',
 }));
-
-// Card Shiny Element
-const CardShine = styled(Box)(({ theme, color }) => ({
-  position: 'absolute',
-  top: 20,
-  right: 20,
-  width: 20,
-  height: 20,
-  borderRadius: '50%',
-  background: `radial-gradient(circle, ${color || theme.palette.primary.main} 0%, transparent 70%)`,
-  opacity: 0.6,
-  filter: `blur(5px)`,
-  zIndex: 1,
-}));
-
-// LexyAgent Card Component
-const LexyAgentCard = ({ theme, onNavigate }) => {
-  return (
-    <FeatureCard bgColor="#7C4DFF" focusColor="#7C4DFF">
-      <CardDecoration color="#7C4DFF" />
-      <CardShine color="#7C4DFF" />
-      <CardContent>
-        <CardIconWrapper color="#7C4DFF">
-          <HubIcon />
-        </CardIconWrapper>
-        <Typography 
-          variant="h3" 
-          component="h2" 
-          sx={{ 
-            fontWeight: 700,
-            marginBottom: 2,
-            background: 'linear-gradient(135deg, #9A7CFF 0%, #7356E5 100%)',
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            color: 'transparent',
-            textShadow: theme.palette.mode === 'dark' ? '0 2px 10px rgba(154, 124, 255, 0.4)' : 'none'
-          }}
-        >
-          LexyAgent
-        </Typography>
-        <Typography 
-          variant="h6" 
-          sx={{ 
-            fontWeight: 500,
-            marginBottom: 1,
-            color: theme.palette.mode === 'dark' ? alpha(theme.palette.primary.light, 0.9) : theme.palette.primary.dark
-          }}
-        >
-          Sistema Multiagente Legale
-        </Typography>
-        <Typography 
-          variant="body1" 
-          sx={{ 
-            mb: 4,
-            color: theme.palette.text.secondary,
-            lineHeight: 1.6
-          }}
-        >
-          Analizza documenti legali complessi con un sistema avanzato di assistenti AI specializzati nella giurisprudenza italiana ed europea.
-        </Typography>
-        <Box sx={{ flexGrow: 1 }} />
-        <Button 
-          variant="contained"
-          size="large"
-          onClick={onNavigate}
-          sx={{ 
-            py: 1.5,
-            background: 'linear-gradient(90deg, #9A7CFF 0%, #7356E5 100%)',
-            boxShadow: '0 8px 16px rgba(124, 77, 255, 0.25)',
-            '&:hover': {
-              boxShadow: '0 12px 20px rgba(124, 77, 255, 0.35)',
-            }
-          }}
-        >
-          Accedi a LexyAgent
-        </Button>
-      </CardContent>
-    </FeatureCard>
-  );
-};
-
-// ALI Card Component
-const ALICard = ({ theme, onNavigate }) => {
-  return (
-    <FeatureCard bgColor="#00BFA5" focusColor="#00BFA5">
-      <CardDecoration color="#00BFA5" />
-      <CardShine color="#00BFA5" />
-      <CardContent>
-        <CardIconWrapper color="#00BFA5">
-          <SearchIcon />
-        </CardIconWrapper>
-        <Typography 
-          variant="h3" 
-          component="h2" 
-          sx={{ 
-            fontWeight: 700,
-            marginBottom: 2,
-            background: 'linear-gradient(135deg, #5EFFEE 0%, #00BFA5 100%)',
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            color: 'transparent',
-            textShadow: theme.palette.mode === 'dark' ? '0 2px 10px rgba(0, 191, 165, 0.4)' : 'none'
-          }}
-        >
-          ALI
-        </Typography>
-        <Typography 
-          variant="h6" 
-          sx={{ 
-            fontWeight: 500,
-            marginBottom: 1,
-            color: theme.palette.mode === 'dark' ? alpha(theme.palette.secondary.light, 0.9) : theme.palette.secondary.dark
-          }}
-        >
-          Assistente Legale Intelligente
-        </Typography>
-        <Typography 
-          variant="body1" 
-          sx={{ 
-            mb: 4,
-            color: theme.palette.text.secondary,
-            lineHeight: 1.6
-          }}
-        >
-          Ricerca avanzata su database giuridici, identificazione di precedenti e generazione di riassunti caso-specifici per la tua attività legale.
-        </Typography>
-        <Box sx={{ flexGrow: 1 }} />
-        <Button 
-          variant="contained"
-          size="large"
-          onClick={onNavigate}
-          sx={{ 
-            py: 1.5,
-            background: 'linear-gradient(90deg, #03DAC5 0%, #00BFA5 100%)',
-            color: '#000000',
-            boxShadow: '0 8px 16px rgba(0, 191, 165, 0.25)',
-            '&:hover': {
-              boxShadow: '0 12px 20px rgba(0, 191, 165, 0.35)',
-            }
-          }}
-        >
-          Accedi ad ALI
-        </Button>
-      </CardContent>
-    </FeatureCard>
-  );
-};
 
 function Dashboard() {
   const navigate = useNavigate();
   const { theme } = useContext(ThemeContext);
+  const [transitioning, setTransitioning] = useState(false);
+  const [transitionOrigin, setTransitionOrigin] = useState({ x: '50%', y: '50%' });
   
   // Usa valori di default sicuri nel caso in cui auth non sia ancora disponibile
   const auth = useAuth() || { user: null, signOut: () => {} };
@@ -428,21 +504,12 @@ function Dashboard() {
   // Funzione per gestire il logout con Supabase
   const handleLogout = async () => {
     try {
-      // Usa il metodo legacy per retrocompatibilità
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('testUser');
-      }
-      
-      // Usa il nuovo metodo Supabase
-      if (signOut) {
-        await signOut();
-      }
-      
-      // Fallback se tutto fallisce
-      navigate('/login');
+      // Use the signOut method from useAuth
+      await signOut();
+      // Navigate is handled automatically by our auth state change listener
     } catch (error) {
       console.error('Errore durante il logout:', error);
-      // Fallback di sicurezza
+      // Fallback for errors
       navigate('/login');
     }
   };
@@ -450,7 +517,10 @@ function Dashboard() {
   // Get greeting based on time of day
   const getTimeBasedGreeting = () => {
     const hour = new Date().getHours();
-    if (hour >= 5 && hour < 12) return "Buongiorno";
+    // Aggiunti i nuovi saluti personalizzati
+    if (hour >= 0 && hour < 5) return "Ciao, nottambulo";
+    if (hour >= 5 && hour < 7) return "Ciao, mattiniero";
+    if (hour >= 7 && hour < 12) return "Buongiorno";
     if (hour >= 12 && hour < 18) return "Buon pomeriggio";
     return "Buonasera";
   };
@@ -463,13 +533,23 @@ function Dashboard() {
     "Potenzia la tua pratica legale con VALIS"
   ];
 
-  // Handler for navigation
-  const handleNavigateToMultiagent = () => {
-    navigate('/multiagente');
-  };
-
-  const handleNavigateToAli = () => {
-    navigate('/ali');
+  // Handler for navigation to multiagent con transizione
+  const handleNavigateToMultiagent = (e) => {
+    // Imposta il punto di origine della transizione in base alla posizione del click
+    if (e && e.clientX && e.clientY) {
+      setTransitionOrigin({ 
+        x: `${e.clientX}px`, 
+        y: `${e.clientY}px` 
+      });
+    }
+    
+    // Attiva la transizione
+    setTransitioning(true);
+    
+    // Esegui la navigazione dopo la transizione
+    setTimeout(() => {
+      navigate('/multiagente');
+    }, 800); // Tempo leggermente inferiore all'animazione per una transizione fluida
   };
 
   const handleNavigateToProfile = () => {
@@ -484,7 +564,8 @@ function Dashboard() {
     <Box sx={{ 
       display: 'flex', 
       flexDirection: 'column',
-      minHeight: '100vh', 
+      height: '100vh', // Layout fisso con altezza fissa
+      overflow: 'hidden', // Impedisce lo scrolling per mantenere layout fisso
       background: theme.palette.mode === 'dark' 
         ? `radial-gradient(circle at 0% 20%, ${alpha('#2D2B55', 0.7)} 0%, transparent 30%),
            radial-gradient(circle at 100% 80%, ${alpha('#28284D', 0.7)} 0%, transparent 30%),
@@ -496,7 +577,16 @@ function Dashboard() {
       position: 'relative',
       transition: 'background 0.5s ease-in-out',
     }}>
-      {/* Background particle pattern */}
+      {/* Componente di transizione pagina */}
+      <PageTransition active={transitioning}>
+        <CircleExpand 
+          active={transitioning} 
+          originX={transitionOrigin.x} 
+          originY={transitionOrigin.y} 
+        />
+      </PageTransition>
+      
+      {/* Background particle pattern con effetto parallax */}
       <Box sx={{ 
         position: 'absolute', 
         top: 0, 
@@ -508,7 +598,52 @@ function Dashboard() {
         opacity: 0.4, 
         backgroundImage: theme.palette.mode === 'dark' 
           ? 'url("data:image/svg+xml,%3Csvg width=\'20\' height=\'20\' viewBox=\'0 0 20 20\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%239C92AC\' fill-opacity=\'0.03\' fill-rule=\'evenodd\'%3E%3Ccircle cx=\'3\' cy=\'3\' r=\'3\'/%3E%3Ccircle cx=\'13\' cy=\'13\' r=\'3\'/%3E%3C/g%3E%3C/svg%3E")'
-          : 'url("data:image/svg+xml,%3Csvg width=\'20\' height=\'20\' viewBox=\'0 0 20 20\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%23B39DDB\' fill-opacity=\'0.05\' fill-rule=\'evenodd\'%3E%3Ccircle cx=\'3\' cy=\'3\' r=\'3\'/%3E%3Ccircle cx=\'13\' cy=\'13\' r=\'3\'/%3E%3C/g%3E%3C/svg%3E")'
+          : 'url("data:image/svg+xml,%3Csvg width=\'20\' height=\'20\' viewBox=\'0 0 20 20\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%23B39DDB\' fill-opacity=\'0.05\' fill-rule=\'evenodd\'%3E%3Ccircle cx=\'3\' cy=\'3\' r=\'3\'/%3E%3Ccircle cx=\'13\' cy=\'13\' r=\'3\'/%3E%3C/g%3E%3C/svg%3E")',
+        animation: 'backgroundAnimation 120s linear infinite',
+        '@keyframes backgroundAnimation': {
+          '0%': { backgroundPosition: '0% 0%' },
+          '100%': { backgroundPosition: '100% 100%' },
+        },
+        // Animazione di fade out durante la transizione
+        ...(transitioning && {
+          animation: 'fadeBackground 0.8s forwards',
+          '@keyframes fadeBackground': {
+            to: { opacity: 0 }
+          }
+        })
+      }} />
+      
+      {/* Effetto glow animato */}
+      <Box sx={{ 
+        position: 'absolute', 
+        top: '50%', 
+        left: '50%', 
+        width: '80vw', 
+        height: '80vh', 
+        borderRadius: '50%', 
+        transform: 'translate(-50%, -50%)', 
+        background: theme.palette.mode === 'dark' 
+          ? 'radial-gradient(circle, rgba(124, 77, 255, 0.15) 0%, rgba(0, 0, 0, 0) 70%)' 
+          : 'radial-gradient(circle, rgba(124, 77, 255, 0.1) 0%, rgba(255, 255, 255, 0) 70%)',
+        zIndex: 0,
+        animation: 'glow 8s ease-in-out infinite alternate',
+        '@keyframes glow': {
+          '0%': { 
+            opacity: 0.5,
+            transform: 'translate(-50%, -50%) scale(0.9)',
+          },
+          '100%': { 
+            opacity: 0.8,
+            transform: 'translate(-50%, -50%) scale(1.1)',
+          },
+        },
+        // Animazione di fade out durante la transizione
+        ...(transitioning && {
+          animation: 'fadeGlow 0.8s forwards',
+          '@keyframes fadeGlow': {
+            to: { opacity: 0 }
+          }
+        })
       }} />
       
       {/* Header con Logo e Controlli */}
@@ -518,7 +653,17 @@ function Dashboard() {
         justifyContent: 'space-between', 
         alignItems: 'center',
         position: 'relative',
-        zIndex: 10
+        zIndex: 10,
+        // Animazione di fade out durante la transizione
+        ...(transitioning && {
+          animation: 'fadeOut 0.5s forwards',
+          '@keyframes fadeOut': {
+            to: { 
+              opacity: 0,
+              transform: 'translateY(-20px)'
+            }
+          }
+        })
       }}>
         <ValisLogo theme={theme} />
         
@@ -540,14 +685,29 @@ function Dashboard() {
           </Tooltip>
         </Box>
       </Box>
-      
-      {/* Main content */}
+{/* Main content */}
       <Container maxWidth="lg" sx={{ 
         position: 'relative', 
         zIndex: 2, 
         flexGrow: 1,
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        // Animazione durante la transizione
+        ...(transitioning && {
+          animation: 'contentExit 0.8s forwards cubic-bezier(0.19, 1, 0.22, 1)',
+          '@keyframes contentExit': {
+            '0%': { 
+              opacity: 1,
+              transform: 'scale(1)'
+            },
+            '100%': { 
+              opacity: 0,
+              transform: 'scale(0.95)'
+            }
+          }
+        })
       }}>
         <Box component="main" sx={{ 
           flexGrow: 1,
@@ -555,10 +715,10 @@ function Dashboard() {
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
-          py: 4
+          width: '100%'
         }}>
           {/* Welcome message - Enhanced typing effect */}
-          <Fade in={true} timeout={1000}>
+          <Fade in={!transitioning} timeout={1000}>
             <Box sx={{ 
               mb: 8, 
               display: 'flex',
@@ -593,30 +753,18 @@ function Dashboard() {
             </Box>
           </Fade>
 
-          {/* Feature Cards in Hexagonal Layout */}
-          <Box sx={{ 
-            display: 'flex', 
-            justifyContent: 'center',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: { xs: 4, md: 10 },
-            maxWidth: '1200px',
-            position: 'relative'
-          }}>
-            {/* LexyAgent Card */}
-            <Grow in={true} timeout={800} style={{ transformOrigin: '0 0 0' }} {...{ timeout: 1000 }}>
-              <Box>
-                <LexyAgentCard theme={theme} onNavigate={handleNavigateToMultiagent} />
-              </Box>
-            </Grow>
-            
-            {/* ALI Card */}
-            <Grow in={true} timeout={800} style={{ transformOrigin: '0 0 0' }} {...{ timeout: 1300 }}>
-              <Box>
-                <ALICard theme={theme} onNavigate={handleNavigateToAli} />
-              </Box>
-            </Grow>
-          </Box>
+          {/* Pulsante Inizia futuristico */}
+          <Fade in={!transitioning} timeout={1500}>
+            <Box sx={{ 
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              my: 4,
+              position: 'relative'
+            }}>
+              <DynamicStartButton onClick={handleNavigateToMultiagent} isTransitioning={transitioning} />
+            </Box>
+          </Fade>
         </Box>
       </Container>
     </Box>

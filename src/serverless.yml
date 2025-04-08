@@ -14,6 +14,8 @@ provider:
     OCR_QUEUE: ${self:custom.environment.OCR_QUEUE}
     TEXT_PROCESSING_QUEUE: ${self:custom.environment.TEXT_PROCESSING_QUEUE}
     SUMMARIZER_QUEUE: ${self:custom.environment.SUMMARIZER_QUEUE}
+  httpApi:
+    cors: true
 
   ecr:
     images:
@@ -29,8 +31,140 @@ provider:
       summarizer:
         path: ./summarizer-service
         platform: linux/amd64
+      document-service:
+        path: ./document-service
+        platform: linux/amd64
 
 functions:
+  # Document Service API Gateway Handler - Single function for all document & collection endpoints
+  documentApi:
+    image:
+      name: document-service
+    memorySize: 1024
+    timeout: 30
+    events:
+      # Handle documents endpoints
+      - http:
+          path: /documents
+          method: ANY
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
+      - http:
+          path: /documents/{proxy+}
+          method: ANY
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
+      # Handle collections endpoints
+      - http:
+          path: /collections
+          method: ANY
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
+      - http:
+          path: /collections/{proxy+}
+          method: ANY
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      RAW_BUCKET: ${self:custom.environment.RAW_BUCKET}
+      DOCUMENTS_TABLE: ${self:custom.environment.DOCUMENTS_TABLE}
+      COLLECTIONS_TABLE: ${self:custom.environment.COLLECTIONS_TABLE}
+      DOC_PROCESSING_TABLE: ${self:custom.environment.DOC_PROCESSING_TABLE}
+      PARSER_QUEUE: ${self:custom.environment.PARSER_QUEUE}
+      OCR_QUEUE: ${self:custom.environment.OCR_QUEUE}
+      TEXT_PROCESSING_QUEUE: ${self:custom.environment.TEXT_PROCESSING_QUEUE}
+      SUMMARIZER_QUEUE: ${self:custom.environment.SUMMARIZER_QUEUE}
+
+  # Direct access to text processing for entity extraction
+  textProcessingApi:
+    image:
+      name: text-processing
+      command:
+        - "app.lambda_handler"
+    memorySize: 1536
+    timeout: 30
+    events:
+      - http:
+          path: /documents/{documentId}/extract-entities
+          method: post
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
+    environment:
+      POWERTOOLS_SERVICE_NAME: text-processing
+      RAW_BUCKET: ${self:custom.environment.RAW_BUCKET}
+      DOCUMENTS_TABLE: ${self:custom.environment.DOCUMENTS_TABLE}
+      DOC_PROCESSING_TABLE: ${self:custom.environment.DOC_PROCESSING_TABLE}
+      SUMMARIZER_QUEUE: ${self:custom.environment.SUMMARIZER_QUEUE}
+
+  # Direct access to summarizer for on-demand summaries
+  summarizerApi:
+    image:
+      name: summarizer
+      command:
+        - "app.lambda_handler"
+    memorySize: 2048
+    timeout: 30
+    events:
+      - http:
+          path: /documents/{documentId}/generate-summary
+          method: post
+          cors:
+            origin: '*'
+            headers:
+              - Content-Type
+              - X-Amz-Date
+              - Authorization
+              - X-Api-Key
+              - X-Amz-Security-Token
+              - X-Amz-User-Agent
+            allowCredentials: false
+    environment:
+      POWERTOOLS_SERVICE_NAME: summarizer
+      DOCUMENTS_TABLE: ${self:custom.environment.DOCUMENTS_TABLE}
+      DOC_PROCESSING_TABLE: ${self:custom.environment.DOC_PROCESSING_TABLE}
+
+  # Processing Pipeline Functions
   documentParser:
     image:
       name: document-parser
@@ -44,6 +178,11 @@ functions:
           batchSize: 1
     environment:
       POWERTOOLS_SERVICE_NAME: document-parser
+      RAW_BUCKET: ${self:custom.environment.RAW_BUCKET}
+      DOCUMENTS_TABLE: ${self:custom.environment.DOCUMENTS_TABLE}
+      DOC_PROCESSING_TABLE: ${self:custom.environment.DOC_PROCESSING_TABLE}
+      TEXT_PROCESSING_QUEUE: ${self:custom.environment.TEXT_PROCESSING_QUEUE}
+      OCR_QUEUE: ${self:custom.environment.OCR_QUEUE}
 
   ocrProcessor:
     image:
@@ -51,13 +190,17 @@ functions:
       command:
         - "app.lambda_handler"
     memorySize: 2048
-    timeout: 300
+    timeout: 120
     events:
       - sqs:
           arn: ${self:custom.environment.OCR_QUEUE}
           batchSize: 1
     environment:
       POWERTOOLS_SERVICE_NAME: ocr-service
+      RAW_BUCKET: ${self:custom.environment.RAW_BUCKET}
+      DOCUMENTS_TABLE: ${self:custom.environment.DOCUMENTS_TABLE}
+      DOC_PROCESSING_TABLE: ${self:custom.environment.DOC_PROCESSING_TABLE}
+      TEXT_PROCESSING_QUEUE: ${self:custom.environment.TEXT_PROCESSING_QUEUE}
 
   textProcessor:
     image:
@@ -65,13 +208,17 @@ functions:
       command:
         - "app.lambda_handler"
     memorySize: 1536
-    timeout: 180
+    timeout: 120
     events:
       - sqs:
           arn: ${self:custom.environment.TEXT_PROCESSING_QUEUE}
           batchSize: 1
     environment:
       POWERTOOLS_SERVICE_NAME: text-processing
+      RAW_BUCKET: ${self:custom.environment.RAW_BUCKET}
+      DOCUMENTS_TABLE: ${self:custom.environment.DOCUMENTS_TABLE}
+      DOC_PROCESSING_TABLE: ${self:custom.environment.DOC_PROCESSING_TABLE}
+      SUMMARIZER_QUEUE: ${self:custom.environment.SUMMARIZER_QUEUE}
 
   summarizer:
     image:
@@ -79,16 +226,26 @@ functions:
       command:
         - "app.lambda_handler"
     memorySize: 2048
-    timeout: 300
+    timeout: 120
     events:
       - sqs:
           arn: ${self:custom.environment.SUMMARIZER_QUEUE}
           batchSize: 1
     environment:
       POWERTOOLS_SERVICE_NAME: summarizer
-
+      DOCUMENTS_TABLE: ${self:custom.environment.DOCUMENTS_TABLE}
+      DOC_PROCESSING_TABLE: ${self:custom.environment.DOC_PROCESSING_TABLE}
+    
 custom:
   environment: ${file(env.${opt:stage, 'prod'}.yml)}
 
-
-
+# Output the API Gateway URL for reference
+outputs:
+  ApiGatewayUrl:
+    Description: "URL of the Valis Document Processing API"
+    Value: 
+      Fn::Join:
+        - ""
+        - - "https://"
+          - Ref: ApiGatewayRestApi
+          - ".execute-api.${self:provider.region}.amazonaws.com/${self:provider.stage}"

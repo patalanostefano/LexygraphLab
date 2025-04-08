@@ -1,313 +1,281 @@
 package com.docprocessing.document.service;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.docprocessing.document.dto.DocumentDto.*;
 import com.docprocessing.document.exception.DocumentNotFoundException;
-import com.docprocessing.document.exception.UnauthorizedAccessException;
-import com.docprocessing.document.model.*;
+import com.docprocessing.document.model.Document;
 import com.docprocessing.document.repository.DocumentRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.time.LocalDateTime;
-import java.util.*;
+import java.io.IOException;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class DocumentService {
-    
-    @Value("${RAW_BUCKET}")
-    private String rawBucketName;
-    
+    private static final Logger log = LoggerFactory.getLogger(DocumentService.class);
     private final DocumentRepository documentRepository;
-    private final StorageService storageService;
-    private final ProcessingService processingService;
+    private final S3Service s3Service;
+    private final SqsService sqsService;
     
-    public DocumentBatchResponse findByUserId(String userId, int page, int limit, String sort, String direction) {
-        // Get documents for the user with pagination
-        List<DocumentMetadata> documents = documentRepository.findByUserId(userId, page, limit, sort, direction);
-        
-        // Calculate total pages and items
-        int totalItems = documentRepository.countByUserId(userId);
-        int totalPages = (int) Math.ceil((double) totalItems / limit);
-        
-        // Create pagination information
-        Pagination pagination = new Pagination();
-        pagination.setCurrentPage(page);
-        pagination.setTotalPages(totalPages);
-        pagination.setTotalItems(totalItems);
-        pagination.setItemsPerPage(limit);
-        pagination.setHasNextPage(page < totalPages);
-        pagination.setHasPreviousPage(page > 1);
-        
-        // Create response
-        DocumentBatchResponse response = new DocumentBatchResponse();
-        response.setDocuments(documents);
-        response.setPagination(pagination);
-        
-        return response;
-    }
-    
-    public DocumentSubmissionResponse submitDocument(
-            String userId, 
-            MultipartFile file, 
-            String name, 
-            String description, 
-            UUID collectionId, 
-            String processingType,
-            String processingOptions,
-            String priority,
-            String language) {
-            
+    public DocumentSubmissionResponse uploadDocument(String userId, MultipartFile file, 
+                                                  String name, String description, 
+                                                  String collectionId, String processingType) {
         try {
-            // Generate document ID
-            UUID documentId = UUID.randomUUID();
+            // Upload file to S3
+            String s3Key = s3Service.uploadDocument(file, userId);
             
-            // Store the file in S3
-            String s3Key = userId + "/" + documentId.toString();
-            storageService.uploadFile(rawBucketName, s3Key, file);
-            
-            // Use original filename if name is not provided
-            if (name == null || name.isEmpty()) {
-                name = file.getOriginalFilename();
+            // Determine processing type
+            Document.ProcessingType docProcessingType = Document.ProcessingType.TEXT; // Default
+            if (processingType != null) {
+                try {
+                    docProcessingType = Document.ProcessingType.valueOf(processingType);
+                } catch (IllegalArgumentException e) {
+                    log.warn("Invalid processing type: {}, using default", processingType);
+                }
             }
             
-            // Create document metadata
-            DocumentMetadata metadata = new DocumentMetadata();
-            metadata.setId(documentId);
-            metadata.setName(name);
-            metadata.setDescription(description);
-            metadata.setCreatedAt(LocalDateTime.now());
-            metadata.setUpdatedAt(LocalDateTime.now());
-            metadata.setSize(file.getSize());
-            metadata.setMimeType(file.getContentType());
-            metadata.setStatus("SUBMITTED");
-            metadata.setProcessingType(processingType);
-            metadata.setCollectionId(collectionId);
-            metadata.setHasSummary(false);
-            metadata.setHasEntities(false);
-            metadata.setOriginalFilename(file.getOriginalFilename());
-            metadata.setUserId(userId);
-            
-            // Save metadata to database
-            documentRepository.save(metadata);
-            
-            // Submit document for processing
-            processingService.submitDocumentForProcessing(
-                documentId, 
-                s3Key, 
-                userId, 
-                processingType, 
-                processingOptions, 
-                priority, 
-                language
+            // Create document record
+            Document document = Document.createNew(
+                    userId,
+                    name,
+                    description,
+                    file.getOriginalFilename(),
+                    file.getContentType(),
+                    file.getSize(),
+                    s3Key,
+                    docProcessingType,
+                    collectionId
             );
             
-            // Create response
-            DocumentSubmissionResponse response = new DocumentSubmissionResponse();
-            response.setId(documentId);
-            response.setName(name);
-            response.setStatus("SUBMITTED");
-            response.setEstimatedCompletionTime(LocalDateTime.now().plusMinutes(5)); // Estimate
-            response.setStatusCheckUrl("/documents/" + documentId + "/status");
-            response.setCollectionId(collectionId);
+            // Save document
+            Document savedDocument = documentRepository.save(document);
             
-            return response;
+            // Queue document for processing
+            queueDocumentForProcessing(savedDocument);
             
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to submit document for processing: " + e.getMessage(), e);
+            // Create status check URL
+            String statusCheckUrl = ServletUriComponentsBuilder.fromCurrentContextPath()
+                    .path("/documents/{id}/status")
+                    .buildAndExpand(savedDocument.getId())
+                    .toUriString();
+            
+            // Return response
+            return DocumentSubmissionResponse.builder()
+                    .id(savedDocument.getId())
+                    .name(savedDocument.getName())
+                    .status("SUBMITTED")
+                    .estimatedCompletionTime(Instant.now().plus(5, ChronoUnit.MINUTES))
+                    .statusCheckUrl(statusCheckUrl)
+                    .collectionId(savedDocument.getCollectionId())
+                    .build();
+            
+        } catch (IOException e) {
+            log.error("Failed to upload document", e);
+            throw new RuntimeException("Failed to upload document: " + e.getMessage());
         }
     }
     
-    public Document getDocument(String userId, UUID documentId) {
-        DocumentMetadata metadata = documentRepository.findById(documentId)
-            .orElseThrow(() -> new DocumentNotFoundException("Document not found: " + documentId));
+    private void queueDocumentForProcessing(Document document) {
+        Map<String, Object> messageBody = new HashMap<>();
+        messageBody.put("documentId", document.getId());
+        messageBody.put("userId", document.getUserId());
+        messageBody.put("s3Key", document.getS3Key());
+        messageBody.put("mimeType", document.getMimeType());
+        messageBody.put("processingType", document.getProcessingType().name());
+        messageBody.put("timestamp", Instant.now().toString());
         
-        // Security check: Only allow owner to view document
-        if (!userId.equals(metadata.getUserId())) {
-            throw new UnauthorizedAccessException("Not authorized to access this document");
+        // Send to parser queue
+        sqsService.sendToParserQueue(messageBody);
+    }
+    
+    public DocumentMetadataResponse getDocument(String userId, String documentId) {
+        Document document = findDocumentAndVerifyOwnership(documentId, userId);
+        
+        // Generate view URL
+        String viewUrl = document.getS3Key() != null ? 
+                s3Service.generatePresignedUrl(document.getS3Key(), document.getOriginalFilename(), 3600) : null;
+        
+        return buildDocumentResponse(document, viewUrl);
+    }
+    
+    public DocumentMetadataResponse updateDocument(String userId, String documentId, DocumentUpdateRequest request) {
+        Document document = findDocumentAndVerifyOwnership(documentId, userId);
+        
+        // Update fields if provided
+        if (request.getName() != null) {
+            document.setName(request.getName());
         }
         
-        // Convert metadata to full document if needed
-        // For simplicity, we're just returning the metadata as Document
-        Document document = new Document();
-        // Copy all metadata properties to document
-        document.setId(metadata.getId());
-        document.setName(metadata.getName());
-        document.setDescription(metadata.getDescription());
-        document.setCreatedAt(metadata.getCreatedAt());
-        document.setUpdatedAt(metadata.getUpdatedAt());
-        document.setSize(metadata.getSize());
-        document.setMimeType(metadata.getMimeType());
-        document.setStatus(metadata.getStatus());
-        document.setProcessingType(metadata.getProcessingType());
-        document.setCollectionId(metadata.getCollectionId());
-        document.setHasSummary(metadata.getHasSummary());
-        document.setHasEntities(metadata.getHasEntities());
-        document.setPageCount(metadata.getPageCount());
-        document.setThumbnailUrl(metadata.getThumbnailUrl());
-        document.setViewUrl(metadata.getViewUrl());
-        document.setTags(metadata.getTags());
-        document.setOriginalFilename(metadata.getOriginalFilename());
-        document.setUserId(metadata.getUserId());
+        if (request.getDescription() != null) {
+            document.setDescription(request.getDescription());
+        }
         
-        // Add any additional processing details and content if needed
-        if ("COMPLETED".equals(metadata.getStatus())) {
-            // Add processing details and content preview
-            Map<String, Object> processingDetails = new HashMap<>();
-            processingDetails.put("contentType", "TEXT");
-            processingDetails.put("language", "en");
-            processingDetails.put("confidence", 0.95);
-            document.setProcessingDetails(processingDetails);
-            
-            Map<String, String> content = new HashMap<>();
-            content.put("preview", "Document content preview...");
-            content.put("summaryPreview", "Document summary preview...");
-            content.put("downloadUrl", "/documents/" + documentId + "/download-url");
-            document.setContent(content);
+        if (request.getCollectionId() != null) {
+            document.setCollectionId(request.getCollectionId());
+        }
+        
+        if (request.getTags() != null) {
+            document.setTags(request.getTags());
+        }
+        
+        document.setUpdatedAt(Instant.now());
+        
+        // Save updated document
+        Document updatedDocument = documentRepository.save(document);
+        
+        // Generate view URL
+        String viewUrl = updatedDocument.getS3Key() != null ? 
+                s3Service.generatePresignedUrl(updatedDocument.getS3Key(), updatedDocument.getOriginalFilename(), 3600) : null;
+        
+        return buildDocumentResponse(updatedDocument, viewUrl);
+    }
+    
+    public void deleteDocument(String userId, String documentId) {
+        Document document = findDocumentAndVerifyOwnership(documentId, userId);
+        
+        // Delete the document from S3
+        if (document.getS3Key() != null) {
+            s3Service.deleteDocument(document.getS3Key());
+        }
+        
+        // Delete the document from the database
+        documentRepository.delete(document);
+    }
+    
+    public List<DocumentMetadataResponse> getUserDocuments(String userId) {
+        List<Document> documents = documentRepository.findByUserId(userId);
+        
+        return documents.stream()
+                .map(document -> {
+                    String viewUrl = document.getS3Key() != null ? 
+                            s3Service.generatePresignedUrl(document.getS3Key(), document.getOriginalFilename(), 3600) : null;
+                    
+                    return buildDocumentResponse(document, viewUrl);
+                })
+                .collect(Collectors.toList());
+    }
+    
+    public List<DocumentMetadataResponse> getDocumentsByCollection(String userId, String collectionId) {
+        List<Document> documents = documentRepository.findByCollectionId(collectionId);
+        
+        // Filter documents that belong to the user
+        return documents.stream()
+                .filter(document -> document.getUserId().equals(userId))
+                .map(document -> {
+                    String viewUrl = document.getS3Key() != null ? 
+                            s3Service.generatePresignedUrl(document.getS3Key(), document.getOriginalFilename(), 3600) : null;
+                    
+                    return buildDocumentResponse(document, viewUrl);
+                })
+                .collect(Collectors.toList());
+    }
+    
+    public ProcessingStatusResponse getDocumentStatus(String userId, String documentId) {
+        Document document = findDocumentAndVerifyOwnership(documentId, userId);
+        
+        // Build basic status response from document
+        return ProcessingStatusResponse.builder()
+                .documentId(documentId)
+                .status(document.getStatus().name())
+                .currentStep("Processing document")
+                .progress(calculateProgress(document.getStatus()))
+                .estimatedCompletionTime(Instant.now().plus(5, ChronoUnit.MINUTES))
+                .build();
+    }
+    
+    public DocumentUrlResponse getDocumentViewUrl(String userId, String documentId, Integer expiresIn) {
+        Document document = findDocumentAndVerifyOwnership(documentId, userId);
+        
+        if (document.getS3Key() == null) {
+            throw new DocumentNotFoundException("Document content not found");
+        }
+        
+        long expiration = expiresIn != null ? expiresIn : 3600;
+        String url = s3Service.generatePresignedUrl(
+                document.getS3Key(),
+                document.getOriginalFilename(),
+                expiration);
+        
+        return DocumentUrlResponse.builder()
+                .url(url)
+                .expiresAt(Instant.now().plus(expiration, ChronoUnit.SECONDS))
+                .build();
+    }
+    
+    public DocumentUrlResponse getDocumentDownloadUrl(String userId, String documentId, Integer expiresIn) {
+        Document document = findDocumentAndVerifyOwnership(documentId, userId);
+        
+        if (document.getS3Key() == null) {
+            throw new DocumentNotFoundException("Document content not found");
+        }
+        
+        long expiration = expiresIn != null ? expiresIn : 3600;
+        String url = s3Service.generateDownloadUrl(
+                document.getS3Key(),
+                document.getOriginalFilename(),
+                expiration);
+        
+        return DocumentUrlResponse.builder()
+                .url(url)
+                .filename(document.getOriginalFilename())
+                .expiresAt(Instant.now().plus(expiration, ChronoUnit.SECONDS))
+                .build();
+    }
+    
+    private Document findDocumentAndVerifyOwnership(String documentId, String userId) {
+        Document document = documentRepository.findById(documentId)
+                .orElseThrow(() -> new DocumentNotFoundException("Document not found with ID: " + documentId));
+        
+        if (!document.getUserId().equals(userId)) {
+            throw new DocumentNotFoundException("Document not found with ID: " + documentId);
         }
         
         return document;
     }
     
-    public Document updateDocument(String userId, UUID documentId, Document documentUpdate) {
-        // Find existing document
-        DocumentMetadata existing = documentRepository.findById(documentId)
-            .orElseThrow(() -> new DocumentNotFoundException("Document not found: " + documentId));
-        
-        // Security check: Only allow owner to update document
-        if (!userId.equals(existing.getUserId())) {
-            throw new UnauthorizedAccessException("Not authorized to update this document");
-        }
-        
-        // Update fields
-        if (documentUpdate.getName() != null) {
-            existing.setName(documentUpdate.getName());
-        }
-        if (documentUpdate.getDescription() != null) {
-            existing.setDescription(documentUpdate.getDescription());
-        }
-        if (documentUpdate.getTags() != null) {
-            existing.setTags(documentUpdate.getTags());
-        }
-        if (documentUpdate.getCollectionId() != null) {
-            existing.setCollectionId(documentUpdate.getCollectionId());
-        }
-        
-        existing.setUpdatedAt(LocalDateTime.now());
-        
-        // Save updates
-        documentRepository.save(existing);
-        
-        // Return updated document
-        return getDocument(userId, documentId);
+    private DocumentMetadataResponse buildDocumentResponse(Document document, String viewUrl) {
+        return DocumentMetadataResponse.builder()
+                .id(document.getId())
+                .name(document.getName())
+                .description(document.getDescription())
+                .createdAt(document.getCreatedAt())
+                .updatedAt(document.getUpdatedAt())
+                .size(document.getSize())
+                .mimeType(document.getMimeType())
+                .status(document.getStatus().name())
+                .processingType(document.getProcessingType().name())
+                .collectionId(document.getCollectionId())
+                .hasSummary(document.getHasSummary())
+                .hasEntities(document.getHasEntities())
+                .pageCount(document.getPageCount())
+                .viewUrl(viewUrl)
+                .tags(document.getTags())
+                .originalFilename(document.getOriginalFilename())
+                .build();
     }
     
-    public void deleteDocument(String userId, UUID documentId) {
-        // Find existing document
-        DocumentMetadata existing = documentRepository.findById(documentId)
-            .orElseThrow(() -> new DocumentNotFoundException("Document not found: " + documentId));
-        
-        // Security check: Only allow owner to delete document
-        if (!userId.equals(existing.getUserId())) {
-            throw new UnauthorizedAccessException("Not authorized to delete this document");
+    private int calculateProgress(Document.DocumentStatus status) {
+        switch (status) {
+            case QUEUED: return 0;
+            case PARSING: return 20;
+            case PROCESSING: return 40;
+            case OCR_PROCESSING: return 50;
+            case TEXT_EXTRACTION: return 70;
+            case SUMMARIZING: return 90;
+            case COMPLETED: return 100;
+            case FAILED: return 0;
+            default: return 0;
         }
-        
-        // Delete document file from S3
-        String s3Key = userId + "/" + documentId.toString();
-        storageService.deleteFile(rawBucketName, s3Key);
-        
-        // Delete metadata from database
-        documentRepository.delete(documentId);
-    }
-    
-    public ProcessingStatusResponse getDocumentStatus(String userId, UUID documentId) {
-        // Find existing document
-        DocumentMetadata metadata = documentRepository.findById(documentId)
-            .orElseThrow(() -> new DocumentNotFoundException("Document not found: " + documentId));
-        
-        // Security check: Only allow owner to check status
-        if (!userId.equals(metadata.getUserId())) {
-            throw new UnauthorizedAccessException("Not authorized to access this document");
-        }
-        
-        // Get processing status
-        return processingService.getProcessingStatus(documentId);
-    }
-    
-    public ExtractedTextResponse getExtractedText(String userId, UUID documentId, Integer page, String format) {
-        // Find existing document
-        DocumentMetadata metadata = documentRepository.findById(documentId)
-            .orElseThrow(() -> new DocumentNotFoundException("Document not found: " + documentId));
-        
-        // Security check: Only allow owner to access text
-        if (!userId.equals(metadata.getUserId())) {
-            throw new UnauthorizedAccessException("Not authorized to access this document");
-        }
-        
-        // Check if processing is complete
-        if (!"COMPLETED".equals(metadata.getStatus())) {
-            throw new RuntimeException("Document processing is not complete");
-        }
-        
-        // Get document text from storage
-        String text = processingService.getExtractedText(documentId, page, format);
-        
-        // Create response
-        ExtractedTextResponse response = new ExtractedTextResponse();
-        response.setDocumentId(documentId);
-        response.setPage(page != null ? page : 1);
-        response.setTotalPages(metadata.getPageCount() != null ? metadata.getPageCount() : 1);
-        response.setFormat(format);
-        response.setLanguage("en"); // Default for now
-        response.setContent(text);
-        
-        // Add pagination URLs if needed
-        if (page != null && page > 1) {
-            response.setPreviousPageUrl("/documents/" + documentId + "/extracted-text?page=" + (page - 1) + "&format=" + format);
-        }
-        if (page != null && metadata.getPageCount() != null && page < metadata.getPageCount()) {
-            response.setNextPageUrl("/documents/" + documentId + "/extracted-text?page=" + (page + 1) + "&format=" + format);
-        }
-        
-        return response;
-    }
-    
-    public SummaryResponse getDocumentSummary(String userId, UUID documentId, Integer maxLength) {
-        // Find existing document
-        DocumentMetadata metadata = documentRepository.findById(documentId)
-            .orElseThrow(() -> new DocumentNotFoundException("Document not found: " + documentId));
-        
-        // Security check: Only allow owner to access summary
-        if (!userId.equals(metadata.getUserId())) {
-            throw new UnauthorizedAccessException("Not authorized to access this document");
-        }
-        
-        // Check if processing is complete
-        if (!"COMPLETED".equals(metadata.getStatus())) {
-            throw new RuntimeException("Document processing is not complete");
-        }
-        
-        // Get document summary from storage
-        return processingService.getDocumentSummary(documentId, maxLength);
-    }
-    
-    public EntitiesResponse getDocumentEntities(String userId, UUID documentId, String[] types) {
-        // Find existing document
-        DocumentMetadata metadata = documentRepository.findById(documentId)
-            .orElseThrow(() -> new DocumentNotFoundException("Document not found: " + documentId));
-        
-        // Security check: Only allow owner to access entities
-        if (!userId.equals(metadata.getUserId())) {
-            throw new UnauthorizedAccessException("Not authorized to access this document");
-        }
-        
-        // Check if processing is complete
-        if (!"COMPLETED".equals(metadata.getStatus())) {
-            throw new RuntimeException("Document processing is not complete");
-        }
-        
-        // Get document entities from storage
-        return processingService.getDocumentEntities(documentId, types);
     }
 }

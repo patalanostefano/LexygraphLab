@@ -1,162 +1,118 @@
 package com.docprocessing.document.service;
-
-import com.docprocessing.document.exception.DocumentNotFoundException;
-import com.docprocessing.document.exception.UnauthorizedAccessException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.docprocessing.document.dto.CollectionDto.*;
+import com.docprocessing.document.dto.DocumentDto.DocumentMetadataResponse;
+import com.docprocessing.document.exception.CollectionNotFoundException;
+import com.docprocessing.document.exception.InvalidRequestException;
 import com.docprocessing.document.model.Collection;
-import com.docprocessing.document.model.DocumentBatchResponse;
-import com.docprocessing.document.model.DocumentMetadata;
-import com.docprocessing.document.model.Pagination;
 import com.docprocessing.document.repository.CollectionRepository;
-import com.docprocessing.document.repository.DocumentRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CollectionService {
 
     private final CollectionRepository collectionRepository;
-    private final DocumentRepository documentRepository;
+    private final DocumentService documentService;
     
-    public DocumentBatchResponse listCollections(String userId, int page, int limit) {
-        // Get collections for the user with pagination
-        List<Collection> collections = collectionRepository.findByOwnerId(userId, page, limit);
+    public CollectionResponse createCollection(String userId, CollectionRequest request) {
+        if (request.getName() == null || request.getName().trim().isEmpty()) {
+            throw new InvalidRequestException("Collection name is required");
+        }
         
-        // Calculate total pages and items
-        int totalItems = collectionRepository.countByOwnerId(userId);
-        int totalPages = (int) Math.ceil((double) totalItems / limit);
+        Collection collection = Collection.createNew(
+                userId,
+                request.getName(),
+                request.getDescription()
+        );
         
-        // Create pagination information
-        Pagination pagination = new Pagination();
-        pagination.setCurrentPage(page);
-        pagination.setTotalPages(totalPages);
-        pagination.setTotalItems(totalItems);
-        pagination.setItemsPerPage(limit);
-        pagination.setHasNextPage(page < totalPages);
-        pagination.setHasPreviousPage(page > 1);
+        Collection savedCollection = collectionRepository.save(collection);
         
-        // Create response
-        DocumentBatchResponse response = new DocumentBatchResponse();
-        response.setDocuments(collections);
-        response.setPagination(pagination);
-        
-        return response;
+        return buildCollectionResponse(savedCollection);
     }
     
-    public Collection createCollection(String userId, Collection collection) {
-        // Generate collection ID
-        UUID collectionId = UUID.randomUUID();
+    public CollectionResponse getCollection(String userId, String collectionId) {
+        Collection collection = findCollectionAndVerifyOwnership(collectionId, userId);
+        return buildCollectionResponse(collection);
+    }
+    
+    public CollectionListResponse getUserCollections(String userId) {
+        List<Collection> collections = collectionRepository.findByUserId(userId);
         
-        // Set owner and timestamps
-        collection.setId(collectionId);
-        collection.setOwnerId(userId);
-        collection.setCreatedAt(LocalDateTime.now());
-        collection.setUpdatedAt(LocalDateTime.now());
-        collection.setDocumentCount(0);
+        List<CollectionResponse> collectionResponses = collections.stream()
+                .map(this::buildCollectionResponse)
+                .collect(Collectors.toList());
         
-        // Save collection
-        collectionRepository.save(collection);
+        return CollectionListResponse.builder()
+                .collections(collectionResponses)
+                .build();
+    }
+    
+    public CollectionResponse updateCollection(String userId, String collectionId, CollectionUpdateRequest request) {
+        Collection collection = findCollectionAndVerifyOwnership(collectionId, userId);
+        
+        // Update fields if provided
+        if (request.getName() != null) {
+            collection.setName(request.getName());
+        }
+        
+        if (request.getDescription() != null) {
+            collection.setDescription(request.getDescription());
+        }
+        
+        collection.setUpdatedAt(Instant.now());
+        
+        // Save updated collection
+        Collection updatedCollection = collectionRepository.save(collection);
+        
+        return buildCollectionResponse(updatedCollection);
+    }
+    
+    public void deleteCollection(String userId, String collectionId) {
+        Collection collection = findCollectionAndVerifyOwnership(collectionId, userId);
+        collectionRepository.delete(collection);
+    }
+    
+    public CollectionDocumentsResponse getCollectionDocuments(String userId, String collectionId) {
+        // Verify collection ownership
+        findCollectionAndVerifyOwnership(collectionId, userId);
+        
+        // Get documents
+        List<DocumentMetadataResponse> documents = documentService.getDocumentsByCollection(userId, collectionId);
+        
+        return CollectionDocumentsResponse.builder()
+                .documents(documents)
+                .build();
+    }
+    
+    private Collection findCollectionAndVerifyOwnership(String collectionId, String userId) {
+        Collection collection = collectionRepository.findById(collectionId)
+                .orElseThrow(() -> new CollectionNotFoundException("Collection not found with ID: " + collectionId));
+        
+        if (!collection.getUserId().equals(userId)) {
+            throw new CollectionNotFoundException("Collection not found with ID: " + collectionId);
+        }
         
         return collection;
     }
     
-    public Collection getCollection(String userId, UUID collectionId) {
-        Collection collection = collectionRepository.findById(collectionId)
-            .orElseThrow(() -> new DocumentNotFoundException("Collection not found: " + collectionId));
-        
-        // Security check: Only allow owner to view collection
-        if (!userId.equals(collection.getOwnerId())) {
-            throw new UnauthorizedAccessException("Not authorized to access this collection");
-        }
-        
-        return collection;
-    }
-    
-    public Collection updateCollection(String userId, UUID collectionId, Collection collectionUpdate) {
-        // Find existing collection
-        Collection existing = collectionRepository.findById(collectionId)
-            .orElseThrow(() -> new DocumentNotFoundException("Collection not found: " + collectionId));
-        
-        // Security check: Only allow owner to update collection
-        if (!userId.equals(existing.getOwnerId())) {
-            throw new UnauthorizedAccessException("Not authorized to update this collection");
-        }
-        
-        // Update fields
-        if (collectionUpdate.getName() != null) {
-            existing.setName(collectionUpdate.getName());
-        }
-        if (collectionUpdate.getDescription() != null) {
-            existing.setDescription(collectionUpdate.getDescription());
-        }
-        
-        existing.setUpdatedAt(LocalDateTime.now());
-        
-        // Save updates
-        collectionRepository.save(existing);
-        
-        return existing;
-    }
-    
-    public void deleteCollection(String userId, UUID collectionId) {
-        // Find existing collection
-        Collection existing = collectionRepository.findById(collectionId)
-            .orElseThrow(() -> new DocumentNotFoundException("Collection not found: " + collectionId));
-        
-        // Security check: Only allow owner to delete collection
-        if (!userId.equals(existing.getOwnerId())) {
-            throw new UnauthorizedAccessException("Not authorized to delete this collection");
-        }
-        
-        // Delete collection
-        collectionRepository.delete(collectionId);
-        
-        // Update documents to remove collection reference
-        documentRepository.removeCollectionReference(collectionId);
-    }
-    
-    public DocumentBatchResponse listCollectionDocuments(
-            String userId, 
-            UUID collectionId, 
-            int page, 
-            int limit, 
-            String sort, 
-            String direction) {
-            
-        // Verify collection exists and user has access
-        Collection collection = collectionRepository.findById(collectionId)
-            .orElseThrow(() -> new DocumentNotFoundException("Collection not found: " + collectionId));
-        
-        // Security check: Only allow owner to view collection documents
-        if (!userId.equals(collection.getOwnerId())) {
-            throw new UnauthorizedAccessException("Not authorized to access this collection");
-        }
-        
-        // Get documents in the collection
-        List<DocumentMetadata> documents = documentRepository.findByCollectionId(collectionId, page, limit, sort, direction);
-        
-        // Calculate total pages and items
-        int totalItems = documentRepository.countByCollectionId(collectionId);
-        int totalPages = (int) Math.ceil((double) totalItems / limit);
-        
-        // Create pagination information
-        Pagination pagination = new Pagination();
-        pagination.setCurrentPage(page);
-        pagination.setTotalPages(totalPages);
-        pagination.setTotalItems(totalItems);
-        pagination.setItemsPerPage(limit);
-        pagination.setHasNextPage(page < totalPages);
-        pagination.setHasPreviousPage(page > 1);
-        
-        // Create response
-        DocumentBatchResponse response = new DocumentBatchResponse();
-        response.setDocuments(documents);
-        response.setPagination(pagination);
-        
-        return response;
+    private CollectionResponse buildCollectionResponse(Collection collection) {
+        return CollectionResponse.builder()
+                .id(collection.getId())
+                .name(collection.getName())
+                .description(collection.getDescription())
+                .documentCount(collection.getDocumentCount())
+                .createdAt(collection.getCreatedAt())
+                .updatedAt(collection.getUpdatedAt())
+                .ownerId(collection.getUserId())
+                .build();
     }
 }
