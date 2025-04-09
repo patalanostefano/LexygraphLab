@@ -1,7 +1,7 @@
+
+package com.docprocessing.document.controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-package com.docprocessing.document.controller;
-
 import com.docprocessing.document.dto.CollectionDto.*;
 import com.docprocessing.document.service.CollectionService;
 import com.docprocessing.document.util.JwtUtil;
