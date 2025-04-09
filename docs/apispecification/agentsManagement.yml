@@ -1,10 +1,8 @@
 openapi: 3.0.3
 info:
-  title: Agent Service API
-  description: API for managing and using AI agents in the LexygraphAI platform
+  title: Agent Management Service API
+  description: API for managing and invoking AWS Bedrock agents
   version: 1.0.0
-  contact:
-    name: LexygraphAI API Team
 servers:
   - url: https://api.lexygraphai.com/api/v1
     description: Production server
@@ -13,17 +11,13 @@ servers:
 
 tags:
   - name: agents
-    description: Agent management operations
-  - name: customization
-    description: Agent customization operations
-  - name: executions
-    description: Agent execution operations
+    description: Agent operations
 
 paths:
   /agents:
     get:
       summary: List available agents
-      description: Get a list of all available agents for the user
+      description: Get a list of all available agents
       operationId: listAgents
       tags:
         - agents
@@ -34,20 +28,8 @@ paths:
           in: query
           schema:
             type: string
-            enum: [EXTRACTION, GENERATION, FORM_FILLING, COMPARISON, ALL]
+            enum: [EXTRACTION, GENERATION, FORM_FILLING, ORCHESTRATION]
           description: Filter by agent type
-        - name: includeCustom
-          in: query
-          schema:
-            type: boolean
-            default: true
-          description: Include custom agents in results
-        - name: includeSystem
-          in: query
-          schema:
-            type: boolean
-            default: true
-          description: Include system agents in results
       responses:
         '200':
           description: List of agents
@@ -56,7 +38,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/AgentResponse'
+                  $ref: '#/components/schemas/Agent'
         '401':
           description: Unauthorized
 
@@ -75,26 +57,23 @@ paths:
           required: true
           schema:
             type: string
-            format: uuid
       responses:
         '200':
           description: Agent details
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AgentResponse'
-        '401':
-          description: Unauthorized
+                $ref: '#/components/schemas/Agent'
         '404':
           description: Agent not found
 
   /agents/custom:
     post:
       summary: Create custom agent
-      description: Create a new custom agent based on an existing agent
+      description: Create a new custom agent based on a base agent type
       operationId: createCustomAgent
       tags:
-        - customization
+        - agents
       security:
         - bearerAuth: []
       requestBody:
@@ -102,91 +81,24 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CustomAgentRequest'
+              $ref: '#/components/schemas/CreateCustomAgentRequest'
       responses:
         '201':
           description: Custom agent created
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AgentResponse'
+                $ref: '#/components/schemas/Agent'
         '400':
           description: Invalid input
-        '401':
-          description: Unauthorized
-        '404':
-          description: Base agent not found
 
-  /agents/custom/{agentId}:
-    put:
-      summary: Update custom agent
-      description: Update an existing custom agent
-      operationId: updateCustomAgent
-      tags:
-        - customization
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: agentId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/CustomAgentUpdateRequest'
-      responses:
-        '200':
-          description: Custom agent updated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AgentResponse'
-        '400':
-          description: Invalid input
-        '401':
-          description: Unauthorized
-        '403':
-          description: Forbidden - cannot modify non-custom agent
-        '404':
-          description: Agent not found
-    
-    delete:
-      summary: Delete custom agent
-      description: Delete an existing custom agent
-      operationId: deleteCustomAgent
-      tags:
-        - customization
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: agentId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '204':
-          description: Custom agent deleted
-        '401':
-          description: Unauthorized
-        '403':
-          description: Forbidden - cannot delete non-custom agent
-        '404':
-          description: Agent not found
-
-  /agents/execute:
+  /agents/invoke:
     post:
-      summary: Execute agent directly
-      description: Run an agent on input data without going through a document
-      operationId: executeAgent
+      summary: Invoke an agent
+      description: Execute an agent with user prompt and optional document references
+      operationId: invokeAgent
       tags:
-        - executions
+        - agents
       security:
         - bearerAuth: []
       requestBody:
@@ -194,83 +106,19 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/DirectExecutionRequest'
-      responses:
-        '200':
-          description: Synchronous execution result
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ExecutionResult'
-        '202':
-          description: Asynchronous execution initiated
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AsyncExecutionResponse'
-        '400':
-          description: Invalid input
-        '401':
-          description: Unauthorized
-        '404':
-          description: Agent not found
-
-  /agents/executions/{executionId}:
-    get:
-      summary: Get execution status
-      description: Check the status of an asynchronous agent execution
-      operationId: getExecutionStatus
-      tags:
-        - executions
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: executionId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-      responses:
-        '200':
-          description: Execution status
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ExecutionStatusResponse'
-        '401':
-          description: Unauthorized
-        '404':
-          description: Execution not found
-
-  /agents/executions/{executionId}/result:
-    get:
-      summary: Get execution result
-      description: Get the result of a completed agent execution
-      operationId: getExecutionResult
-      tags:
-        - executions
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: executionId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
+              $ref: '#/components/schemas/InvokeAgentRequest'
       responses:
         '200':
           description: Execution result
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ExecutionResult'
-        '401':
-          description: Unauthorized
+                $ref: '#/components/schemas/AgentResponse'
         '404':
-          description: Execution not found or not completed
-          
+          description: Agent or document not found
+        '500':
+          description: Agent execution failed
+
 components:
   securitySchemes:
     bearerAuth:
@@ -279,226 +127,85 @@ components:
       bearerFormat: JWT
 
   schemas:
-    AgentResponse:
+    Agent:
       type: object
       properties:
         id:
           type: string
-          format: uuid
         name:
           type: string
         description:
           type: string
         type:
           type: string
-          enum: [EXTRACTION, GENERATION, FORM_FILLING, COMPARISON]
-        capabilities:
-          type: array
-          items:
-            type: string
-        parameters:
-          type: array
-          items:
-            $ref: '#/components/schemas/AgentParameter'
-        inputFormats:
-          type: array
-          items:
-            type: string
-          example: ["application/pdf", "text/plain"]
-        outputFormats:
-          type: array
-          items:
-            type: string
-          example: ["application/json", "text/csv"]
+          enum: [EXTRACTION, GENERATION, FORM_FILLING, ORCHESTRATION]
         isCustom:
           type: boolean
-        baseAgentId:
+        baseType:
           type: string
-          format: uuid
-          nullable: true
+          enum: [EXTRACTION, GENERATION, FORM_FILLING, ORCHESTRATION]
+          description: Base agent type (for custom agents)
         customPrompt:
           type: string
-          nullable: true
-        creationDate:
-          type: string
-          format: date-time
-        lastModifiedDate:
+          description: Custom prompt template (for custom agents)
+        createdAt:
           type: string
           format: date-time
 
-    AgentParameter:
-      type: object
-      properties:
-        name:
-          type: string
-        displayName:
-          type: string
-        description:
-          type: string
-        type:
-          type: string
-          enum: [STRING, NUMBER, BOOLEAN, ENUM, JSON, FILE_REFERENCE]
-        required:
-          type: boolean
-        defaultValue:
-          type: string
-        enumValues:
-          type: array
-          items:
-            type: object
-            properties:
-              value:
-                type: string
-              displayName:
-                type: string
-
-    CustomAgentRequest:
+    CreateCustomAgentRequest:
       type: object
       required:
         - name
-        - baseAgentId
+        - baseType
+        - customPrompt
       properties:
         name:
           type: string
-          maxLength: 100
+          description: Name for the custom agent
         description:
           type: string
-          maxLength: 500
-        baseAgentId:
+          description: Description of the agent's purpose
+        baseType:
           type: string
-          format: uuid
+          enum: [EXTRACTION, GENERATION, FORM_FILLING, ORCHESTRATION]
+          description: Type of base agent to customize
         customPrompt:
           type: string
-          maxLength: 5000
-        parameterOverrides:
-          type: object
-          additionalProperties: true
-          description: Override default parameter values
+          description: Custom prompt template to guide the agent
 
-    CustomAgentUpdateRequest:
-      type: object
-      properties:
-        name:
-          type: string
-          maxLength: 100
-        description:
-          type: string
-          maxLength: 500
-        customPrompt:
-          type: string
-          maxLength: 5000
-        parameterOverrides:
-          type: object
-          additionalProperties: true
-          description: Override default parameter values
-
-    DirectExecutionRequest:
+    InvokeAgentRequest:
       type: object
       required:
         - agentId
-        - input
+        - prompt
       properties:
         agentId:
           type: string
-          format: uuid
-        input:
-          oneOf:
-            - type: string
-              description: Text input or Base64 encoded binary data
-            - type: object
-              additionalProperties: true
-              description: JSON structured input
-        inputType:
+          description: ID of the agent to invoke (can be system or custom agent ID)
+        prompt:
           type: string
-          description: MIME type of the input data
-          default: "text/plain"
-        parameters:
-          type: object
-          additionalProperties: true
-          description: Agent execution parameters
-        async:
-          type: boolean
-          default: false
-          description: Execute asynchronously (for long-running operations)
+          description: User prompt to guide the agent's task
+        documentIds:
+          type: array
+          items:
+            type: string
+          description: Optional list of document IDs to process
 
-    ExecutionResult:
+    AgentResponse:
       type: object
       properties:
         executionId:
           type: string
-          format: uuid
         agentId:
           type: string
-          format: uuid
-        status:
-          type: string
-          enum: [COMPLETED, FAILED]
-        startTime:
-          type: string
-          format: date-time
-        endTime:
-          type: string
-          format: date-time
         result:
-          oneOf:
-            - type: string
-              description: Text output or Base64 encoded binary data
-            - type: object
-              additionalProperties: true
-              description: JSON structured output
-        outputType:
           type: string
-          description: MIME type of the output data
-        error:
-          type: string
-          description: Error message if status is FAILED
-
-    AsyncExecutionResponse:
-      type: object
-      properties:
-        executionId:
-          type: string
-          format: uuid
-        status:
-          type: string
-          enum: [PENDING, PROCESSING]
-        statusUrl:
-          type: string
-          format: uri
-        resultUrl:
-          type: string
-          format: uri
-        estimatedCompletionTime:
+          description: Output from the agent
+        documentIds:
+          type: array
+          items:
+            type: string
+          description: Document IDs used in this execution
+        timestamp:
           type: string
           format: date-time
-
-    ExecutionStatusResponse:
-      type: object
-      properties:
-        executionId:
-          type: string
-          format: uuid
-        agentId:
-          type: string
-          format: uuid
-        status:
-          type: string
-          enum: [PENDING, PROCESSING, COMPLETED, FAILED]
-        progress:
-          type: integer
-          minimum: 0
-          maximum: 100
-          description: Percentage of completion
-        startTime:
-          type: string
-          format: date-time
-        estimatedCompletionTime:
-          type: string
-          format: date-time
-        message:
-          type: string
-          description: Current status message
-        resultUrl:
-          type: string
-          format: uri
-          description: URL to fetch the result when completed
