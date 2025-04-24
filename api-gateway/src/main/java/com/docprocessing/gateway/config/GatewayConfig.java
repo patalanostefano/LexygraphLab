@@ -1,4 +1,4 @@
-package main.java.com.docprocessing.gateway.config;
+package com.docprocessing.gateway.config;
 
 import org.springframework.cloud.gateway.route.RouteLocator;
 import org.springframework.cloud.gateway.route.builder.RouteLocatorBuilder;

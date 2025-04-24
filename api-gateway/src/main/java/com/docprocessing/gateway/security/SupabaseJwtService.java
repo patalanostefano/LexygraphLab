@@ -1,4 +1,4 @@
-package main.java.com.docprocessing.gateway.security;
+package com.docprocessing.gateway.security;
 
 import com.auth0.jwk.Jwk;
 import com.auth0.jwk.JwkProvider;

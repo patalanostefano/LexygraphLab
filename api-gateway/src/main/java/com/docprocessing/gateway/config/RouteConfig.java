@@ -1,4 +1,4 @@
-package main.java.com.docprocessing.gateway.config;
+package com.docprocessing.gateway.config;
 
 import org.springframework.cloud.gateway.filter.ratelimit.KeyResolver;
 import org.springframework.context.annotation.Bean;

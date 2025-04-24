@@ -1,4 +1,4 @@
-package main.java.com.docprocessing.gateway.security;
+package com.docprocessing.gateway.security;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

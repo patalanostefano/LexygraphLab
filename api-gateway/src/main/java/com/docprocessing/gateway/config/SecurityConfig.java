@@ -1,4 +1,4 @@
-package main.java.com.docprocessing.gateway.config;
+package com.docprocessing.gateway.config;
 
 import com.docprocessing.gateway.filter.AuthenticationFilter;
 import lombok.RequiredArgsConstructor;

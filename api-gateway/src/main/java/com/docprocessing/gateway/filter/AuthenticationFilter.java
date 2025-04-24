@@ -1,4 +1,4 @@
-package main.java.com.docprocessing.gateway.filter;
+package com.docprocessing.gateway.filter;
 
 import com.docprocessing.gateway.security.SupabaseJwtService;
 import lombok.extern.slf4j.Slf4j;

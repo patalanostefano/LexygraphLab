@@ -15,3 +15,4 @@ public class AgentInvocationResponse {
     public ResponseEntity<RequestResponseDto.java> notify(AgentInvocationResponse response) {
     }
 // Constructor, Getters and setters
+}

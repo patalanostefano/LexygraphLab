@@ -1,4 +1,4 @@
-package main.java.com.docprocessing.gateway.filter;
+package com.docprocessing.gateway.filter;
 
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -18,7 +18,7 @@ public class ErrorHandlerFilter implements GlobalFilter, Ordered {
                 .onErrorResume(throwable -> {
                     // Handle specific exceptions
                     if (throwable instanceof ResponseStatusException) {
-                        exchange.getResponse().setStatusCode(((ResponseStatusException) throwable).getStatusCode());
+                        exchange.getResponse().setStatusCode(((ResponseStatusException) throwable).getStatus());
                     } else {
                         // Default to internal server error
                         exchange.getResponse().setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR);
