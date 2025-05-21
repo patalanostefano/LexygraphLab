@@ -252,7 +252,6 @@ const EnhancedDocumentItem = ({ document, onDelete, onView, onEdit, showActions 
   );
 };
 
-
 const DocumentSelectorDialog = ({
   open,
   onClose,
@@ -919,52 +918,15 @@ function Multiagent() {
     const apiKey = 'example_api_key_' + Date.now();
     const service = new DocumentService(apiKey);
     setDocumentService(service);
-  
-    // 🚫 Rimosse tutte le righe di mockCollections e setCollections
   }, []);
-
-  // Funzione per gestire l'upload di documenti in una collezione
-  const handleUploadDocumentsToCollection = (collectionId, files) => {
-    if (!files.length) return;
-    
-    // Aggiungi i documenti alla collezione
-    const uploadedDocuments = Array.from(files).map(file => ({
-      id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-      name: file.name,
-      size: file.size,
-      type: file.type,
-      date: new Date().toISOString(),
-      collectionId,
-      isReadOnly: true, // I documenti delle collezioni sono solo visualizzabili, non modificabili
-      content: `Contenuto del documento "${file.name}" caricato nella collezione`
-    }));
-    
-    // Aggiorna il conteggio dei documenti nella collezione
-    setCollections(prev => 
-      prev.map(col => 
-        col.id === collectionId 
-          ? { ...col, documentCount: (col.documentCount || 0) + files.length } 
-          : col
-      )
-    );
-    
-    // Aggiungi i documenti all'array globale
-    setDocuments(prev => [...uploadedDocuments, ...prev]);
-    
-    // Mostra notifica
-    setNotification({
-      show: true,
-      message: `${files.length} documenti caricati nella collezione`,
-      severity: 'success'
-    });
-  };
-
+  
   // Funzione per aprire il dialogo di modifica
   const handleEditProject = (project, event) => {
     event.stopPropagation(); // Previene l'apertura del progetto
-    setProjectToEdit({...project});
+    setProjectToEdit({ ...project });
     setEditProjectDialog(true);
   };
+  
 
   // Funzione per aggiornare il progetto
   const handleUpdateProject = (updatedProject) => {
@@ -1005,45 +967,6 @@ function Multiagent() {
     }
   };
 
-  // Funzioni per gestire le collezioni
-  const handleCreateCollection = (newCollection) => {
-    setCollections([newCollection, ...collections]);
-    setNewCollectionDialog(false);
-  };
-
-  const handleUpdateCollection = (updatedCollection, newFiles = []) => {
-    if (updatedCollection) {
-      const updatedCollections = collections.map(c => 
-        c.id === updatedCollection.id ? updatedCollection : c
-      );
-      
-      setCollections(updatedCollections);
-      setEditCollectionDialog(false);
-      setCollectionToEdit(null);
-      
-      // Se sono stati aggiunti nuovi file, aggiornali nella collezione
-      if (newFiles.length > 0) {
-        handleUploadDocumentsToCollection(updatedCollection.id, newFiles);
-      }
-    }
-  };
-
-  const handleDeleteCollection = (collectionId) => {
-    if (collectionId) {
-      // Se stai visualizzando la collezione da eliminare, torna alla vista principale
-      if (selectedCollection && selectedCollection.id === collectionId) {
-        setSelectedCollection(null);
-      }
-      
-      const updatedCollections = collections.filter(c => c.id !== collectionId);
-      setCollections(updatedCollections);
-      setDeleteCollectionDialog(false);
-      setCollectionToDelete(null);
-      
-      // Rimuovi anche eventuali documenti associati a questa collezione
-      setDocuments(prev => prev.filter(doc => doc.collectionId !== collectionId));
-    }
-  };
 
   // Funzione per ripristinare un documento dalla Lexychain
   const handleRestoreDocument = (activity) => {
@@ -1899,71 +1822,74 @@ function Multiagent() {
       pb: 6,
     }}>
       {pageMode === 'select' ? (
-        /* Griglia progetti - versione responsive */
-        <Box sx={{ 
-          pb: collectionsExpanded ? 4 : 8,
-          maxWidth: '100%',
-          overflowX: 'hidden'
-        }}>
-          <Box sx={{
-            mb: 4,
-            display: 'flex',
-            flexDirection: { xs: 'column', md: 'row' },
-            justifyContent: 'space-between',
-            alignItems: { xs: 'flex-start', md: 'center' },
-            gap: 2,
-            width: '100%'
-          }}>
-            <Typography variant="h5" sx={{ fontWeight: 600, fontSize: '1.5rem' }}>I tuoi progetti</Typography>
-            <Box sx={{ 
-              display: 'flex', 
-              gap: { xs: 1, md: 2 },
-              width: { xs: '100%', md: 'auto' },
-              flexDirection: { xs: 'column', md: 'row' },
-              flexWrap: { xs: 'nowrap', md: 'wrap' }
-            }}>
-              <TextField
-                placeholder="Cerca progetti e collezioni..."
-                variant="outlined"
-                size="small"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon fontSize="small" />
-                    </InputAdornment>
-                  ),
-                }}
-                sx={{ 
-                  width: { xs: '100%', sm: '300px' },
-                  backgroundColor: theme.palette.mode === 'dark' 
-                    ? alpha(theme.palette.background.paper, 0.2) 
-                    : alpha(theme.palette.background.paper, 0.8),
-                  borderRadius: 1
-                }}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-              
-              <Box sx={{ display: 'flex', gap: 1, width: { xs: '100%', md: 'auto' } }}>
-                <Button 
-                  variant="outlined"
-                  startIcon={<HomeIcon />}
-                  onClick={() => navigate('/')}
-                  sx={{ flex: { xs: 1, md: 'none' } }}
-                >
-                  Dashboard
-                </Button>
-                <Button 
-                  variant="contained" 
-                  startIcon={<AddIcon />}
-                  onClick={() => setNewProjectDialog(true)}
-                  sx={{ flex: { xs: 1, md: 'none' } }}
-                >
-                  Nuovo Progetto
-                </Button>
-              </Box>
-            </Box>
-          </Box>
+     /* Griglia progetti - versione responsive */
+<Box sx={{ 
+  pb: 8,                   
+  maxWidth: '100%',
+  overflowX: 'hidden'
+}}>
+  <Box sx={{
+    mb: 4,
+    display: 'flex',
+    flexDirection: { xs: 'column', md: 'row' },
+    justifyContent: 'space-between',
+    alignItems: { xs: 'flex-start', md: 'center' },
+    gap: 2,
+    width: '100%'
+  }}>
+    <Typography variant="h5" sx={{ fontWeight: 600, fontSize: '1.5rem' }}>
+      I tuoi progetti
+    </Typography>
+    <Box sx={{ 
+      display: 'flex', 
+      gap: { xs: 1, md: 2 },
+      width: { xs: '100%', md: 'auto' },
+      flexDirection: { xs: 'column', md: 'row' },
+      flexWrap: { xs: 'nowrap', md: 'wrap' }
+    }}>
+      <TextField
+        placeholder="Cerca progetti..."   // tolta la parola “collezioni”
+        variant="outlined"
+        size="small"
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <SearchIcon fontSize="small" />
+            </InputAdornment>
+          ),
+        }}
+        sx={{ 
+          width: { xs: '100%', sm: '300px' },
+          backgroundColor: theme.palette.mode === 'dark' 
+            ? alpha(theme.palette.background.paper, 0.2) 
+            : alpha(theme.palette.background.paper, 0.8),
+          borderRadius: 1
+        }}
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
+      
+      <Box sx={{ display: 'flex', gap: 1, width: { xs: '100%', md: 'auto' } }}>
+        <Button 
+          variant="outlined"
+          startIcon={<HomeIcon />}
+          onClick={() => navigate('/')}
+          sx={{ flex: { xs: 1, md: 'none' } }}
+        >
+          Dashboard
+        </Button>
+        <Button 
+          variant="contained" 
+          startIcon={<AddIcon />}
+          onClick={() => setNewProjectDialog(true)}
+          sx={{ flex: { xs: 1, md: 'none' } }}
+        >
+          Nuovo Progetto
+        </Button>
+      </Box>
+    </Box>
+  </Box>
+
           
           {/* Prima i progetti con maggiore risalto */}
           <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>Progetti</Typography>
@@ -2067,179 +1993,6 @@ function Multiagent() {
             )}
           </Grid>
 
-          {/* Sezione Collezioni di documenti */}
-          <Box sx={{ 
-            mb: 6, 
-            border: `1px solid ${theme.palette.divider}`,
-            borderRadius: theme.shape.borderRadius,
-            bgcolor: theme.palette.background.paper,
-            boxShadow: theme.palette.mode === 'dark' 
-              ? '0 2px 8px rgba(0,0,0,0.2)' 
-              : '0 2px 8px rgba(0,0,0,0.05)',
-            overflow: 'visible',
-            width: '100%',
-            mx: 'auto', 
-            maxWidth: { xs: '100%', lg: '1200px' }
-          }}>
-            <Box 
-              sx={{ 
-                p: 2,
-                display: 'flex', 
-                justifyContent: 'space-between', 
-                alignItems: 'center',
-                borderBottom: collectionsExpanded ? `1px solid ${theme.palette.divider}` : 'none',
-                bgcolor: theme.palette.background.paper,
-                '&:hover': {
-                  bgcolor: theme.palette.mode === 'dark' 
-                    ? alpha(theme.palette.background.paper, 0.6) 
-                    : alpha(theme.palette.background.paper, 0.8),
-                },
-                borderTopLeftRadius: theme.shape.borderRadius,
-                borderTopRightRadius: theme.shape.borderRadius
-              }}
-            >
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center',
-                cursor: 'pointer'
-              }} onClick={() => setCollectionsExpanded(!collectionsExpanded)}>
-                <CreateNewFolderIcon color="secondary" sx={{ mr: 1 }} />
-                <Typography variant="h6" sx={{ fontWeight: 500 }}>Collezioni di documenti</Typography>
-                <IconButton size="small" sx={{ ml: 1 }}>
-                  {collectionsExpanded ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
-                </IconButton>
-              </Box>
-              
-              {/* Pulsante Nuova Collezione */}
-              <Button 
-                variant="outlined" 
-                color="secondary"
-                size="small"
-                startIcon={<CreateNewFolderIcon />}
-                onClick={() => setNewCollectionDialog(true)}
-              >
-                Nuova Collezione
-              </Button>
-            </Box>
-            
-            {/* Contenuto collezioni - visibile solo quando espanso */}
-            <Box sx={{ 
-              height: collectionsExpanded ? 'auto' : 0,
-              opacity: collectionsExpanded ? 1 : 0,
-              visibility: collectionsExpanded ? 'visible' : 'hidden',
-              transition: 'height 0.3s ease, opacity 0.2s ease',
-              p: collectionsExpanded ? 2 : 0,
-              pt: collectionsExpanded ? 2 : 0,
-              overflow: 'visible',
-              position: 'relative',
-              zIndex: 0
-            }}>
-              {filteredCollections.length > 0 ? (
-                <Box sx={{ 
-                  display: 'flex', 
-                  flexDirection: 'column', 
-                  gap: 1,
-                  maxWidth: '900px',
-                  mx: 'auto',
-                  mb: 2,
-                  position: 'relative',
-                  zIndex: 1
-                }}>
-                  {filteredCollections.map((collection, index) => (
-                    <Box 
-                      key={collection.id}
-                      sx={{
-                        border: `1px solid ${theme.palette.secondary.main}`,
-                        borderRadius: 1,
-                        position: 'relative',
-                        overflow: 'visible',
-                        transform: `translateY(${index * 1}px)`,
-                        marginTop: index > 0 ? '-6px' : 0,
-                        boxShadow: theme.palette.mode === 'dark' 
-                          ? '0 1px 4px rgba(0,0,0,0.25)' 
-                          : '0 1px 4px rgba(0,0,0,0.08)',
-                        zIndex: filteredCollections.length - index,
-                        width: '100%',
-                        transition: 'transform 0.2s ease-in-out',
-                        '&:hover': {
-                          transform: `translateY(${index * 1 - 2}px)`,
-                          boxShadow: '0 3px 8px rgba(0,0,0,0.12)'
-                        }
-                      }}
-                    >
-                      <Box sx={{ 
-                        py: 1,
-                        px: 2,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        bgcolor: theme.palette.background.paper,
-                        minHeight: '48px',
-                        maxHeight: '48px',
-                        borderRadius: 1
-                      }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
-                          <CreateNewFolderIcon color="secondary" sx={{ mr: 1.5, fontSize: '1.1rem' }} />
-                          <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                            {collection.name}
-                          </Typography>
-                        </Box>
-                        
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Typography variant="body2" color="text.secondary" sx={{ 
-                            display: 'flex', 
-                            alignItems: 'center',
-                            fontSize: '0.8rem'
-                          }}>
-                            <DescriptionIcon fontSize="small" sx={{ mr: 0.5, opacity: 0.7, fontSize: '1rem' }} />
-                            {collection.documentCount || 0} documenti
-                          </Typography>
-                          
-                          <IconButton 
-                            size="small"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setCollectionToEdit(collection);
-                              setEditCollectionDialog(true);
-                            }}
-                            sx={{ padding: '4px' }}
-                          >
-                            <EditIcon fontSize="small" sx={{ fontSize: '1rem' }} />
-                          </IconButton>
-                          
-                          <IconButton
-                            size="small"
-                            color="error"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setCollectionToDelete(collection);
-                              setDeleteCollectionDialog(true);
-                            }}
-                            sx={{ padding: '4px' }}
-                          >
-                            <DeleteIcon fontSize="small" sx={{ fontSize: '1rem' }} />
-                          </IconButton>
-                        </Box>
-                      </Box>
-                    </Box>
-                  ))}
-                </Box>
-              ) : (
-                <Box sx={{ 
-                  p: 3, 
-                  textAlign: 'center',
-                  bgcolor: theme.palette.background.paper,
-                  borderRadius: 1
-                }}>
-                  <CreateNewFolderIcon sx={{ fontSize: 50, color: 'text.secondary', mb: 1 }} />
-                  <Typography variant="body1">Nessuna collezione disponibile</Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 1, mb: 2 }}>
-                    {searchTerm ? "Nessuna collezione corrisponde alla tua ricerca" : "Crea una nuova collezione per organizzare i tuoi documenti"}
-                  </Typography>
-                </Box>
-              )}
-            </Box>
-          </Box>
         </Box>
       ) : (
         /* Layout lavoro chat style - schermata fissa */
@@ -2897,23 +2650,21 @@ function Multiagent() {
         </Box>
       )}
       
-      {/* Dialog per nuovo progetto */}
-      <NewProjectDialog
-        open={newProjectDialog}
-        onClose={() => setNewProjectDialog(false)}
-        onCreate={handleCreateProject}
-        collections={collections}
-      />
-      
-      {/* Dialog per modifica progetto */}
-      <EditProjectDialog 
-        open={editProjectDialog} 
-        onClose={() => setEditProjectDialog(false)}
-        project={projectToEdit}
-        onUpdate={handleUpdateProject}
-        collections={collections}
-      />
-      
+    {/* Dialog per nuovo progetto */}
+<NewProjectDialog
+  open={newProjectDialog}
+  onClose={() => setNewProjectDialog(false)}
+  onCreate={handleCreateProject}
+/>
+
+{/* Dialog per modifica progetto */}
+<EditProjectDialog 
+  open={editProjectDialog} 
+  onClose={() => setEditProjectDialog(false)}
+  project={projectToEdit}
+  onUpdate={handleUpdateProject}
+/>
+
       {/* Dialog per conferma eliminazione progetto */}
       <DeleteConfirmDialog 
         open={deleteConfirmDialog}
@@ -2921,31 +2672,7 @@ function Multiagent() {
         onConfirm={confirmDeleteProject}
         projectName={projectToDelete?.name || ''}
       />
-      
-      {/* Dialog per creazione collezione */}
-      <NewCollectionDialog
-        open={newCollectionDialog}
-        onClose={() => setNewCollectionDialog(false)}
-        onCreate={handleCreateCollection}
-        onUploadDocuments={handleUploadDocumentsToCollection}
-      />
-      
-      {/* Dialog per modifica collezione */}
-      <EditCollectionDialog
-        open={editCollectionDialog}
-        onClose={() => setEditCollectionDialog(false)}
-        collection={collectionToEdit}
-        onUpdate={handleUpdateCollection}
-        documentService={documentService}
-      />
-      
-      {/* Dialog per conferma eliminazione collezione */}
-      <DeleteCollectionConfirmDialog 
-        open={deleteCollectionDialog}
-        onClose={() => setDeleteCollectionDialog(false)}
-        onConfirm={() => handleDeleteCollection(collectionToDelete?.id)}
-        collectionName={collectionToDelete?.name || ''}
-      />
+  
       
       {/* Dialog dell'editor di documenti - utilizza il componente esistente */}
       <DocumentEditorDialog
@@ -2963,14 +2690,6 @@ function Multiagent() {
         onEdit={artifact && !artifact.isReadOnly ? handleEditArtifact : null}
       />
       
-      {/* Dialog per selezione documento da collezione */}
-      <DocumentSelectorDialog
-        open={documentSelectorOpen}
-        onClose={() => setDocumentSelectorOpen(false)}
-        onSelect={handleSelectDocument}
-        collections={collections}
-        documentService={documentService}
-      />
       
       {/* Drawer per documenti - migliorato */}
       <DocumentDrawer
