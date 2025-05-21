@@ -38,14 +38,12 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
-import PersonIcon from '@mui/icons-material/Person';
 import AddIcon from '@mui/icons-material/Add';
 import FolderIcon from '@mui/icons-material/Folder';
 import DescriptionIcon from '@mui/icons-material/Description';
 import SendIcon from '@mui/icons-material/Send';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import PsychologyIcon from '@mui/icons-material/Psychology';
 import BusinessIcon from '@mui/icons-material/Business';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -53,42 +51,24 @@ import HomeIcon from '@mui/icons-material/Home';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import FileIcon from '@mui/icons-material/InsertDriveFile';
 import FullscreenIcon from '@mui/icons-material/Fullscreen';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
+
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import HistoryIcon from '@mui/icons-material/History';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import BalanceIcon from '@mui/icons-material/Balance';
 import InfoIcon from '@mui/icons-material/Info';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import ArrowRightIcon from '@mui/icons-material/ArrowRight';
-import FilterListIcon from '@mui/icons-material/FilterList';
-import SortIcon from '@mui/icons-material/Sort';
-import RefreshIcon from '@mui/icons-material/Refresh';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import ArticleIcon from '@mui/icons-material/Article';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import ImageIcon from '@mui/icons-material/Image';
-import SummarizeIcon from '@mui/icons-material/Summarize';
-import ListAltIcon from '@mui/icons-material/ListAlt';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import PlaceIcon from '@mui/icons-material/Place';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import LocalOfferIcon from '@mui/icons-material/LocalOffer';
-import EventIcon from '@mui/icons-material/Event';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import CloseIcon from '@mui/icons-material/Close';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import ErrorIcon from '@mui/icons-material/Error';
-import WarningIcon from '@mui/icons-material/Warning';
+
 import CreateNewFolderIcon from '@mui/icons-material/CreateNewFolder';
 import SearchIcon from '@mui/icons-material/Search';
-import ZoomInIcon from '@mui/icons-material/ZoomIn';
-import ZoomOutIcon from '@mui/icons-material/ZoomOut';
-import PrintIcon from '@mui/icons-material/Print';
-import SaveIcon from '@mui/icons-material/Save';
-// Importazione per docx (necessaria per la funzione di esportazione DOCX)
+
 import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType } from 'docx';
 
 // Importa componenti e stili personalizzati
@@ -99,11 +79,6 @@ import {
   PromptInputBox, 
   AgentChip
 } from './MultiagentStyles';
-
-import { 
-  DeleteConfirmDialog,
-  DeleteCollectionConfirmDialog,
-} from './ProjectComponents';
 
 import { 
   Message, 
@@ -277,168 +252,100 @@ const EnhancedDocumentItem = ({ document, onDelete, onView, onEdit, showActions 
   );
 };
 
-// Componente DocumentSelectorDialog per selezionare documenti da collezioni
-const DocumentSelectorDialog = ({ open, onClose, onSelect, collections = [], documentService, multiSelect = false }) => {
+
+const DocumentSelectorDialog = ({
+  open,
+  onClose,
+  onSelect,
+  documents = [],
+  multiSelect = false,
+  loading = false
+}) => {
   const theme = useTheme();
-  const [loading, setLoading] = useState(false);
-  const [documents, setDocuments] = useState([]);
-  const [selectedCollection, setSelectedCollection] = useState(null);
   const [search, setSearch] = useState('');
   const [notification, setNotification] = useState({ open: false, message: '', severity: 'info' });
   const [selectedDocuments, setSelectedDocuments] = useState([]);
-  
-  // Carica i documenti dalla collezione selezionata
-  const loadDocuments = async (collectionId) => {
-    if (!collectionId || !documentService) return;
-    
-    setLoading(true);
-    
-    try {
-      const response = await documentService.getCollectionDocuments(collectionId);
-      setDocuments(response.documents || []);
-    } catch (error) {
-      console.error("Errore durante il caricamento dei documenti:", error);
-      setNotification({
-        open: true,
-        message: "Errore durante il caricamento dei documenti. Riprova più tardi.",
-        severity: 'error'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-  // Effetto per caricare i documenti quando si seleziona una collezione
-  useEffect(() => {
-    if (selectedCollection) {
-      loadDocuments(selectedCollection.id);
-    }
-  }, [selectedCollection]);
-  
-  // Reset selezione quando cambia collezione
-  useEffect(() => {
-    setSelectedDocuments([]);
-  }, [selectedCollection]);
-  
+
   // Filtra i documenti in base alla ricerca
   const filteredDocuments = documents.filter(doc => 
     doc.name.toLowerCase().includes(search.toLowerCase())
   );
-  
-  // Gestione della selezione di un documento
+
+  // Gestione della selezione di un documento (singolo o multiplo)
   const handleSelectDocument = (document) => {
     if (!multiSelect) {
-      if (onSelect) {
-        onSelect(document);
-        onClose();
-      }
+      onSelect?.(document);
+      onClose();
     } else {
-      const isAlreadySelected = selectedDocuments.some(doc => doc.id === document.id);
-      if (isAlreadySelected) {
-        setSelectedDocuments(selectedDocuments.filter(doc => doc.id !== document.id));
-      } else {
-        setSelectedDocuments([...selectedDocuments, document]);
-      }
+      setSelectedDocuments(prev => 
+        prev.some(d => d.id === document.id)
+          ? prev.filter(d => d.id !== document.id)
+          : [...prev, document]
+      );
     }
   };
-  
+
+  // Conferma selezione multipla
   const handleConfirmSelection = () => {
-    if (onSelect && selectedDocuments.length > 0) {
-      onSelect(selectedDocuments);
+    if (selectedDocuments.length > 0) {
+      onSelect?.(selectedDocuments);
       onClose();
     }
   };
-  
-  const isDocumentSelected = (docId) => {
-    return selectedDocuments.some(doc => doc.id === docId);
-  };
-  
-  // Funzione per selezionare tutti i documenti
+
+  // Controlla se un documento è selezionato
+  const isDocumentSelected = (docId) => 
+    selectedDocuments.some(d => d.id === docId);
+
+  // Seleziona o deseleziona tutti i documenti
   const handleSelectAll = () => {
-    if (selectedDocuments.length === filteredDocuments.length) {
-      setSelectedDocuments([]);
-    } else {
-      setSelectedDocuments([...filteredDocuments]);
-    }
+    setSelectedDocuments(prev => 
+      prev.length === filteredDocuments.length ? [] : [...filteredDocuments]
+    );
   };
-  
-  // Funzione per chiudere le notifiche
+
+  // Chiude la notifica
   const handleCloseNotification = () => {
     setNotification(prev => ({ ...prev, open: false }));
   };
-  
+
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      aria-labelledby="document-selector-title"
-      maxWidth="md"
-      fullWidth
-    >
-      <DialogTitle id="document-selector-title">
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+      <DialogTitle>
         <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Typography variant="h6">Seleziona documento{multiSelect ? "i" : ""}</Typography>
-          <IconButton edge="end" color="inherit" onClick={onClose} aria-label="close">
+          <Typography variant="h6">
+            Seleziona documento{multiSelect ? 'i' : ''}
+          </Typography>
+          <IconButton onClick={onClose}>
             <CloseIcon />
           </IconButton>
         </Box>
       </DialogTitle>
+
       <DialogContent dividers>
-        <Box sx={{ mb: 3, display: 'flex', gap: 2 }}>
-          <TextField
-            select
-            label="Collezione"
-            value={selectedCollection?.id || ''}
-            onChange={(e) => {
-              const selected = collections.find(c => c.id === e.target.value);
-              setSelectedCollection(selected || null);
-            }}
-            fullWidth
-          >
-            <MenuItem value="">Seleziona una collezione</MenuItem>
-            {collections.map((collection) => (
-              <MenuItem key={collection.id} value={collection.id}>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <FolderIcon fontSize="small" sx={{ mr: 1, opacity: 0.7 }} />
-                  {collection.name}
-                </Box>
-              </MenuItem>
-            ))}
-          </TextField>
-          
+        <Box sx={{ mb: 3 }}>
           <TextField
             label="Cerca"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={e => setSearch(e.target.value)}
             fullWidth
-            variant="outlined"
           />
         </Box>
-        
+
         {loading ? (
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', my: 4 }}>
             <CircularProgress size={40} sx={{ mb: 2 }} />
             <Typography>Caricamento documenti...</Typography>
           </Box>
-        ) : !selectedCollection ? (
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', my: 6 }}>
-            <FolderIcon sx={{ fontSize: 60, color: 'text.disabled', mb: 2 }} />
-            <Typography variant="body1" color="text.secondary">
-              Seleziona una collezione per visualizzare i documenti
-            </Typography>
-          </Box>
         ) : filteredDocuments.length === 0 ? (
           <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', my: 6 }}>
             <InsertDriveFileIcon sx={{ fontSize: 60, color: 'text.disabled', mb: 2 }} />
-            {search ? (
-              <Typography variant="body1" color="text.secondary">
-                Nessun documento trovato per "{search}"
-              </Typography>
-            ) : (
-              <Typography variant="body1" color="text.secondary">
-                Nessun documento in questa collezione
-              </Typography>
-            )}
+            <Typography variant="body1" color="text.secondary">
+              {search
+                ? `Nessun documento trovato per "${search}"`
+                : 'Nessun documento disponibile'
+              }
+            </Typography>
           </Box>
         ) : (
           <>
@@ -446,50 +353,61 @@ const DocumentSelectorDialog = ({ open, onClose, onSelect, collections = [], doc
               <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <FormControlLabel
                   control={
-                    <Checkbox 
-                      checked={selectedDocuments.length === filteredDocuments.length && filteredDocuments.length > 0} 
-                      indeterminate={selectedDocuments.length > 0 && selectedDocuments.length < filteredDocuments.length}
+                    <Checkbox
+                      checked={
+                        selectedDocuments.length === filteredDocuments.length && filteredDocuments.length > 0
+                      }
+                      indeterminate={
+                        selectedDocuments.length > 0 && selectedDocuments.length < filteredDocuments.length
+                      }
                       onChange={handleSelectAll}
                     />
                   }
                   label="Seleziona tutti"
                 />
                 <Typography variant="body2">
-                  {selectedDocuments.length} di {filteredDocuments.length} selezionati
+                  {`${selectedDocuments.length} di ${filteredDocuments.length} selezionati`}
                 </Typography>
               </Box>
             )}
+
             <List sx={{ maxHeight: 400, overflow: 'auto' }}>
-              {filteredDocuments.map((document) => (
-                <ListItem 
-                  key={document.id} 
-                  button 
+              {filteredDocuments.map(document => (
+                <ListItem
+                  key={document.id}
+                  button
                   onClick={() => handleSelectDocument(document)}
-                  sx={{ 
-                    mb: 1, 
+                  sx={{
+                    mb: 1,
                     borderRadius: 1,
-                    bgcolor: multiSelect && isDocumentSelected(document.id) 
-                      ? alpha(theme.palette.primary.main, 0.1) 
-                      : 'inherit'
+                    bgcolor: multiSelect && isDocumentSelected(document.id)
+                      ? alpha(theme.palette.primary.main, 0.1)
+                      : 'inherit',
                   }}
                 >
                   {multiSelect && (
-                    <Checkbox 
-                      edge="start" 
+                    <Checkbox
+                      edge="start"
                       checked={isDocumentSelected(document.id)}
-                      tabIndex={-1}
                       disableRipple
                     />
                   )}
                   <ListItemIcon>
-                    {document.mimeType?.includes('pdf') ? <PictureAsPdfIcon color="error" /> :
-                     document.mimeType?.includes('word') ? <ArticleIcon color="primary" /> :
-                     document.mimeType?.includes('image') ? <ImageIcon color="success" /> :
-                     <FileIcon />}
+                    {document.mimeType?.includes('pdf') ? (
+                      <PictureAsPdfIcon color="error" />
+                    ) : document.mimeType?.includes('word') ? (
+                      <ArticleIcon color="primary" />
+                    ) : document.mimeType?.includes('image') ? (
+                      <ImageIcon color="success" />
+                    ) : (
+                      <FileIcon />
+                    )}
                   </ListItemIcon>
-                  <ListItemText 
-                    primary={document.name} 
-                    secondary={`${(document.size / 1024).toFixed(1)} KB • ${new Date(document.updatedAt || document.date).toLocaleDateString()}`} 
+                  <ListItemText
+                    primary={document.name}
+                    secondary={`${(document.size / 1024).toFixed(1)} KB • ${
+                      new Date(document.updatedAt || document.date).toLocaleDateString()
+                    }`}
                   />
                 </ListItem>
               ))}
@@ -497,30 +415,27 @@ const DocumentSelectorDialog = ({ open, onClose, onSelect, collections = [], doc
           </>
         )}
       </DialogContent>
+
       <DialogActions>
         <Button onClick={onClose}>Annulla</Button>
         {multiSelect && (
-          <Button 
-            onClick={handleConfirmSelection} 
-            variant="contained" 
+          <Button
+            onClick={handleConfirmSelection}
+            variant="contained"
             disabled={selectedDocuments.length === 0}
           >
             Conferma selezione
           </Button>
         )}
       </DialogActions>
-      
+
       <Snackbar
         open={notification.open}
         autoHideDuration={6000}
         onClose={handleCloseNotification}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert 
-          onClose={handleCloseNotification} 
-          severity={notification.severity} 
-          sx={{ width: '100%' }}
-        >
+        <Alert onClose={handleCloseNotification} severity={notification.severity}>
           {notification.message}
         </Alert>
       </Snackbar>
@@ -528,77 +443,58 @@ const DocumentSelectorDialog = ({ open, onClose, onSelect, collections = [], doc
   );
 };
 
-// Componente popup per la creazione di un nuovo progetto - Modificato con Cliente e Collezione
-const NewProjectDialog = ({ open, onClose, onCreate, collections = [] }) => {
+const NewProjectDialog = ({ open, onClose, onCreate }) => {
   const [newProjectName, setNewProjectName] = useState('');
   const [clientName, setClientName] = useState('');
   const [files, setFiles] = useState([]);
-  const [showCollectionSelector, setShowCollectionSelector] = useState(false);
-  const [collectionDocuments, setCollectionDocuments] = useState([]);
   const theme = useTheme();
-  
+
   const handleFileChange = (e) => {
     if (e.target.files?.length > 0) {
       setFiles(Array.from(e.target.files));
     }
   };
-  
-  const handleAddFromCollection = (selectedDocs) => {
-    setCollectionDocuments(selectedDocs);
-    setShowCollectionSelector(false);
-  };
-  
+
   const handleCreateProject = () => {
-    if (newProjectName.trim()) {
-      // Prepara i documenti dai file caricati
-      const fileDocuments = files.map(file => ({
-        id: `doc-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        name: file.name,
-        size: file.size,
-        type: file.type,
-        date: new Date().toISOString()
-      }));
-      
-      // Combina con documenti selezionati dalle collezioni
-      const allDocuments = [
-        ...fileDocuments,
-        ...collectionDocuments
-      ];
-      
-      const newProject = {
-        id: Date.now().toString(),
-        name: newProjectName,
-        client: clientName,
-        date: new Date().toLocaleDateString(),
-        documents: allDocuments
-      };
-      
-      onCreate(newProject);
-      
-      // Reset dei campi
-      setNewProjectName('');
-      setClientName('');
-      setFiles([]);
-      setCollectionDocuments([]);
-    }
+    if (!newProjectName.trim()) return;
+
+    const fileDocuments = files.map(file => ({
+      id: `doc-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      date: new Date().toISOString()
+    }));
+
+    const newProject = {
+      id: Date.now().toString(),
+      name: newProjectName,
+      client: clientName,
+      date: new Date().toLocaleDateString(),
+      documents: fileDocuments
+    };
+
+    onCreate(newProject);
+
+    // Reset fields
+    setNewProjectName('');
+    setClientName('');
+    setFiles([]);
   };
-  
-  // Rimuove documento dalla selezione di collezione
-  const handleRemoveCollectionDocument = (docId) => {
-    setCollectionDocuments(collectionDocuments.filter(doc => doc.id !== docId));
-  };
-  
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <Box sx={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
+      <Box sx={{
+        display: 'flex',
+        justifyContent: 'space-between',
         alignItems: 'center',
         borderBottom: `1px solid ${theme.palette.divider}`,
         px: 3,
         py: 2
       }}>
-        <Typography variant="h5" fontWeight={600}>Crea Nuovo Progetto</Typography>
+        <Typography variant="h5" fontWeight={600}>
+          Crea Nuovo Progetto
+        </Typography>
       </Box>
       <DialogContent>
         <Grid container spacing={2} sx={{ mt: 0 }}>
@@ -620,7 +516,6 @@ const NewProjectDialog = ({ open, onClose, onCreate, collections = [] }) => {
               }}
             />
           </Grid>
-          
           <Grid item xs={12}>
             <TextField
               margin="dense"
@@ -638,215 +533,10 @@ const NewProjectDialog = ({ open, onClose, onCreate, collections = [] }) => {
               }}
             />
           </Grid>
-          
           <Grid item xs={12} sx={{ mt: 2 }}>
-            <Typography variant="subtitle2" gutterBottom>Documenti</Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} md={6}>
-                <Button
-                  variant="outlined"
-                  component="label"
-                  fullWidth
-                  startIcon={<AttachFileIcon />}
-                  sx={{ py: 1.5 }}
-                >
-                  {files.length > 0 ? `${files.length} documenti selezionati` : 'Carica documenti'}
-                  <input
-                    type="file"
-                    hidden
-                    multiple
-                    onChange={handleFileChange}
-                  />
-                </Button>
-              </Grid>
-              <Grid item xs={12} md={6}>
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  startIcon={<FolderIcon />}
-                  sx={{ py: 1.5 }}
-                  onClick={() => setShowCollectionSelector(true)}
-                >
-                  {collectionDocuments.length > 0 ? `${collectionDocuments.length} da collezioni` : 'Aggiungi da collezione'}
-                </Button>
-              </Grid>
-            </Grid>
-          </Grid>
-          
-          {files.length > 0 && (
-            <Grid item xs={12}>
-              <Typography variant="subtitle2" gutterBottom>File caricati:</Typography>
-              <Paper variant="outlined" sx={{ p: 1.5, mt: 1, maxHeight: '150px', overflow: 'auto' }}>
-                <List dense>
-                  {files.map((file, index) => (
-                    <ListItem 
-                      key={index} 
-                      sx={{ py: 0.5 }}
-                      secondaryAction={
-                        <IconButton 
-                          edge="end" 
-                          size="small" 
-                          onClick={() => setFiles(files.filter((_, i) => i !== index))}
-                        >
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      }
-                    >
-                      <ListItemIcon sx={{ minWidth: '36px' }}>
-                        <DescriptionIcon fontSize="small" />
-                      </ListItemIcon>
-                      <ListItemText 
-                        primary={file.name} 
-                        secondary={`${(file.size / 1024).toFixed(1)} KB`}
-                        primaryTypographyProps={{ variant: 'body2' }}
-                        secondaryTypographyProps={{ variant: 'caption' }}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              </Paper>
-            </Grid>
-          )}
-          
-          {collectionDocuments.length > 0 && (
-            <Grid item xs={12}>
-              <Typography variant="subtitle2" gutterBottom>Documenti da collezioni:</Typography>
-              <Paper variant="outlined" sx={{ p: 1.5, mt: 1, maxHeight: '150px', overflow: 'auto' }}>
-                <List dense>
-                  {collectionDocuments.map((doc) => (
-                    <ListItem 
-                      key={doc.id} 
-                      sx={{ py: 0.5 }}
-                      secondaryAction={
-                        <IconButton 
-                          edge="end" 
-                          size="small" 
-                          onClick={() => handleRemoveCollectionDocument(doc.id)}
-                        >
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      }
-                    >
-                      <ListItemIcon sx={{ minWidth: '36px' }}>
-                        {doc.mimeType?.includes('pdf') ? <PictureAsPdfIcon color="error" /> :
-                         doc.mimeType?.includes('word') ? <ArticleIcon color="primary" /> :
-                         doc.mimeType?.includes('image') ? <ImageIcon color="success" /> :
-                         <FileIcon />}
-                      </ListItemIcon>
-                      <ListItemText 
-                        primary={doc.name} 
-                        secondary={doc.size ? `${(doc.size / 1024).toFixed(1)} KB` : ''}
-                        primaryTypographyProps={{ variant: 'body2' }}
-                        secondaryTypographyProps={{ variant: 'caption' }}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              </Paper>
-            </Grid>
-          )}
-        </Grid>
-      </DialogContent>
-      <DialogActions sx={{ px: 3, pb: 3 }}>
-        <Button onClick={onClose} variant="outlined">Annulla</Button>
-        <Button 
-          onClick={handleCreateProject} 
-          variant="contained"
-          disabled={!newProjectName.trim()}
-          startIcon={<AddIcon />}
-        >
-          Crea Progetto
-        </Button>
-      </DialogActions>
-      
-      {/* Dialog per selezionare documenti da collezioni */}
-      <DocumentSelectorDialog
-        open={showCollectionSelector}
-        onClose={() => setShowCollectionSelector(false)}
-        onSelect={handleAddFromCollection}
-        collections={collections}
-        multiSelect={true}
-      />
-    </Dialog>
-  );
-};
-
-// Componente per creare una nuova collezione - con gestione documenti
-const NewCollectionDialog = ({ open, onClose, onCreate, onUploadDocuments }) => {
-  const [collectionName, setCollectionName] = useState('');
-  const [files, setFiles] = useState([]);
-  const theme = useTheme();
-
-  // Reset dei campi quando il dialogo viene aperto
-  useEffect(() => {
-    if (open) {
-      setCollectionName('');
-      setFiles([]);
-    }
-  }, [open]);
-  
-  const handleFileChange = (e) => {
-    if (e.target.files?.length > 0) {
-      setFiles(Array.from(e.target.files));
-    }
-  };
-  
-  const handleCreateCollection = () => {
-    if (collectionName.trim()) {
-      const newCollection = {
-        id: 'col-' + Date.now().toString(),
-        name: collectionName,
-        documentCount: files.length,
-        createdAt: new Date().toISOString()
-      };
-      
-      onCreate(newCollection);
-      
-      // Se ci sono file, chiamiamo la funzione di upload
-      if (files.length > 0 && onUploadDocuments) {
-        onUploadDocuments(newCollection.id, files);
-      }
-      
-      // Reset dei campi
-      setCollectionName('');
-      setFiles([]);
-    }
-  };
-  
-  return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <Box sx={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
-       borderBottom: `1px solid ${theme.palette.divider}`,
-        px: 3,
-        py: 2
-      }}>
-        <Typography variant="h5" fontWeight={600}>Crea Nuova Collezione</Typography>
-      </Box>
-      <DialogContent>
-        <Grid container spacing={2} sx={{ mt: 0 }}>
-          <Grid item xs={12}>
-            <TextField
-              autoFocus
-              margin="dense"
-              label="Nome della collezione"
-              fullWidth
-              variant="outlined"
-              value={collectionName}
-              onChange={(e) => setCollectionName(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <CreateNewFolderIcon color="secondary" />
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </Grid>
-          
-          <Grid item xs={12} sx={{ mt: 2 }}>
+            <Typography variant="subtitle2" gutterBottom>
+              Documenti
+            </Typography>
             <Button
               variant="outlined"
               component="label"
@@ -855,25 +545,25 @@ const NewCollectionDialog = ({ open, onClose, onCreate, onUploadDocuments }) => 
               sx={{ py: 1.5 }}
             >
               {files.length > 0 ? `${files.length} documenti selezionati` : 'Carica documenti'}
-              <input
-                type="file"
-                hidden
-                multiple
-                onChange={handleFileChange}
-              />
+              <input type="file" hidden multiple onChange={handleFileChange} />
             </Button>
           </Grid>
-          
+
           {files.length > 0 && (
             <Grid item xs={12}>
+              <Typography variant="subtitle2" gutterBottom>
+                File caricati:
+              </Typography>
               <Paper variant="outlined" sx={{ p: 1.5, mt: 1, maxHeight: '150px', overflow: 'auto' }}>
                 <List dense>
                   {files.map((file, index) => (
-                    <ListItem key={index} sx={{ py: 0.5 }}
+                    <ListItem
+                      key={index}
+                      sx={{ py: 0.5 }}
                       secondaryAction={
-                        <IconButton 
-                          edge="end" 
-                          size="small" 
+                        <IconButton
+                          edge="end"
+                          size="small"
                           onClick={() => setFiles(files.filter((_, i) => i !== index))}
                         >
                           <DeleteIcon fontSize="small" />
@@ -883,8 +573,8 @@ const NewCollectionDialog = ({ open, onClose, onCreate, onUploadDocuments }) => 
                       <ListItemIcon sx={{ minWidth: '36px' }}>
                         <DescriptionIcon fontSize="small" />
                       </ListItemIcon>
-                      <ListItemText 
-                        primary={file.name} 
+                      <ListItemText
+                        primary={file.name}
                         secondary={`${(file.size / 1024).toFixed(1)} KB`}
                         primaryTypographyProps={{ variant: 'body2' }}
                         secondaryTypographyProps={{ variant: 'caption' }}
@@ -898,95 +588,75 @@ const NewCollectionDialog = ({ open, onClose, onCreate, onUploadDocuments }) => 
         </Grid>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 3 }}>
-        <Button onClick={onClose} variant="outlined">Annulla</Button>
-        <Button 
-          onClick={handleCreateCollection} 
+        <Button onClick={onClose} variant="outlined">
+          Annulla
+        </Button>
+        <Button
+          onClick={handleCreateProject}
           variant="contained"
-          disabled={!collectionName.trim()}
-          startIcon={<CreateNewFolderIcon />}
-          color="secondary"
+          disabled={!newProjectName.trim()}
+          startIcon={<AddIcon />}
         >
-          Crea Collezione
+          Crea Progetto
         </Button>
       </DialogActions>
     </Dialog>
   );
 };
 
-// Componente per il dialogo di modifica progetto - Aggiornato con cliente e collezioni
-const EditProjectDialog = ({ open, onClose, project, onUpdate, collections = [] }) => {
+const EditProjectDialog = ({ open, onClose, project, onUpdate }) => {
   const [projectToEdit, setProjectToEdit] = useState(null);
   const [files, setFiles] = useState([]);
-  const [showCollectionSelector, setShowCollectionSelector] = useState(false);
-  const [addedDocuments, setAddedDocuments] = useState([]);
   const theme = useTheme();
 
   // Inizializza i dati del progetto quando il dialogo viene aperto
   useEffect(() => {
     if (open && project) {
-      setProjectToEdit({...project});
+      setProjectToEdit({ ...project });
       setFiles([]);
-      setAddedDocuments([]);
     }
   }, [open, project]);
-
-  const handleUpdateProject = () => {
-    if (projectToEdit) {
-      // Aggiungi i nuovi file ai documenti esistenti
-      const newFileDocuments = files.map(file => ({
-        id: `doc-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        name: file.name,
-        size: file.size,
-        type: file.type,
-        date: new Date().toISOString()
-      }));
-      
-      const updatedProject = {
-        ...projectToEdit,
-        documents: [
-          ...(projectToEdit.documents || []),
-          ...newFileDocuments,
-          ...addedDocuments
-        ]
-      };
-      
-      onUpdate(updatedProject);
-      setFiles([]);
-      setAddedDocuments([]);
-    }
-  };
 
   const handleFileChange = (e) => {
     if (e.target.files?.length > 0) {
       setFiles(Array.from(e.target.files));
     }
   };
-  
+
   const handleDeleteDocument = (docId) => {
-    setProjectToEdit({
+    setProjectToEdit(prev => ({
+      ...prev,
+      documents: (prev.documents || []).filter(doc => doc.id !== docId)
+    }));
+  };
+
+  const handleUpdateProject = () => {
+    if (!projectToEdit) return;
+
+    const newFileDocuments = files.map(file => ({
+      id: `doc-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      date: new Date().toISOString()
+    }));
+
+    const updatedProject = {
       ...projectToEdit,
-      documents: projectToEdit.documents.filter(doc => doc.id !== docId)
-    });
-  };
-  
-  const handleAddFromCollection = (selectedDocs) => {
-    setAddedDocuments(selectedDocs);
-    setShowCollectionSelector(false);
-  };
-  
-  const handleRemoveAddedDocument = (docId) => {
-    setAddedDocuments(addedDocuments.filter(doc => doc.id !== docId));
+      documents: [
+        ...(projectToEdit.documents || []),
+        ...newFileDocuments
+      ]
+    };
+
+    onUpdate(updatedProject);
+    setFiles([]);
   };
 
   if (!projectToEdit) return null;
 
   return (
-    <Dialog 
-      open={open} 
-      onClose={onClose}
-      maxWidth="md"
-      fullWidth
-    >
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>Modifica Progetto</DialogTitle>
       <DialogContent>
         <Grid container spacing={2} sx={{ mt: 0 }}>
@@ -998,7 +668,7 @@ const EditProjectDialog = ({ open, onClose, project, onUpdate, collections = [] 
               fullWidth
               variant="outlined"
               value={projectToEdit.name || ''}
-              onChange={(e) => setProjectToEdit({...projectToEdit, name: e.target.value})}
+              onChange={(e) => setProjectToEdit(prev => ({ ...prev, name: e.target.value }))}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -1008,7 +678,7 @@ const EditProjectDialog = ({ open, onClose, project, onUpdate, collections = [] 
               }}
             />
           </Grid>
-          
+
           <Grid item xs={12}>
             <TextField
               margin="dense"
@@ -1016,7 +686,7 @@ const EditProjectDialog = ({ open, onClose, project, onUpdate, collections = [] 
               fullWidth
               variant="outlined"
               value={projectToEdit.client || ''}
-              onChange={(e) => setProjectToEdit({...projectToEdit, client: e.target.value})}
+              onChange={(e) => setProjectToEdit(prev => ({ ...prev, client: e.target.value }))}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -1026,18 +696,23 @@ const EditProjectDialog = ({ open, onClose, project, onUpdate, collections = [] 
               }}
             />
           </Grid>
-          
+
           <Grid item xs={12} sx={{ mt: 2 }}>
-            <Typography variant="subtitle1" gutterBottom>Documenti ({projectToEdit.documents?.length || 0})</Typography>
-            
-            {projectToEdit.documents && projectToEdit.documents.length > 0 ? (
+            <Typography variant="subtitle1" gutterBottom>
+              Documenti ({(projectToEdit.documents || []).length})
+            </Typography>
+            {(projectToEdit.documents || []).length > 0 ? (
               <Paper variant="outlined" sx={{ p: 1.5, maxHeight: '200px', overflow: 'auto' }}>
                 <List dense>
-                  {projectToEdit.documents.map((doc) => (
-                    <ListItem 
-                      key={doc.id} 
+                  {projectToEdit.documents.map(doc => (
+                    <ListItem
+                      key={doc.id}
                       secondaryAction={
-                        <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteDocument(doc.id)}>
+                        <IconButton
+                          edge="end"
+                          aria-label="delete"
+                          onClick={() => handleDeleteDocument(doc.id)}
+                        >
                           <DeleteIcon fontSize="small" color="error" />
                         </IconButton>
                       }
@@ -1048,8 +723,8 @@ const EditProjectDialog = ({ open, onClose, project, onUpdate, collections = [] 
                          doc.type?.includes('image') ? <ImageIcon color="success" /> :
                          <FileIcon />}
                       </ListItemIcon>
-                      <ListItemText 
-                        primary={doc.name} 
+                      <ListItemText
+                        primary={doc.name}
                         secondary={`${(doc.size / 1024).toFixed(1)} KB • ${new Date(doc.date).toLocaleDateString()}`}
                       />
                     </ListItem>
@@ -1069,9 +744,11 @@ const EditProjectDialog = ({ open, onClose, project, onUpdate, collections = [] 
               </Box>
             )}
           </Grid>
-          
+
           <Grid item xs={12} sx={{ mt: 2 }}>
-            <Typography variant="subtitle2" gutterBottom>Aggiungi documenti</Typography>
+            <Typography variant="subtitle2" gutterBottom>
+              Aggiungi nuovi documenti
+            </Typography>
             <Grid container spacing={2}>
               <Grid item xs={12} md={6}>
                 <Button
@@ -1090,34 +767,25 @@ const EditProjectDialog = ({ open, onClose, project, onUpdate, collections = [] 
                   />
                 </Button>
               </Grid>
-              <Grid item xs={12} md={6}>
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  startIcon={<FolderIcon />}
-                  sx={{ py: 1.5 }}
-                  onClick={() => setShowCollectionSelector(true)}
-                >
-                  Aggiungi da collezione
-                </Button>
-              </Grid>
             </Grid>
           </Grid>
-          
+
           {files.length > 0 && (
             <Grid item xs={12}>
-              <Typography variant="subtitle2" gutterBottom>File caricati:</Typography>
+              <Typography variant="subtitle2" gutterBottom>
+                File caricati:
+              </Typography>
               <Paper variant="outlined" sx={{ p: 1.5, mt: 1, maxHeight: '150px', overflow: 'auto' }}>
                 <List dense>
                   {files.map((file, index) => (
-                    <ListItem 
-                      key={index} 
+                    <ListItem
+                      key={index}
                       sx={{ py: 0.5 }}
                       secondaryAction={
-                        <IconButton 
-                          edge="end" 
-                          size="small" 
-                          onClick={() => setFiles(files.filter((_, i) => i !== index))}
+                        <IconButton
+                          edge="end"
+                          size="small"
+                          onClick={() => setFiles(prev => prev.filter((_, i) => i !== index))}
                         >
                           <DeleteIcon fontSize="small" />
                         </IconButton>
@@ -1126,47 +794,9 @@ const EditProjectDialog = ({ open, onClose, project, onUpdate, collections = [] 
                       <ListItemIcon sx={{ minWidth: '36px' }}>
                         <DescriptionIcon fontSize="small" />
                       </ListItemIcon>
-                      <ListItemText 
-                        primary={file.name} 
+                      <ListItemText
+                        primary={file.name}
                         secondary={`${(file.size / 1024).toFixed(1)} KB`}
-                        primaryTypographyProps={{ variant: 'body2' }}
-                        secondaryTypographyProps={{ variant: 'caption' }}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              </Paper>
-            </Grid>
-          )}
-          
-          {addedDocuments.length > 0 && (
-            <Grid item xs={12}>
-              <Typography variant="subtitle2" gutterBottom>Documenti da collezioni:</Typography>
-              <Paper variant="outlined" sx={{ p: 1.5, mt: 1, maxHeight: '150px', overflow: 'auto' }}>
-                <List dense>
-                  {addedDocuments.map((doc) => (
-                    <ListItem 
-                      key={doc.id} 
-                      sx={{ py: 0.5 }}
-                      secondaryAction={
-                        <IconButton 
-                          edge="end" 
-                          size="small" 
-                          onClick={() => handleRemoveAddedDocument(doc.id)}
-                        >
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      }
-                    >
-                      <ListItemIcon sx={{ minWidth: '36px' }}>
-                        {doc.mimeType?.includes('pdf') ? <PictureAsPdfIcon color="error" /> :
-                         doc.mimeType?.includes('word') ? <ArticleIcon color="primary" /> :
-                         doc.mimeType?.includes('image') ? <ImageIcon color="success" /> :
-                         <FileIcon />}
-                      </ListItemIcon>
-                      <ListItemText 
-                        primary={doc.name} 
-                        secondary={doc.size ? `${(doc.size / 1024).toFixed(1)} KB` : ''}
                         primaryTypographyProps={{ variant: 'body2' }}
                         secondaryTypographyProps={{ variant: 'caption' }}
                       />
@@ -1180,253 +810,18 @@ const EditProjectDialog = ({ open, onClose, project, onUpdate, collections = [] 
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Annulla</Button>
-        <Button 
-          onClick={handleUpdateProject} 
+        <Button
+          onClick={handleUpdateProject}
           variant="contained"
           disabled={!projectToEdit.name}
         >
           Aggiorna
         </Button>
       </DialogActions>
-      
-      {/* Dialog per selezionare documenti da collezioni */}
-      <DocumentSelectorDialog
-        open={showCollectionSelector}
-        onClose={() => setShowCollectionSelector(false)}
-        onSelect={handleAddFromCollection}
-        collections={collections}
-        multiSelect={true}
-      />
     </Dialog>
   );
 };
 
-// Componente per il dialogo di modifica collezione - Aggiornato per gestire documenti
-const EditCollectionDialog = ({ open, onClose, collection, onUpdate, documentService }) => {
-  const [collectionToEdit, setCollectionToEdit] = useState(null);
-  const [files, setFiles] = useState([]);
-  const [documents, setDocuments] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const theme = useTheme();
-
-  // Inizializza i dati della collezione quando il dialogo viene aperto
-  useEffect(() => {
-    if (open && collection) {
-      setCollectionToEdit({...collection});
-      setFiles([]);
-      loadCollectionDocuments(collection.id);
-    }
-  }, [open, collection]);
-
-  // Carica i documenti della collezione
-  const loadCollectionDocuments = async (collectionId) => {
-    if (!collectionId) return;
-    
-    setLoading(true);
-    try {
-      // In produzione si userebbe documentService.getCollectionDocuments
-      // Qui simuliamo una risposta con documenti fittizi
-      const mockDocuments = [
-        {
-          id: `doc-${Date.now()}-1`,
-          name: `Doc_${collection.name}_1.docx`,
-          size: 245 * 1024,
-          type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-          date: new Date().toISOString(),
-          collectionId: collectionId
-        },
-        {
-          id: `doc-${Date.now()}-2`,
-          name: `Doc_${collection.name}_2.pdf`,
-          size: 412 * 1024,
-          type: 'application/pdf',
-          date: new Date().toISOString(),
-          collectionId: collectionId
-        }
-      ];
-      
-      setDocuments(mockDocuments);
-    } catch (error) {
-      console.error("Errore durante il caricamento dei documenti:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleUpdateCollection = () => {
-    if (collectionToEdit) {
-      // Calcola il nuovo conteggio documenti
-      const documentCount = documents.length + files.length;
-      
-      const updatedCollection = {
-        ...collectionToEdit,
-        documentCount
-      };
-      
-      onUpdate(updatedCollection, files);
-      setFiles([]);
-    }
-  };
-
-  const handleFileChange = (e) => {
-    if (e.target.files?.length > 0) {
-      setFiles(Array.from(e.target.files));
-    }
-  };
-  
-  const handleDeleteDocument = (docId) => {
-    setDocuments(documents.filter(doc => doc.id !== docId));
-  };
-
-  if (!collectionToEdit) return null;
-
-  return (
-    <Dialog 
-      open={open} 
-      onClose={onClose}
-      maxWidth="md"
-      fullWidth
-    >
-      <DialogTitle>Modifica Collezione</DialogTitle>
-      <DialogContent>
-        <Grid container spacing={2} sx={{ mt: 0 }}>
-          <Grid item xs={12}>
-            <TextField
-              autoFocus
-              margin="dense"
-              label="Nome della collezione"
-              fullWidth
-              variant="outlined"
-              value={collectionToEdit.name || ''}
-              onChange={(e) => setCollectionToEdit({...collectionToEdit, name: e.target.value})}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <CreateNewFolderIcon color="secondary" />
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </Grid>
-          
-          <Grid item xs={12} sx={{ mt: 2 }}>
-            <Typography variant="subtitle1" gutterBottom>
-              Documenti nella collezione ({documents.length})
-            </Typography>
-            
-            {loading ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
-                <CircularProgress size={30} />
-              </Box>
-            ) : documents.length > 0 ? (
-              <Paper variant="outlined" sx={{ p: 1.5, maxHeight: '200px', overflow: 'auto' }}>
-                <List dense>
-                  {documents.map((doc) => (
-                    <ListItem 
-                      key={doc.id} 
-                      secondaryAction={
-                        <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteDocument(doc.id)}>
-                          <DeleteIcon fontSize="small" color="error" />
-                        </IconButton>
-                      }
-                    >
-                      <ListItemIcon>
-                        {doc.type?.includes('pdf') ? <PictureAsPdfIcon color="error" /> :
-                         doc.type?.includes('word') ? <ArticleIcon color="primary" /> :
-                         doc.type?.includes('image') ? <ImageIcon color="success" /> :
-                         <FileIcon />}
-                      </ListItemIcon>
-                      <ListItemText 
-                        primary={doc.name} 
-                        secondary={`${(doc.size / 1024).toFixed(1)} KB • ${new Date(doc.date).toLocaleDateString()}`}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              </Paper>
-            ) : (
-              <Box sx={{ 
-                p: 2, 
-                textAlign: 'center', 
-                border: `1px dashed ${theme.palette.divider}`,
-                borderRadius: 1
-              }}>
-                <Typography variant="body2" color="text.secondary">
-                  Nessun documento in questa collezione
-                </Typography>
-              </Box>
-            )}
-          </Grid>
-          
-          <Grid item xs={12} sx={{ mt: 2 }}>
-            <Button
-              variant="outlined"
-              component="label"
-              fullWidth
-              startIcon={<AttachFileIcon />}
-              sx={{ py: 1.5 }}
-            >
-              {files.length > 0 ? `${files.length} nuovi documenti selezionati` : 'Aggiungi documenti'}
-              <input
-                type="file"
-                hidden
-                multiple
-                onChange={handleFileChange}
-              />
-            </Button>
-          </Grid>
-          
-          {files.length > 0 && (
-            <Grid item xs={12}>
-              <Paper variant="outlined" sx={{ p: 1.5, mt: 1, maxHeight: '150px', overflow: 'auto' }}>
-                <List dense>
-                  {files.map((file, index) => (
-                    <ListItem 
-                      key={index} 
-                      sx={{ py: 0.5 }}
-                      secondaryAction={
-                        <IconButton 
-                          edge="end" 
-                          size="small" 
-                          onClick={() => setFiles(files.filter((_, i) => i !== index))}
-                        >
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      }
-                    >
-                      <ListItemIcon sx={{ minWidth: '36px' }}>
-                        <DescriptionIcon fontSize="small" />
-                      </ListItemIcon>
-                      <ListItemText 
-                        primary={file.name} 
-                        secondary={`${(file.size / 1024).toFixed(1)} KB`}
-                        primaryTypographyProps={{ variant: 'body2' }}
-                        secondaryTypographyProps={{ variant: 'caption' }}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-              </Paper>
-            </Grid>
-          )}
-        </Grid>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Annulla</Button>
-        <Button 
-          onClick={handleUpdateCollection} 
-          variant="contained"
-          disabled={!collectionToEdit.name}
-          color="secondary"
-        >
-          Aggiorna
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
-};
-
-// Componente principale Multiagent
 function Multiagent() {
   const { theme } = useContext(ThemeContext);
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -1454,19 +849,7 @@ function Multiagent() {
   // Stato per il dialogo di conferma eliminazione
   const [deleteConfirmDialog, setDeleteConfirmDialog] = useState(false);
   const [projectToDelete, setProjectToDelete] = useState(null);
-  
-  // Stato per le collezioni
-  const [collections, setCollections] = useState([]);
-  const [newCollectionDialog, setNewCollectionDialog] = useState(false);
-  const [editCollectionDialog, setEditCollectionDialog] = useState(false);
-  const [collectionToEdit, setCollectionToEdit] = useState(null);
-  const [deleteCollectionDialog, setDeleteCollectionDialog] = useState(false);
-  const [collectionToDelete, setCollectionToDelete] = useState(null);
-  const [selectedCollection, setSelectedCollection] = useState(null);
-  
-  // Stato per il toggle delle collezioni (espanse/compresse)
-  const [collectionsExpanded, setCollectionsExpanded] = useState(false);
-  
+ 
   // Stato per i gruppi di lavoro disponibili
   const [workspaces, setWorkspaces] = useState([
     { id: 'ws-1', name: 'Team Contenzioso' },
@@ -1505,8 +888,6 @@ function Multiagent() {
   
   // Nuovo stato per DocumentService e funzionalità correlate
   const [documentService, setDocumentService] = useState(null);
-  const [documentCollections, setDocumentCollections] = useState([]);
-  const [isLoadingDocuments, setIsLoadingDocuments] = useState(false);
   const [documentSelectorOpen, setDocumentSelectorOpen] = useState(false);
   const [processingDocuments, setProcessingDocuments] = useState([]);
   const [notification, setNotification] = useState({ show: false, message: '', severity: 'success' });
@@ -1522,41 +903,24 @@ function Multiagent() {
     { id: 'executor', name: 'Esecutore', description: 'Automazione di pratiche standardizzate', nickName: '@esecutore' },
   ];
 
-  // Progetti e collezioni filtrati in base alla ricerca
   const filteredProjects = useMemo(() => {
     if (!searchTerm.trim()) return projects;
-    
+  
     return projects.filter(project => 
       project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (project.client && project.client.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (project.notes && project.notes.toLowerCase().includes(searchTerm.toLowerCase()))
     );
   }, [projects, searchTerm]);
-  
-  const filteredCollections = useMemo(() => {
-    if (!searchTerm.trim()) return collections;
-    
-    return collections.filter(collection => 
-      collection.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (collection.tag && collection.tag.toLowerCase().includes(searchTerm.toLowerCase()))
-    );
-  }, [collections, searchTerm]);
 
-  // Inizializzazione del servizio DocumentService
+  
   useEffect(() => {
-    // Simulazione di API key - in produzione verrebbe ottenuta dall'autenticazione
+    // Simulazione di API key – in produzione verrebbe ottenuta dall'autenticazione
     const apiKey = 'example_api_key_' + Date.now();
     const service = new DocumentService(apiKey);
     setDocumentService(service);
-    
-    // Simula il recupero delle collezioni di documenti
-    const mockCollections = [
-      { id: 'col-1', name: 'Contenziosi', documentCount: 24 },
-      { id: 'col-2', name: 'Contratti', documentCount: 16 },
-      { id: 'col-3', name: 'Documenti Personali', documentCount: 8 }
-    ];
-    setDocumentCollections(mockCollections);
-    setCollections(mockCollections);
+  
+    // 🚫 Rimosse tutte le righe di mockCollections e setCollections
   }, []);
 
   // Funzione per gestire l'upload di documenti in una collezione
@@ -1790,43 +1154,6 @@ function Multiagent() {
     } else {
       setDocuments([]);
     }
-  };
-  
-  const handleSelectCollection = (collection) => {
-    setSelectedCollection(collection);
-    
-    // Qui puoi implementare la logica per caricare i documenti della collezione
-    // utilizzando documentService.getCollectionDocuments(collection.id)
-    
-    // Esempio:
-    setIsLoadingDocuments(true);
-    
-    setTimeout(() => {
-      // Simulazione del caricamento dei documenti di una collezione
-      const mockDocuments = [
-        {
-          id: `doc-${Date.now()}-1`,
-          name: `Doc_${collection.name}_1.docx`,
-          size: 245 * 1024,
-          type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-          date: new Date().toISOString(),
-          isReadOnly: true,
-          content: `Contenuto del documento 1 nella collezione "${collection.name}"`
-        },
-        {
-          id: `doc-${Date.now()}-2`,
-          name: `Doc_${collection.name}_2.pdf`,
-          size: 412 * 1024,
-          type: 'application/pdf',
-          date: new Date().toISOString(),
-          isReadOnly: true,
-          content: `Contenuto del documento 2 nella collezione "${collection.name}"`
-        }
-      ];
-      
-      setDocuments(mockDocuments);
-      setIsLoadingDocuments(false);
-    }, 1000);
   };
   
   const handleSendPrompt = () => {
