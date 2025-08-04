@@ -39,14 +39,17 @@ export const DocumentEditorDialog = ({ open, onClose, document: docData, onSave 
     }
   }, [docData, open]);
   
-  // Salva il documento
+  // Salva il documento - MODIFICATO PER RISOLVERE IL PROBLEMA 2
   const handleSave = () => {
     if (!docData || !editorRef.current) return;
     
     // Ottieni il contenuto corrente dell'editor
     const content = editorRef.current.innerHTML;
     
-    // Prepara il contenuto HTML per Word
+    // Prepara il contenuto HTML per Word, ma conserva solo il corpo per la visualizzazione nell'artifact
+    const cleanContent = content; // Questo è il contenuto che verrà visualizzato nell'artifact
+    
+    // Prepara l'HTML completo per DOCX
     const wordHtml = `<!DOCTYPE html>
 <html xmlns:o="urn:schemas-microsoft-com:office:office" 
       xmlns:w="urn:schemas-microsoft-com:office:word"
@@ -81,7 +84,8 @@ export const DocumentEditorDialog = ({ open, onClose, document: docData, onSave 
     const updatedDocument = {
       ...docData,
       name: documentTitle.endsWith('.docx') ? documentTitle : documentTitle + '.docx',
-      content: wordHtml,
+      content: cleanContent, // Utilizza il contenuto pulito per la visualizzazione
+      rawContent: wordHtml, // Mantieni l'HTML completo in una proprietà separata per il download
       type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       lastModified: new Date().toISOString()
     };

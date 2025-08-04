@@ -1,7 +1,0 @@
-alpine-baselayout
-alpine-keys
-alpine-release
-apk-tools
-busybox
-ca-certificates
-libc-utils

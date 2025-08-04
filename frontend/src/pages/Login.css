@@ -1,4 +1,13 @@
 /* src/pages/Login.css */
+/* Reset globale per rimuovere i margini */
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
 :root {
     /* Theme variables - will be updated by JS based on user preference */
     --background-primary: #f7f7fb;
@@ -18,6 +27,14 @@
     --error-color: #e53e3e;
     --success-color: #38a169;
     --icon-color: #718096;
+    --info-color: #17a2b8;
+    
+    /* RGB variants for opacity control */
+    --success-color-rgb: 56, 161, 105;
+    --error-color-rgb: 229, 62, 62;
+    --accent-primary-rgb: 107, 70, 193;
+    --background-secondary-rgb: 255, 255, 255;
+    --info-color-rgb: 23, 162, 184;
     
     /* Constants (don't change with theme) */
     --transition-standard: all 0.3s ease;
@@ -42,7 +59,15 @@
     --shadow-color-strong: rgba(0, 0, 0, 0.35);
     --error-color: #fc8181;
     --success-color: #68d391;
+    --info-color: #56cade;
     --icon-color: #a0aec0;
+    
+    /* RGB variants for dark mode */
+    --success-color-rgb: 104, 211, 145;
+    --error-color-rgb: 252, 129, 129;
+    --accent-primary-rgb: 139, 92, 246;
+    --background-secondary-rgb: 30, 30, 56;
+    --info-color-rgb: 86, 202, 222;
 }
 
 * {
@@ -61,16 +86,67 @@ body {
     background-color: var(--background-primary);
     color: var(--text-primary);
     min-height: 100vh;
-    padding: 40px 20px;
     position: relative;
     overflow-x: hidden;
     transition: var(--transition-smooth);
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100vw;
+    height: 100vh;
 }
 
+/* Stili per la pagina di login */
+.login-page-scope {
+    background: linear-gradient(135deg, var(--background-primary) 0%, var(--background-tertiary) 100%);
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -1;
+}
+
+body.dark-theme,
+.dark-theme {
+    background-color: #17172f !important;
+}
+
+body.dark-theme.login-page-scope,
+.dark-theme.login-page-scope {
+    background: linear-gradient(135deg, #17172f 0%, #1e1e38 100%) !important;
+}
+
+/* Rimuove lo sfondo nero rettangolare */
 .auth-page {
-    max-width: 1200px;
-    margin: 0 auto;
-    position: relative;
+    max-width: 100vw;
+    width: 100vw;
+    height: 100vh;
+    margin: 0 !important;
+    padding: 0 !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: transparent !important; /* Forza la trasparenza */
+    overflow: hidden;
+}
+
+.auth-layout {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    width: 100vw;
+    padding: 0;
+    margin: 0;
+    background: transparent !important; /* Forza la trasparenza */
 }
 
 .logo-container {
@@ -81,6 +157,7 @@ body {
     flex-direction: column;
     align-items: flex-start;
     z-index: 2;
+    animation: fadeIn 1s;
 }
 
 .theme-toggle {
@@ -122,12 +199,13 @@ body {
     font-weight: 700;
     font-size: 4.2rem;
     letter-spacing: 3px;
-    color: var(--text-primary);
+    color: var(--text-primary); /* Usa il colore del tema */
     position: relative;
     transition: var(--transition-smooth);
     display: inline-block;
     text-transform: uppercase;
     line-height: 1;
+    padding: 0.5rem 0;
 }
 
 .logo-main::after {
@@ -154,6 +232,9 @@ body {
     font-weight: 400;
     transition: var(--transition-smooth);
     opacity: 0.9;
+    letter-spacing: 1px;
+    text-align: center;
+    margin-top: 0.5rem;
 }
 
 /* Logo embellishments */
@@ -200,6 +281,7 @@ body {
     transform: translateZ(0);
     backface-visibility: hidden;
     will-change: transform, box-shadow;
+    backdrop-filter: blur(5px); /* Effetto vetro smerigliato */
 }
 
 .auth-title {
@@ -264,10 +346,17 @@ body {
     display: none;
     padding: 0 40px 40px;
     animation: fadeIn 0.4s forwards;
+    opacity: 0;
+    transform: translateY(10px);
+    pointer-events: none;
+    transition: all 0.3s ease-out;
 }
 
 .tab-content.active {
     display: block;
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: all;
 }
 
 @keyframes fadeIn {
@@ -322,7 +411,7 @@ body {
 .form-control:focus {
     outline: none;
     border-color: var(--accent-primary);
-    box-shadow: 0 0 0 3px rgba(107, 70, 193, 0.2);
+    box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb), 0.2);
 }
 
 .form-control:focus + .form-label,
@@ -334,17 +423,12 @@ body {
     z-index: 3;
 }
 
-.dark-theme .form-control:focus + .form-label,
-.dark-theme .form-control:not(:placeholder-shown) + .form-label {
-    background-color: var(--background-secondary);
-}
-
 .form-control:focus + .form-label {
     color: var(--accent-primary);
 }
 
 .dark-theme .form-control:focus {
-    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3);
+    box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb), 0.3);
 }
 
 .password-toggle {
@@ -390,6 +474,11 @@ body {
     height: 0;
 }
 
+.remember-checkbox:focus + .custom-checkbox,
+.terms-checkbox input:focus + .terms-custom-checkbox {
+    box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb), 0.25);
+}
+
 .custom-checkbox {
     width: 20px;
     height: 20px;
@@ -430,10 +519,15 @@ body {
 }
 
 .forgot-link {
+    background: transparent;
+    border: none;
     font-size: 0.9rem;
     color: var(--accent-primary);
+    cursor: pointer;
+    transition: var(--transition-standard);
+    padding: 0;
     text-decoration: none;
-    transition: var(--transition-smooth);
+    outline: none;
     position: relative;
     display: inline-block;
     overflow: hidden;
@@ -459,6 +553,10 @@ body {
     transform: translateX(0);
 }
 
+.forgot-link:focus {
+    outline: none;
+}
+
 .btn {
     display: flex;
     align-items: center;
@@ -479,7 +577,7 @@ body {
 .btn-primary {
     background-color: var(--accent-primary);
     color: white;
-    box-shadow: 0 6px 14px rgba(107, 70, 193, 0.2);
+    box-shadow: 0 6px 14px rgba(var(--accent-primary-rgb), 0.2);
     margin-bottom: 16px;
 }
 
@@ -501,19 +599,29 @@ body {
 
 .btn-primary:hover {
     background-color: var(--accent-secondary);
-    box-shadow: 0 8px 18px rgba(107, 70, 193, 0.35);
+    box-shadow: 0 8px 18px rgba(var(--accent-primary-rgb), 0.35);
 }
 
 .btn-primary:hover::before {
     left: 100%;
 }
 
+.btn-primary:not(:disabled):active {
+    animation: pulse 0.5s;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(var(--accent-primary-rgb), 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(var(--accent-primary-rgb), 0); }
+    100% { box-shadow: 0 0 0 0 rgba(var(--accent-primary-rgb), 0); }
+}
+
 .dark-theme .btn-primary {
-    box-shadow: 0 6px 15px rgba(139, 92, 246, 0.3);
+    box-shadow: 0 6px 15px rgba(var(--accent-primary-rgb), 0.3);
 }
 
 .dark-theme .btn-primary:hover {
-    box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+    box-shadow: 0 8px 20px rgba(var(--accent-primary-rgb), 0.4);
 }
 
 .btn-social {
@@ -599,24 +707,31 @@ body {
     margin-bottom: 24px;
     padding: 14px 16px;
     border-radius: 8px;
-    display: none;
+    display: flex;
     align-items: center;
     box-shadow: 0 3px 12px var(--shadow-color);
     animation: slideDown 0.4s forwards;
     transition: var(--transition-smooth);
     backdrop-filter: blur(5px);
+    transform: translateY(-10px);
 }
 
 .notification.success {
-    background-color: rgba(56, 161, 105, 0.08);
+    background-color: rgba(var(--success-color-rgb), 0.1);
     border-left: 4px solid var(--success-color);
     color: var(--success-color);
 }
 
 .notification.error {
-    background-color: rgba(229, 62, 62, 0.08);
+    background-color: rgba(var(--error-color-rgb), 0.1);
     border-left: 4px solid var(--error-color);
     color: var(--error-color);
+}
+
+.notification.info {
+    background-color: rgba(var(--info-color-rgb), 0.1);
+    border-left: 4px solid var(--info-color);
+    color: var(--info-color);
 }
 
 .notification.show {
@@ -631,12 +746,27 @@ body {
 @keyframes slideDown {
     from {
         opacity: 0;
-        transform: translateY(-10px);
+        transform: translateY(-20px);
     }
     to {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+.dark-theme .notification.success {
+    background-color: rgba(var(--success-color-rgb), 0.15);
+    color: var(--success-color);
+}
+
+.dark-theme .notification.error {
+    background-color: rgba(var(--error-color-rgb), 0.15);
+    color: var(--error-color);
+}
+
+.dark-theme .notification.info {
+    background-color: rgba(var(--info-color-rgb), 0.15);
+    color: var(--info-color);
 }
 
 /* Email verification form styles */
@@ -663,11 +793,11 @@ body {
 .verification-digit:focus {
     outline: none;
     border-color: var(--accent-primary);
-    box-shadow: 0 0 0 3px rgba(107, 70, 193, 0.2);
+    box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb), 0.2);
 }
 
 .dark-theme .verification-digit:focus {
-    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3);
+    box-shadow: 0 0 0 3px rgba(var(--accent-primary-rgb), 0.3);
 }
 
 .resend-code {
@@ -732,7 +862,7 @@ body {
     position: fixed;
     z-index: -1;
     transition: var(--transition-smooth);
-    opacity: 0.7;
+    opacity: 0.5; /* Aumentato per maggiore visibilità */
     pointer-events: none;
     filter: blur(40px);
 }
@@ -744,7 +874,7 @@ body {
     height: 250px;
     border-radius: 50%;
     background: radial-gradient(circle at center, var(--accent-tertiary) 0%, transparent 70%);
-    opacity: 0.15;
+    opacity: 0.25; /* Aumentato per maggiore visibilità */
     animation: float1 15s ease-in-out infinite;
 }
 
@@ -755,7 +885,7 @@ body {
     height: 200px;
     border-radius: 50%;
     background: radial-gradient(circle at center, var(--accent-tertiary) 0%, transparent 70%);
-    opacity: 0.15;
+    opacity: 0.25; /* Aumentato per maggiore visibilità */
     animation: float2 18s ease-in-out infinite;
 }
 
@@ -769,7 +899,7 @@ body {
     50% { transform: translate(30px, -30px); }
 }
 
-/* Legal-themed subtle pattern in the background */
+/* Legal-themed subtle pattern in the background - Ridotto */
 .legal-pattern {
     position: fixed;
     top: 0;
@@ -778,8 +908,9 @@ body {
     height: 100%;
     background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
     z-index: -2;
-    opacity: 0.3;
+    opacity: 0.1; /* Ridotto per renderlo più leggero */
     transition: var(--transition-smooth);
+    background-color: transparent !important;
 }
 
 /* Termini e condizioni checkbox */
@@ -845,6 +976,103 @@ body {
     text-decoration: underline;
 }
 
+/* Modal per conferma email e reset password */
+.email-confirm-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.modal-content {
+    background-color: var(--background-secondary);
+    border-radius: 16px;
+    box-shadow: 0 10px 25px var(--shadow-color-strong);
+    padding: 30px;
+    max-width: 450px;
+    width: 100%;
+    text-align: center;
+    animation: slideUp 0.4s ease-out;
+}
+
+.modal-icon {
+    font-size: 3rem;
+    color: var(--accent-primary);
+    margin-bottom: 20px;
+}
+
+.modal-content h3 {
+    font-size: 1.8rem;
+    margin-bottom: 15px;
+    color: var(--text-primary);
+}
+
+.modal-content p {
+    margin-bottom: 15px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.modal-content .note {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    opacity: 0.7;
+    font-style: italic;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* Overlay di caricamento */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(var(--background-secondary-rgb), 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 16px;
+    z-index: 10;
+    backdrop-filter: blur(5px);
+}
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(var(--accent-primary-rgb), 0.3);
+    border-radius: 50%;
+    border-top: 3px solid var(--accent-primary);
+    animation: spin 1s linear infinite;
+}
+
+/* Stile per lo spinner di caricamento */
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100%;
+    background-color: var(--background-primary);
+    transition: var(--transition-smooth);
+}
+
 /* Responsive styles */
 @media (max-width: 992px) {
     .logo-container {
@@ -879,6 +1107,27 @@ body {
         top: 20px;
         right: 20px;
     }
+    
+    .auth-layout {
+        padding: 2rem 1rem;
+    }
+    
+    .auth-container {
+        padding-top: 30px;
+    }
+    
+    .modal-content {
+        margin: 0 15px;
+        padding: 25px;
+    }
+    
+    .modal-icon {
+        font-size: 2.5rem;
+    }
+    
+    .modal-content h3 {
+        font-size: 1.5rem;
+    }
 }
 
 @media (max-width: 576px) {
@@ -912,6 +1161,23 @@ body {
     .auth-title {
         font-size: 1.4rem;
     }
+    
+    .modal-content {
+        padding: 20px;
+    }
+    
+    .modal-content h3 {
+        font-size: 1.3rem;
+        margin-bottom: 12px;
+    }
+    
+    .modal-content p {
+        font-size: 0.9rem;
+    }
+    
+    .modal-content .note {
+        font-size: 0.8rem;
+    }
 }
 
 /* For React specific adjustments */
@@ -928,33 +1194,22 @@ body {
 .btn .loading {
     display: inline-block;
 }
-/* Aggiungi queste classi al tuo Login.css */
 
-/* Stile per lo spinner di caricamento */
-.loading-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  width: 100%;
-  background-color: var(--background-primary);
-  transition: var(--transition-smooth);
+/* Fix per il tema scuro */
+/* Assicurati che l'applicazione del tema oscuro funzioni a livello globale */
+body.dark-theme,
+.dark-theme {
+    background-color: #17172f !important;
 }
 
-.loading-spinner {
-  width: 40px;
-  height: 40px;
-  border: 3px solid rgba(124, 77, 255, 0.2);
-  border-radius: 50%;
-  border-top-color: var(--accent-primary);
-  animation: spin 1s ease-in-out infinite;
+/* Correggi il colore delle label degli input nel tema scuro */
+.dark-theme .form-control:focus + .form-label,
+.dark-theme .form-control:not(:placeholder-shown) + .form-label {
+    background-color: var(--background-secondary);
 }
 
-.dark-theme .loading-spinner {
-  border: 3px solid rgba(179, 136, 255, 0.2);
-  border-top-color: var(--accent-primary);
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
+/* Fix per elementi che condividono il colore di sfondo nel tema scuro */
+.dark-theme .custom-checkbox,
+.dark-theme .terms-custom-checkbox {
+    background-color: var(--input-background);
 }

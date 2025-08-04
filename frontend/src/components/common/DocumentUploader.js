@@ -18,6 +18,7 @@ import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
+import { documentsApi } from '../../api/api.js';  // Importa il modulo API
 
 function DocumentUploader() {
   const [files, setFiles] = useState([]);
@@ -25,6 +26,7 @@ function DocumentUploader() {
   const [progress, setProgress] = useState(0);
   const [alert, setAlert] = useState({ show: false, message: '', severity: 'success' });
 
+  // Gestisce la selezione dei file
   const handleFileSelect = (e) => {
     if (e.target.files && e.target.files.length > 0) {
       const newFiles = Array.from(e.target.files);
@@ -32,11 +34,13 @@ function DocumentUploader() {
     }
   };
 
+  // Gestisce la rimozione di un file dalla lista
   const handleFileDelete = (index) => {
     setFiles(prevFiles => prevFiles.filter((_, i) => i !== index));
   };
 
-  const handleUpload = () => {
+  // Gestisce l'upload dei file
+  const handleUpload = async () => {
     if (files.length === 0) {
       setAlert({
         show: true,
@@ -49,12 +53,16 @@ function DocumentUploader() {
     setUploading(true);
     setProgress(0);
 
-    // Simulazione del caricamento
-    const interval = setInterval(() => {
-      setProgress(prevProgress => {
-        const newProgress = prevProgress + 10;
-        if (newProgress >= 100) {
-          clearInterval(interval);
+    // Caricamento dei file tramite il modulo API
+    for (let i = 0; i < files.length; i++) {
+      try {
+        // Usa la funzione uploadDocument dal modulo API
+        await documentsApi.uploadDocument(files[i], { name: files[i].name });
+        
+        // Simulazione del progresso di caricamento
+        setProgress(((i + 1) / files.length) * 100);
+        
+        if (i === files.length - 1) {
           setUploading(false);
           setFiles([]);
           setAlert({
@@ -62,13 +70,21 @@ function DocumentUploader() {
             message: 'File caricati con successo!',
             severity: 'success'
           });
-          return 100;
         }
-        return newProgress;
-      });
-    }, 500);
+      } catch (error) {
+        console.error('Errore durante il caricamento:', error);
+        setAlert({
+          show: true,
+          message: 'Errore nel caricamento dei file.',
+          severity: 'error'
+        });
+        setUploading(false);
+        break;
+      }
+    }
   };
 
+  // Gestisce la chiusura del messaggio di alert
   const handleCloseAlert = () => {
     setAlert(prev => ({ ...prev, show: false }));
   };

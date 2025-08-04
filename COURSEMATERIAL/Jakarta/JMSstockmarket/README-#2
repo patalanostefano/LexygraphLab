@@ -1,5 +1,0 @@
-For starting the JMS servant 
-
-$ java -cp JMSStockMarketServant-1.0-SNAPSHOT-jar-with-dependencies.jar it.uniroma1.jmsstockmarketservant.StockMarketServant
-
-

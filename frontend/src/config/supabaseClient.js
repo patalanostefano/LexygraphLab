@@ -1,9 +1,30 @@
-// src/config/supabaseClient.js
 import { createClient } from '@supabase/supabase-js';
 
-// Credenziali Supabase
-const supabaseUrl = 'https://jhmixisgdyvxxpyjistt.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpobWl4aXNnZHl2eHhweWppc3R0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE4ODM0ODAsImV4cCI6MjA1NzQ1OTQ4MH0.NurmxG_GBIiIMU1u5LJ9LmFPnjnkU0N2tQHX4ohrB_s';
+// Updated Supabase credentials
+const supabaseUrl = 'https://sjfdkgzmjaasjtavuhfu.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNqZmRrZ3ptamFhc2p0YXZ1aGZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE5NDUwNTIsImV4cCI6MjA1NzUyMTA1Mn0.dWBqYF31Ot73oXqf8v2KaMj37Tkzb3dd7Szq1WviDPA'; // Replace with your actual key
 
-// Crea e esporta il client Supabase
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// JWT Configuration options
+const supabaseOptions = {
+  auth: {
+    autoRefreshToken: true,
+    persistSession: true,
+    detectSessionInUrl: true
+  }
+};
+
+// Create and export the Supabase client with options
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, supabaseOptions);
+
+// Export the function to get the Supabase client
+export const getSupabaseClient = () => supabase;
+
+// Helper function to get JWT token from session
+export const getAuthToken = async () => {
+  const { data, error } = await supabase.auth.getSession();
+  if (error) {
+    console.error('Error retrieving auth session:', error);
+    return null;
+  }
+  return data?.session?.access_token || null;
+};

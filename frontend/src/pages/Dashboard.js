@@ -1,4 +1,3 @@
-// valis/src/pages/Dashboard.js
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import { 
   Box, 
@@ -17,7 +16,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import HelpIcon from '@mui/icons-material/Help';
 import { useNavigate } from 'react-router-dom';
-import { ThemeContext } from '../../../../../LexygraphLab-fedf0d2dd232066d92eb7a8e8a9d4787cfd35c36/LexygraphLab-fedf0d2dd232066d92eb7a8e8a9d4787cfd35c36/frontend/src/context/ThemeContext';
+import { ThemeContext } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
 
 // Logo VALIS esattamente come nell'immagine con effetti hover animati

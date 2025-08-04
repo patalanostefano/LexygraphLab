@@ -1,0 +1,254 @@
+openapi: 3.0.3
+info:
+  title: Agent Orchestrator Service API
+  description: Multi-agent orchestration and communication service
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Development server
+
+paths:
+  /orchestrator/plan:
+    post:
+      summary: Request execution plan
+      description: Send prompt and document IDs to orchestrator for strategy planning
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                prompt:
+                  type: string
+                  description: User's initial prompt/request
+                documentIds:
+                  type: array
+                  items:
+                    type: string
+                  description: List of document IDs to attach (userId_projectId_docId format)
+                userId:
+                  type: string
+                  description: User identifier
+                projectId:
+                  type: string
+                  description: Project identifier
+              required:
+                - prompt
+                - documentIds
+                - userId
+                - projectId
+      responses:
+        '200':
+          description: Execution plan generated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  planId:
+                    type: string
+                    description: Unique identifier for this planning session
+                  strategy:
+                    type: string
+                    description: Orchestrator's proposed execution strategy
+                  estimatedSteps:
+                    type: integer
+                    description: Number of agents/steps in the plan
+        '400':
+          description: Bad request - invalid prompt or document IDs
+        '500':
+          description: Internal server error
+
+  /orchestrator/plan/{planId}/confirm:
+    post:
+      summary: Confirm or modify execution plan
+      description: User confirms the plan or provides additional instructions
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                confirmed:
+                  type: boolean
+                  description: Whether user confirms the current plan
+                additionalInstructions:
+                  type: string
+                  description: Additional instructions if plan needs modification
+                  nullable: true
+              required:
+                - confirmed
+      responses:
+        '200':
+          description: Plan confirmation processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  planId:
+                    type: string
+                  status:
+                    type: string
+                    enum: [confirmed, modified, executing]
+                  updatedStrategy:
+                    type: string
+                    description: Updated strategy if modified
+                    nullable: true
+        '404':
+          description: Plan not found
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+
+  /orchestrator/execute:
+    post:
+      summary: Execute confirmed plan
+      description: Execute the confirmed plan by distributing tasks to agents
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                planId:
+                  type: string
+                  description: ID of the confirmed plan to execute
+              required:
+                - planId
+      responses:
+        '200':
+          description: Execution started successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  executionId:
+                    type: string
+                    description: Unique identifier for this execution
+                  status:
+                    type: string
+                    enum: [started, processing]
+        '404':
+          description: Plan not found or not confirmed
+        '400':
+          description: Bad request
+        '500':
+          description: Internal server error
+
+  /agents/process:
+    post:
+      summary: Process agent task
+      description: Send task to specific agent and wait for response
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                agentId:
+                  type: string
+                  description: Environment-based agent identifier
+                prompt:
+                  type: string
+                  description: Specific prompt for this agent
+                documentIds:
+                  type: array
+                  items:
+                    type: string
+                  description: Document IDs for this specific task
+                executionId:
+                  type: string
+                  description: Reference to the overall execution
+              required:
+                - agentId
+                - prompt
+                - documentIds
+                - executionId
+      responses:
+        '200':
+          description: Agent task completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  agentId:
+                    type: string
+                  prompt:
+                    type: string
+                  documentIds:
+                    type: array
+                    items:
+                      type: string
+                  executionId:
+                    type: string
+                  response:
+                    type: string
+                    description: Agent's response to the task
+                  completedAt:
+                    type: string
+                    format: date-time
+        '400':
+          description: Bad request - invalid agent ID or parameters
+        '404':
+          description: Agent not found
+        '500':
+          description: Internal server error
+
+  /orchestrator/status/{executionId}:
+    get:
+      summary: Get execution status
+      description: Check the status of an ongoing execution
+      parameters:
+        - name: executionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Execution status retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  executionId:
+                    type: string
+                  status:
+                    type: string
+                    enum: [processing, completed, failed]
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        agentId:
+                          type: string
+                        response:
+                          type: string
+                        completedAt:
+                          type: string
+                          format: date-time
+                  finalResult:
+                    type: string
+                    description: Orchestrator's final compiled result
+                    nullable: true
+        '404':
+          description: Execution not found
+        '500':
+          description: Internal server error

@@ -2,17 +2,14 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ThemeContext } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
+import { supabase } from '../config/supabaseClient';
 import './Login.css';
-
-// Credenziali di test
-const TEST_CREDENTIALS = {
-  email: 'utente@prova.com',
-  password: 'Prova123!'
-};
 
 const Login = () => {
   const navigate = useNavigate();
   const { theme } = useContext(ThemeContext);
+  const { signIn, user, loading: authLoading } = useAuth();
   const isDarkTheme = theme.palette.mode === 'dark';
   
   // State per il controllo delle tab
@@ -20,46 +17,66 @@ const Login = () => {
   // State per il controllo delle notifiche
   const [notification, setNotification] = useState({ show: false, message: '', type: '' });
   // State per i form
-  const [loginFormData, setLoginFormData] = useState({ email: '', password: '', remember: false });
+  const [loginFormData, setLoginFormData] = useState({ 
+    email: '', 
+    password: '', 
+    remember: false 
+  });
   const [registerFormData, setRegisterFormData] = useState({ 
     email: '', 
     password: '', 
     confirmPassword: '', 
     termsAccepted: false 
   });
+  const [loading, setLoading] = useState(false);
   
-  // Controlla se l'utente è già autenticato all'avvio (solo con "Ricordami" attivo)
+  // State per i modal
+  const [showEmailConfirmModal, setShowEmailConfirmModal] = useState(false);
+  const [resetPasswordModal, setResetPasswordModal] = useState({
+    show: false,
+    email: ''
+  });
+  
+  // Controlla se l'utente è già autenticato
   useEffect(() => {
-    const checkAuthentication = () => {
-      const storedUser = localStorage.getItem('testUser');
-      if (storedUser) {
-        const userInfo = JSON.parse(storedUser);
-        // Se l'utente è autenticato e ha selezionato "Ricordami"
-        if (userInfo.isAuthenticated && userInfo.remember) {
-          console.log('Utente già autenticato con "Ricordami" attivo, reindirizzamento alla dashboard...');
-          window.location.href = '/';
-        }
+    console.log('Login component mounted, checking auth state');
+    
+    const checkSession = async () => {
+      // Verifica session direttamente con Supabase
+      const { data: { session } } = await supabase.auth.getSession();
+      console.log("Current session check:", session);
+      
+      if (session) {
+        console.log("User already authenticated, redirecting to home");
+        navigate('/');
       }
     };
     
-    checkAuthentication();
-  }, []);
+    checkSession();
+  }, [navigate]);
   
   // Applica la classe di scope quando il componente viene montato
   useEffect(() => {
     document.body.classList.add('login-page-scope');
     
-    // Rimuovi la classe quando il componente viene smontato
+    // Aggiungi dark-theme se necessario
+    if (isDarkTheme) {
+      document.body.classList.add('dark-theme');
+    }
+    
     return () => {
       document.body.classList.remove('login-page-scope');
+      if (isDarkTheme) {
+        document.body.classList.remove('dark-theme');
+      }
     };
-  }, []);
+  }, [isDarkTheme]);
   
   // Funzione per mostrare notifiche
   const showNotification = (message, type) => {
+    console.log(`Notification: ${type} - ${message}`);
     setNotification({ show: true, message, type });
     
-    // Auto-hide dopo 5 secondi
     setTimeout(() => {
       setNotification(prev => ({ ...prev, show: false }));
     }, 5000);
@@ -72,56 +89,88 @@ const Login = () => {
   };
   
   // Funzione per gestire il login
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    console.log("Tentativo di login con:", loginFormData.email);
     
-    console.log("Login tentato con:", loginFormData);
-    
-    const { email, password, remember } = loginFormData;
-    
-    // Controlla se le credenziali sono quelle di test
-    if (email === TEST_CREDENTIALS.email && password === TEST_CREDENTIALS.password) {
-      // Messaggio di successo (diverso in base a "Ricordami")
-      const successMessage = remember 
-        ? 'Accesso effettuato con successo (sessione verrà ricordata)' 
-        : 'Accesso effettuato con successo';
-      showNotification(successMessage, 'success');
+    try {
+      const { email, password } = loginFormData;
       
-      // Se "Ricordami" è selezionato, salva in localStorage per accessi futuri
-      if (remember) {
-        localStorage.setItem('testUser', JSON.stringify({
-          isAuthenticated: true,
-          email: email,
-          remember: true
-        }));
-        console.log('Login riuscito con "Ricordami" attivo, le credenziali verranno salvate');
-      } else {
-        // Per sessioni senza "Ricordami", usa la sessionStorage (dura solo per la sessione corrente)
-        sessionStorage.setItem('sessionUser', JSON.stringify({
-          isAuthenticated: true,
-          email: email
-        }));
-        // Rimuovi dalla localStorage se era stato salvato in precedenza
-        localStorage.removeItem('testUser');
-        console.log('Login riuscito senza "Ricordami", le credenziali NON verranno salvate');
+      // Log dettagliato pre-login
+      console.log("Pre-login request: sending to Supabase", { 
+        email, 
+        passwordLength: password.length 
+      });
+      
+      // Chiamata diretta a Supabase per login
+      const response = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+      
+      const { data, error } = response;
+
+      // Log dettagliato del risultato
+      console.log("Risposta login completa:", {
+        success: !error,
+        error: error ? {
+          message: error.message,
+          status: error.status,
+          name: error.name
+        } : null,
+        userData: data?.user ? {
+          id: data.user.id,
+          email: data.user.email,
+          emailConfirmed: data.user.email_confirmed_at,
+          lastSignIn: data.user.last_sign_in_at
+        } : null,
+        sessionData: data?.session ? {
+          expiresAt: data.session.expires_at,
+          token: data.session.access_token ? "presente" : "mancante"
+        } : null
+      });
+
+      if (error) throw error;
+      
+      // Memorizza l'utente in localStorage per compatibilità
+      localStorage.setItem('testUser', 'true');
+      if (loginFormData.remember) {
+        localStorage.setItem('savedEmail', email);
       }
+
+      showNotification('Accesso effettuato con successo', 'success');
       
-      // Reindirizza alla dashboard in entrambi i casi
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 1500);
-    } else {
-      showNotification(`Credenziali non valide. Usa ${TEST_CREDENTIALS.email} / ${TEST_CREDENTIALS.password}`, 'error');
+      // Log prima del reindirizzamento
+      console.log("Pre-redirect state:", {
+        pathname: window.location.pathname,
+        user: !!data.user,
+        session: !!data.session,
+        localStorage: !!localStorage.getItem('testUser')
+      });
+      
+      // Forza il reindirizzamento con window.location per evitare problemi
+      window.location.href = '/';
+      
+    } catch (error) {
+      console.error("Errore login completo:", error);
+      console.error("Dettagli errore:", {
+        message: error.message,
+        status: error.status,
+        name: error.name,
+        details: error.details
+      });
+      showNotification(error.message || 'Credenziali non valide', 'error');
+      setLoading(false);
     }
   };
   
   // Funzione per gestire la registrazione
-  const handleRegister = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
     
-    console.log("Registrazione tentata con:", registerFormData);
-    
     const { email, password, confirmPassword, termsAccepted } = registerFormData;
+    console.log("Tentativo di registrazione con:", email);
     
     if (!termsAccepted) {
       showNotification('Per favore accetta i termini e condizioni per continuare', 'error');
@@ -132,42 +181,118 @@ const Login = () => {
       showNotification('Le password non corrispondono', 'error');
       return;
     }
+
+    setLoading(true);
     
-    // Simuliamo una registrazione di successo
-    showNotification('Registrazione completata! Ora puoi accedere con le tue credenziali', 'success');
-    
-    // Passa alla scheda di login dopo un breve ritardo
-    setTimeout(() => {
-      setActiveTab('login');
-      // Precompila l'email nel form di login
-      setLoginFormData(prev => ({
-        ...prev,
-        email: email
-      }));
-    }, 2000);
+    try {
+      // Chiamata diretta a Supabase per registrazione
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`
+        }
+      });
+
+      console.log("Risposta registrazione:", { data, error });
+
+      if (error) throw error;
+
+      showNotification(
+        'Registrazione completata! Ti abbiamo inviato un email di conferma.', 
+        'success'
+      );
+      
+      // Mostra il modal di conferma email
+      setShowEmailConfirmModal(true);
+      
+      // Se l'email non richiede conferma, imposta localStorage
+      if (data?.user && !data?.user?.identities?.[0]?.identity_data?.email_verified) {
+        localStorage.setItem('testUser', 'true');
+      }
+      
+      setTimeout(() => {
+        setActiveTab('login');
+        setLoginFormData(prev => ({ ...prev, email }));
+        setLoading(false);
+        
+        // Se non è richiesta la verifica dell'email, reindirizza
+        if (data?.user && !data?.session) {
+          showNotification('Verifica la tua email per completare la registrazione', 'info');
+        } else if (data?.session) {
+          // L'utente è già autenticato, reindirizza
+          navigate('/');
+        }
+      }, 2000);
+    } catch (error) {
+      console.error("Errore registrazione:", error);
+      showNotification(error.message || 'Errore durante la registrazione', 'error');
+      setLoading(false);
+    }
   };
   
   // Funzione per accesso con Google
-  const handleGoogleSignIn = () => {
-    showNotification('Simulazione accesso con Google...', 'success');
+  const handleGoogleSignIn = async () => {
+    setLoading(true);
+    console.log("Tentativo di login con Google");
     
-    // Simula il login con Google - per default lo consideriamo "remember" true
-    setTimeout(() => {
-      localStorage.setItem('testUser', JSON.stringify({
-        isAuthenticated: true,
-        email: 'google-user@example.com',
+    try {
+      const { error, data } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        remember: true // Per gli accessi social, assumiamo che l'utente voglia essere ricordato
-      }));
+        options: {
+          redirectTo: `${window.location.origin}/`
+        }
+      });
+
+      console.log("Risposta Google auth:", { error, data });
+
+      if (error) throw error;
       
-      window.location.href = '/';
-    }, 1500);
+      // Non serve fare altro perché la pagina verrà reindirizzata da OAuth
+    } catch (error) {
+      console.error("Errore Google auth:", error);
+      showNotification(error.message || 'Errore durante il login con Google', 'error');
+      setLoading(false);
+    }
   };
   
   // Funzione per recupero password
-  const handleForgotPassword = (e) => {
+  const handleForgotPassword = async (e) => {
     e.preventDefault();
-    alert(`Per accedere usa:\nEmail: ${TEST_CREDENTIALS.email}\nPassword: ${TEST_CREDENTIALS.password}`);
+    const { email } = loginFormData;
+    console.log("Tentativo recupero password per:", email);
+
+    if (!email) {
+      showNotification('Inserisci la tua email per reimpostare la password', 'error');
+      return;
+    }
+    
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`
+      });
+
+      if (error) throw error;
+
+      showNotification(
+        'Ti abbiamo inviato un email con le istruzioni per reimpostare la password', 
+        'success'
+      );
+      
+      // Mostra il modal di reset password
+      setResetPasswordModal({
+        show: true,
+        email: email
+      });
+      
+      setLoading(false);
+    } catch (error) {
+      console.error("Errore reset password:", error);
+      showNotification(error.message || 'Errore durante il recupero password', 'error');
+      setLoading(false);
+    }
   };
   
   return (
@@ -190,6 +315,13 @@ const Login = () => {
         
         {/* Main Authentication Container */}
         <div className="auth-container">
+          {/* Overlay di caricamento */}
+          {loading && (
+            <div className="loading-overlay">
+              <div className="loading-spinner"></div>
+            </div>
+          )}
+          
           <div className="tabs">
             <div 
               className={`tab-btn ${activeTab === 'login' ? 'active' : ''}`} 
@@ -211,7 +343,7 @@ const Login = () => {
           
           {notification.show && (
             <div className={`notification ${notification.type}`}>
-              <i className={`fas ${notification.type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}`}></i>
+              <i className={`fas ${notification.type === 'success' ? 'fa-check-circle' : notification.type === 'info' ? 'fa-info-circle' : 'fa-exclamation-circle'}`}></i>
               <span>{notification.message}</span>
             </div>
           )}
@@ -229,6 +361,7 @@ const Login = () => {
                     required
                     value={loginFormData.email}
                     onChange={e => setLoginFormData({...loginFormData, email: e.target.value})}
+                    disabled={loading}
                   />
                   <label className="form-label" htmlFor="login-email">Indirizzo Email</label>
                 </div>
@@ -244,6 +377,7 @@ const Login = () => {
                     required
                     value={loginFormData.password}
                     onChange={e => setLoginFormData({...loginFormData, password: e.target.value})}
+                    disabled={loading}
                   />
                   <label className="form-label" htmlFor="login-password">Password</label>
                   <i 
@@ -273,6 +407,7 @@ const Login = () => {
                     id="remember"
                     checked={loginFormData.remember}
                     onChange={e => setLoginFormData({...loginFormData, remember: e.target.checked})}
+                    disabled={loading}
                   />
                   <div className="custom-checkbox">
                     <i className="fas fa-check"></i>
@@ -280,29 +415,32 @@ const Login = () => {
                   <span className="remember-text">Ricordami</span>
                 </label>
                 
-                <a 
-                  href="#" 
+                <button
+                  type="button"
                   className="forgot-link" 
                   onClick={handleForgotPassword}
+                  disabled={loading}
                 >
                   Password dimenticata?
-                </a>
+                </button>
               </div>
               
               <button 
                 type="submit" 
                 className="btn btn-primary"
+                disabled={loading}
               >
-                Accedi
+                {loading ? 'Caricamento...' : 'Accedi'}
               </button>
               
               <button 
                 type="button" 
                 className="btn btn-social" 
                 onClick={handleGoogleSignIn}
+                disabled={loading}
               >
                 <i className="fab fa-google"></i>
-                Accedi con Google
+                {loading ? 'Caricamento...' : 'Accedi con Google'}
               </button>
             </form>
           </div>
@@ -320,6 +458,7 @@ const Login = () => {
                     required
                     value={registerFormData.email}
                     onChange={e => setRegisterFormData({...registerFormData, email: e.target.value})}
+                    disabled={loading}
                   />
                   <label className="form-label" htmlFor="register-email">Indirizzo Email</label>
                 </div>
@@ -336,7 +475,14 @@ const Login = () => {
                     value={registerFormData.password}
                     onChange={e => {
                       setRegisterFormData({...registerFormData, password: e.target.value});
+                      
+                      // Mostra indicatore forza password
+                      const passwordStrength = document.querySelector('.password-strength');
+                      if (passwordStrength) {
+                        passwordStrength.style.display = e.target.value ? 'block' : 'none';
+                      }
                     }}
+                    disabled={loading}
                   />
                   <label className="form-label" htmlFor="register-password">Password</label>
                   <i 
@@ -361,8 +507,8 @@ const Login = () => {
                     className="password-strength-meter" 
                     style={{ 
                       width: `${registerFormData.password.length > 8 ? 100 : registerFormData.password.length * 12.5}%`,
-                      backgroundColor: registerFormData.password.length <= 4 ? '#e53e3e' : 
-                                        registerFormData.password.length <= 8 ? '#ed8936' : '#38a169'
+                      backgroundColor: registerFormData.password.length <= 4 ? 'var(--error-color)' : 
+                                        registerFormData.password.length <= 8 ? '#ed8936' : 'var(--success-color)'
                     }}
                   ></div>
                 </div>
@@ -379,6 +525,7 @@ const Login = () => {
                     required
                     value={registerFormData.confirmPassword}
                     onChange={e => setRegisterFormData({...registerFormData, confirmPassword: e.target.value})}
+                    disabled={loading}
                   />
                   <label className="form-label" htmlFor="confirm-password">Conferma Password</label>
                   <i 
@@ -407,31 +554,79 @@ const Login = () => {
                   required
                   checked={registerFormData.termsAccepted}
                   onChange={e => setRegisterFormData({...registerFormData, termsAccepted: e.target.checked})}
+                  disabled={loading}
                 />
                 <div className="terms-custom-checkbox">
                   <i className="fas fa-check"></i>
                 </div>
                 <span className="terms-text">
-                  Accetto i <a href="#" target="_blank">Termini di Servizio</a> e la <a href="#" target="_blank">Privacy Policy</a> 
+                  Accetto i <a href="#" target="_blank" rel="noopener noreferrer">Termini di Servizio</a> e la <a href="#" target="_blank" rel="noopener noreferrer">Privacy Policy</a> 
                 </span>
               </label>
               
-              <button type="submit" className="btn btn-primary">
-                Registrati
+              <button 
+                type="submit" 
+                className="btn btn-primary"
+                disabled={loading}
+              >
+                {loading ? 'Caricamento...' : 'Registrati'}
               </button>
               
               <button 
                 type="button" 
                 className="btn btn-social" 
                 onClick={handleGoogleSignIn}
+                disabled={loading}
               >
                 <i className="fab fa-google"></i>
-                Registrati con Google
+                {loading ? 'Caricamento...' : 'Registrati con Google'}
               </button>
             </form>
           </div>
         </div>
       </div>
+
+      {/* Modal di conferma email */}
+      {showEmailConfirmModal && (
+        <div className="email-confirm-modal">
+          <div className="modal-content">
+            <div className="modal-icon">
+              <i className="fas fa-envelope"></i>
+            </div>
+            <h3>Controlla la tua email</h3>
+            <p>Abbiamo inviato un'email di conferma a <strong>{registerFormData.email}</strong></p>
+            <p>Per completare la registrazione, clicca sul link nell'email che ti abbiamo inviato.</p>
+            <p className="note">Non vedi l'email? Controlla nella cartella spam o junk.</p>
+            <button 
+              className="btn btn-primary"
+              onClick={() => setShowEmailConfirmModal(false)}
+            >
+              Ho capito
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Modal di reset password */}
+      {resetPasswordModal.show && (
+        <div className="email-confirm-modal">
+          <div className="modal-content">
+            <div className="modal-icon">
+              <i className="fas fa-key"></i>
+            </div>
+            <h3>Reset Password</h3>
+            <p>Abbiamo inviato un'email con le istruzioni per reimpostare la password a <strong>{resetPasswordModal.email}</strong></p>
+            <p>Segui le istruzioni nell'email per impostare una nuova password.</p>
+            <p className="note">Non vedi l'email? Controlla nella cartella spam o junk.</p>
+            <button 
+              className="btn btn-primary"
+              onClick={() => setResetPasswordModal({show: false, email: ''})}
+            >
+              Ho capito
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

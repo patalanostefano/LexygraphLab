@@ -1,29 +1,23 @@
-# Use Node.js as base image
-FROM node:20-alpine
+# Stage 1: Build the React app
+FROM node:20-alpine as build
 
-# Set working directory
 WORKDIR /app
 
-# Copy package.json and package-lock.json first for better caching
 COPY package*.json ./
+RUN npm install
 
-# Install dependencies
-RUN npm i
-
-# Copy the rest of the application code
 COPY . .
-
-# Build the application for production
 RUN npm run build
 
-# Use nginx to serve the static files
+# Stage 2: Serve with nginx
 FROM nginx:alpine
 
-# Copy the build output to replace the default nginx contents
-COPY --from=0 /app/build /usr/share/nginx/html
+# Copy custom nginx config
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Expose port 80
+# Copy build output
+COPY --from=build /app/build /usr/share/nginx/html
+
 EXPOSE 80
 
-# Start nginx
 CMD ["nginx", "-g", "daemon off;"]

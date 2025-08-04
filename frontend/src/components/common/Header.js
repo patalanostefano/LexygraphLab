@@ -1,4 +1,3 @@
-// src/components/common/Header.js - Versione avanzata
 import React, { useContext, useState } from 'react';
 import { 
   AppBar, 

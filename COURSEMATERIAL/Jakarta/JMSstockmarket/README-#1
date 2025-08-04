@@ -1,6 +1,0 @@
-For installing the ActiveMQ docker image and running it 
-
-$ docker pull rmohr/activemq
-$ docker run -p 61616:61616 -p 8161:8161 rmohr/activemq
-
-You can check ActiveMQ is up and running by connecting in a browser to http://localhost:8161

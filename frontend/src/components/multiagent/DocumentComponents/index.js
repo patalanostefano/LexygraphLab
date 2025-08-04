@@ -1,6 +1,11 @@
-// Esporta tutti i componenti relativi ai documenti
-export { DocumentItem } from '../../../../../GitHub/LexygraphLab/frontend/src/components/multiagent/DocumentComponents/DocumentItem';
-export { ArtifactFullScreenDialog } from '../../../../../GitHub/LexygraphLab/frontend/src/components/multiagent/DocumentComponents/ArtifactFullScreenDialog';
-export { DocumentEditorDialog } from '../../../../../GitHub/LexygraphLab/frontend/src/components/multiagent/DocumentComponents/DocumentEditorDialog';
-export { extractHtmlContent } from '../../../../../GitHub/LexygraphLab/frontend/src/components/multiagent/DocumentComponents/documentUtils';
-export { DocumentProcessingStatus } from '../../../../../GitHub/LexygraphLab/frontend/src/components/multiagent/DocumentComponents/DocumentProcessingStatus';
+// DocumentComponents/index.js - Export di tutti i componenti per documenti
+
+export { default as DocumentEditorDialog } from './DocumentEditorDialog';
+export { default as ArtifactFullScreenDialog } from './ArtifactFullScreenDialog';
+export { default as DocumentPreviewDialog } from './DocumentPreviewDialog'; // AGGIUNTO
+export { default as DocumentUploader } from './DocumentUploader';
+export { default as DocumentItem } from './DocumentItem';
+export { DocumentProcessingStatus } from './DocumentProcessingStatus';
+
+// Export delle utility per documenti
+export * from './documentUtils';

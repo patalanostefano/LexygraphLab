@@ -266,18 +266,26 @@ export const DocumentTitleGenerator = {
 
 // Funzione migliorata per generare un file Word compatibile
 export const generateWordDocument = (content, filename = "documento.docx") => {
-  // Estrai il testo pulito
+  // Estrai il testo pulito, ma mantieni la formattazione HTML esistente
   let textContent = content;
   
-  // Se è HTML, estrai il testo
-  if (content.includes('<!DOCTYPE html>') || content.includes('<html')) {
-    try {
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(content, 'text/html');
-      textContent = doc.body.textContent || content;
-    } catch (e) {
-      textContent = content.replace(/<[^>]*>/g, ' ').replace(/\s{2,}/g, ' ').trim();
-    }
+  // Se content contiene proprietà rawContent preesistente, usala
+  if (content && typeof content === 'object' && content.rawContent) {
+    return content.rawContent;
+  }
+  
+  // Se è HTML, assicurati che sia ben formattato
+  if (typeof content === 'string' && 
+      (content.includes('<!DOCTYPE html>') || content.includes('<html') || 
+       content.includes('<p>') || content.includes('<div>'))) {
+    // È già in formato HTML, lo usiamo direttamente
+    textContent = content;
+  } else if (typeof content === 'string') {
+    // È testo semplice, convertilo in HTML
+    textContent = content.split('\n\n').map(para => `<p>${para.replace(/\n/g, '<br>')}</p>`).join('');
+  } else if (content && typeof content === 'object') {
+    // È un oggetto, prendi la proprietà content
+    textContent = content.content || '';
   }
   
   // Crea un documento Word-compatibile
@@ -290,7 +298,7 @@ export const generateWordDocument = (content, filename = "documento.docx") => {
   <meta name="ProgId" content="Word.Document">
   <meta name="Generator" content="Microsoft Word 15">
   <meta name="Originator" content="Microsoft Word 15">
-  <title>${filename.replace(/\.[^/.]+$/, '')}</title>
+  <title>${typeof filename === 'string' ? filename.replace(/\.[^/.]+$/, '') : 'Documento'}</title>
   <!--[if gte mso 9]>
   <xml>
     <w:WordDocument>
@@ -310,10 +318,10 @@ export const generateWordDocument = (content, filename = "documento.docx") => {
 </head>
 <body>
   <div class="header">
-    ${filename.replace(/\.[^/.]+$/, '')} - ${new Date().toLocaleDateString('it-IT')}
+    ${typeof filename === 'string' ? filename.replace(/\.[^/.]+$/, '') : 'Documento'} - ${new Date().toLocaleDateString('it-IT')}
   </div>
   
-  ${textContent.split('\n\n').map(para => `<p>${para.replace(/\n/g, '<br>')}</p>`).join('')}
+  ${typeof textContent === 'string' ? textContent : ''}
   
   <div class="footer">
     Documento generato il ${new Date().toLocaleDateString('it-IT')}
@@ -325,7 +333,7 @@ export const generateWordDocument = (content, filename = "documento.docx") => {
 // Funzione per scaricare documento come .docx
 export const downloadWordDocument = (content, filename = "documento.docx") => {
   // Se non ha estensione .docx, aggiungerla
-  if (!filename.toLowerCase().endsWith('.docx')) {
+  if (typeof filename === 'string' && !filename.toLowerCase().endsWith('.docx')) {
     filename += '.docx';
   }
   
