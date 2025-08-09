@@ -1,1 +1,3 @@
 .metals/
+.node_modules/
+.build/
