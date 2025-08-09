@@ -1,22 +1,16 @@
-// src/App.js (modificato)
+// src/App.js
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeContextProvider } from './context/ThemeContext';
 import { useAuth } from './context/AuthContext';
 
-// Importa gli stili - l'ordine è importante!
 import './styles/globals.css';
 import './styles/login-scope.css';
 
-// Pages & Components
 import Dashboard from './pages/Dashboard';
-import Multiagent from './components/multiagent/multiagentconst/main/Multiagent';
-import ProfileSection from './components/profile/ProfileSection';
 import Login from './pages/Login';
 import AuthCallback from './pages/AuthCallback';
-import SupabaseTest from './pages/SupabaseTest';
 
-// Auth Guard Component migliorato
 const PrivateRoute = ({ children }) => {
   const { loading, isAuthenticated } = useAuth();
   
@@ -65,28 +59,11 @@ function App() {
           <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="/supabase-test" element={<SupabaseTest />} />
             <Route 
               path="/" 
               element={
                 <PrivateRoute>
                   <Dashboard />
-                </PrivateRoute>
-              } 
-            />
-            <Route 
-              path="/multiagente" 
-              element={
-                <PrivateRoute>
-                  <Multiagent />
-                </PrivateRoute>
-              } 
-            />
-            <Route 
-              path="/profile" 
-              element={
-                <PrivateRoute>
-                  <ProfileSection />
                 </PrivateRoute>
               } 
             />

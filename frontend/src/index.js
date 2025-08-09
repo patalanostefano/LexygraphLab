@@ -5,7 +5,6 @@ import { BrowserRouter as Router } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import './styles/globals.css';
 import App from './App';
-import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
@@ -18,4 +17,3 @@ root.render(
   </React.StrictMode>
 );
 
-reportWebVitals();
