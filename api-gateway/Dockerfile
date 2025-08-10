@@ -20,10 +20,10 @@ COPY --from=build /app/target/*.jar app.jar
 # Set environment variables
 ENV SPRING_PROFILES_ACTIVE=dev
 
-# Expose default Spring Boot port
+# Expose the port configured in application.yml
 EXPOSE 8080
 
-# Healthcheck (optional)
+# Healthcheck aligned with application port
 HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
   CMD wget --spider -q http://localhost:8080/api/health || exit 1
 

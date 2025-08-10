@@ -10,12 +10,13 @@ import org.springframework.http.HttpMethod;
 @Configuration
 public class GatewayConfig {
 
-    @Value("${services.document-service.url:http://document-service:8081}")
+    @Value("${services.document-service.url:http://document-service:8000}")
     private String documentServiceUrl;
 
     @Bean
     public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
         return builder.routes()
+
                 // DOCUMENT SERVICE ROUTES
                 .route("document_upload", r -> r
                         .path("/api/v1/documents/upload")
@@ -31,11 +32,25 @@ public class GatewayConfig {
                         .filters(f -> f.setRequestHeader("X-Gateway-Source", "api-gateway"))
                         .uri(documentServiceUrl))
 
+                .route("document_text", r -> r
+                        .path("/api/v1/documents/{userId}/{projectId}/{docId}/text")
+                        .and()
+                        .method(HttpMethod.GET)
+                        .filters(f -> f.setRequestHeader("X-Gateway-Source", "api-gateway"))
+                        .uri(documentServiceUrl))
+
                 .route("documents_list", r -> r
                         .path("/api/v1/documents/{userId}/{projectId}")
                         .and()
                         .method(HttpMethod.GET)
                         .filters(f -> f.setRequestHeader("X-Gateway-Source", "api-gateway"))
+                        .uri(documentServiceUrl))
+
+                // HEALTH CHECK to Document Service
+                .route("document_service_health_root", r -> r
+                        .path("/")
+                        .and()
+                        .method(HttpMethod.GET)
                         .uri(documentServiceUrl))
 
                 // AGENT SERVICE ROUTES
@@ -52,7 +67,7 @@ public class GatewayConfig {
                         .method(HttpMethod.GET)
                         .uri("forward:/api/v1/agents/list"))
 
-                // HEALTH CHECK
+                // GATEWAY HEALTH
                 .route("health_check", r -> r
                         .path("/api/health", "/health")
                         .and()
@@ -65,6 +80,7 @@ public class GatewayConfig {
                         .and()
                         .method(HttpMethod.GET)
                         .uri("forward:/gateway/info"))
+
                 .build();
     }
 }

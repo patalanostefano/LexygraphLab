@@ -2,15 +2,15 @@
 import os
 import requests
 from pathlib import Path
+import uuid
 
-BASE_URL = "http://localhost:8000/api/v1"
+BASE_URL = "http://localhost:8080/api/v1"
 PDF_DIR = "pdfs"
 REAL_USER_ID = "54df1b72-6838-4061-8312-32ac7d3ce640" 
 
-
-def test_upload_document(pdf_path, user_id="54df1b72-6838-4061-8312-32ac7d3ce640", project_id="test_project", doc_id="doc1"):
+def test_upload_document(pdf_path, user_id, project_id, doc_id):
     """Test document upload"""
-    print(f"📤 Uploading: {pdf_path}")
+    print(f"📤 Uploading: {pdf_path} with new doc_id: {doc_id}")
     
     if not os.path.exists(pdf_path):
         print(f"❌ PDF not found: {pdf_path}")
@@ -73,7 +73,7 @@ def test_list_documents(user_id, project_id):
         result = response.json()
         print(f"✅ Found {len(result['documents'])} documents")
         for doc in result['documents']:
-            print(f"  - {doc['title']} ({doc['doc_id']})")
+            print(f"  - {doc['title']} ({doc['doc_id']})")
         return result['documents']
     else:
         print(f"❌ List failed: {response.text}")
@@ -107,11 +107,16 @@ def run_tests():
     
     # Check if service is running
     try:
-        response = requests.get("http://localhost:8000", timeout=5)
-    except:
-        print("❌ Service not running. Start with: docker run -p 8000:8000 document-service")
+        response = requests.get(f"http://localhost:8080/api/health", timeout=5)
+        if response.status_code != 200:
+            print("❌ API Gateway not running. Check logs or start it.")
+            return
+    except requests.exceptions.ConnectionError:
+        print("❌ API Gateway not running. Check logs or start it.")
         return
-    
+
+    print("✅ API Gateway is up and running.")
+
     # Find PDF files
     pdf_files = []
     if Path(PDF_DIR).exists():
@@ -130,11 +135,12 @@ def run_tests():
     print(f"📁 Testing with {len(pdf_files)} PDF files")
     print("=" * 40)
     
-    # Test uploads
+    # Test uploads with unique IDs
     uploaded_docs = []
-    for i, pdf_file in enumerate(pdf_files[:2]):  # Test max 2 files
-        doc_id = f"doc{i+1}"
-        document_id = test_upload_document(str(pdf_file), REAL_USER_ID, doc_id=doc_id)
+    for i, pdf_file in enumerate(pdf_files[:2]):
+        # Genera un UUID per l'ID del documento
+        doc_id = str(uuid.uuid4())
+        document_id = test_upload_document(str(pdf_file), REAL_USER_ID, "test_project", doc_id)
         if document_id:
             uploaded_docs.append({
                 'document_id': document_id,
