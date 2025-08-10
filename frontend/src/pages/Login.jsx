@@ -3,13 +3,12 @@ import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ThemeContext } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
-import { supabase } from '../config/supabaseClient';
 import './Login.css';
 
 const Login = () => {
   const navigate = useNavigate();
   const { theme } = useContext(ThemeContext);
-  const { signIn, user, loading: authLoading } = useAuth();
+  const { signIn, signUp, signInWithOAuth, user, loading: authLoading } = useAuth();
   const isDarkTheme = theme.palette.mode === 'dark';
   
   // State per il controllo delle tab
@@ -37,23 +36,13 @@ const Login = () => {
     email: ''
   });
   
-  // Controlla se l'utente è già autenticato
+  // Controlla se l'utente è già autenticato - UPDATED to use simplified auth
   useEffect(() => {
-    console.log('Login component mounted, checking auth state');
-    
-    const checkSession = async () => {
-      // Verifica session direttamente con Supabase
-      const { data: { session } } = await supabase.auth.getSession();
-      console.log("Current session check:", session);
-      
-      if (session) {
-        console.log("User already authenticated, redirecting to home");
-        navigate('/');
-      }
-    };
-    
-    checkSession();
-  }, [navigate]);
+    if (user) {
+      console.log("User already authenticated, redirecting to home");
+      navigate('/');
+    }
+  }, [user, navigate]);
   
   // Applica la classe di scope quando il componente viene montato
   useEffect(() => {
@@ -88,7 +77,7 @@ const Login = () => {
     setNotification({ show: false, message: '', type: '' });
   };
   
-  // Funzione per gestire il login
+  // UPDATED: Simplified login using AuthContext
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -97,75 +86,29 @@ const Login = () => {
     try {
       const { email, password } = loginFormData;
       
-      // Log dettagliato pre-login
-      console.log("Pre-login request: sending to Supabase", { 
-        email, 
-        passwordLength: password.length 
-      });
-      
-      // Chiamata diretta a Supabase per login
-      const response = await supabase.auth.signInWithPassword({
-        email,
-        password
-      });
-      
-      const { data, error } = response;
-
-      // Log dettagliato del risultato
-      console.log("Risposta login completa:", {
-        success: !error,
-        error: error ? {
-          message: error.message,
-          status: error.status,
-          name: error.name
-        } : null,
-        userData: data?.user ? {
-          id: data.user.id,
-          email: data.user.email,
-          emailConfirmed: data.user.email_confirmed_at,
-          lastSignIn: data.user.last_sign_in_at
-        } : null,
-        sessionData: data?.session ? {
-          expiresAt: data.session.expires_at,
-          token: data.session.access_token ? "presente" : "mancante"
-        } : null
-      });
+      // Use simplified AuthContext signIn
+      const { data, error } = await signIn(email, password);
 
       if (error) throw error;
       
-      // Memorizza l'utente in localStorage per compatibilità
-      localStorage.setItem('testUser', 'true');
+      // Save email if remember is checked
       if (loginFormData.remember) {
         localStorage.setItem('savedEmail', email);
       }
 
       showNotification('Accesso effettuato con successo', 'success');
       
-      // Log prima del reindirizzamento
-      console.log("Pre-redirect state:", {
-        pathname: window.location.pathname,
-        user: !!data.user,
-        session: !!data.session,
-        localStorage: !!localStorage.getItem('testUser')
-      });
-      
-      // Forza il reindirizzamento con window.location per evitare problemi
-      window.location.href = '/';
+      // Navigation will be handled by AuthContext
       
     } catch (error) {
-      console.error("Errore login completo:", error);
-      console.error("Dettagli errore:", {
-        message: error.message,
-        status: error.status,
-        name: error.name,
-        details: error.details
-      });
+      console.error("Errore login:", error);
       showNotification(error.message || 'Credenziali non valide', 'error');
+    } finally {
       setLoading(false);
     }
   };
   
-  // Funzione per gestire la registrazione
+  // UPDATED: Simplified registration using AuthContext
   const handleRegister = async (e) => {
     e.preventDefault();
     
@@ -185,16 +128,8 @@ const Login = () => {
     setLoading(true);
     
     try {
-      // Chiamata diretta a Supabase per registrazione
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`
-        }
-      });
-
-      console.log("Risposta registrazione:", { data, error });
+      // Use simplified AuthContext signUp
+      const { data, error } = await signUp(email, password);
 
       if (error) throw error;
 
@@ -206,15 +141,9 @@ const Login = () => {
       // Mostra il modal di conferma email
       setShowEmailConfirmModal(true);
       
-      // Se l'email non richiede conferma, imposta localStorage
-      if (data?.user && !data?.user?.identities?.[0]?.identity_data?.email_verified) {
-        localStorage.setItem('testUser', 'true');
-      }
-      
       setTimeout(() => {
         setActiveTab('login');
         setLoginFormData(prev => ({ ...prev, email }));
-        setLoading(false);
         
         // Se non è richiesta la verifica dell'email, reindirizza
         if (data?.user && !data?.session) {
@@ -227,28 +156,22 @@ const Login = () => {
     } catch (error) {
       console.error("Errore registrazione:", error);
       showNotification(error.message || 'Errore durante la registrazione', 'error');
+    } finally {
       setLoading(false);
     }
   };
   
-  // Funzione per accesso con Google
+  // UPDATED: Simplified Google sign in using AuthContext
   const handleGoogleSignIn = async () => {
     setLoading(true);
     console.log("Tentativo di login con Google");
     
     try {
-      const { error, data } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/`
-        }
-      });
-
-      console.log("Risposta Google auth:", { error, data });
+      const { data, error } = await signInWithOAuth('google');
 
       if (error) throw error;
       
-      // Non serve fare altro perché la pagina verrà reindirizzata da OAuth
+      // OAuth will redirect automatically, no need to do anything else
     } catch (error) {
       console.error("Errore Google auth:", error);
       showNotification(error.message || 'Errore durante il login con Google', 'error');
@@ -256,7 +179,7 @@ const Login = () => {
     }
   };
   
-  // Funzione per recupero password
+  // UPDATED: Simplified forgot password using AuthContext  
   const handleForgotPassword = async (e) => {
     e.preventDefault();
     const { email } = loginFormData;
@@ -270,6 +193,8 @@ const Login = () => {
     setLoading(true);
 
     try {
+      // We'll need to add this method to AuthContext, or use supabase directly
+      const { supabase } = await import('../config/supabaseClient');
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`
       });
@@ -287,10 +212,10 @@ const Login = () => {
         email: email
       });
       
-      setLoading(false);
     } catch (error) {
       console.error("Errore reset password:", error);
       showNotification(error.message || 'Errore durante il recupero password', 'error');
+    } finally {
       setLoading(false);
     }
   };
@@ -617,7 +542,7 @@ const Login = () => {
             <h3>Reset Password</h3>
             <p>Abbiamo inviato un'email con le istruzioni per reimpostare la password a <strong>{resetPasswordModal.email}</strong></p>
             <p>Segui le istruzioni nell'email per impostare una nuova password.</p>
-            <p className="note">Non vedi l'email? Controlla nella cartella spam o junk.</p>
+            <p className="note">Non vedi l'email? Controlla nella cartella spam or junk.</p>
             <button 
               className="btn btn-primary"
               onClick={() => setResetPasswordModal({show: false, email: ''})}

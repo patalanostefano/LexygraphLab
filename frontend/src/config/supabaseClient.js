@@ -2,7 +2,7 @@ import { createClient } from '@supabase/supabase-js';
 
 // Updated Supabase credentials
 const supabaseUrl = 'https://sjfdkgzmjaasjtavuhfu.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNqZmRrZ3ptamFhc2p0YXZ1aGZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE5NDUwNTIsImV4cCI6MjA1NzUyMTA1Mn0.dWBqYF31Ot73oXqf8v2KaMj37Tkzb3dd7Szq1WviDPA'; // Replace with your actual key
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNqZmRrZ3ptamFhc2p0YXZ1aGZ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDE5NDUwNTIsImV4cCI6MjA1NzUyMTA1Mn0.dWBqYF31Ot73oXqf8v2KaMj37Tkzb3dd7Szq1WviDPA'; 
 
 // JWT Configuration options
 const supabaseOptions = {

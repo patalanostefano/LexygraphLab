@@ -1,4 +1,4 @@
-// src/App.js
+// src/App.js - Simplified version without AuthCallback
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeContextProvider } from './context/ThemeContext';
@@ -9,12 +9,11 @@ import './styles/login-scope.css';
 
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
-import AuthCallback from './pages/AuthCallback';
 
 const PrivateRoute = ({ children }) => {
   const { loading, isAuthenticated } = useAuth();
   
-  // Visualizza un loader mentre controlliamo l'autenticazione
+  // Show loader while checking authentication
   if (loading) {
     return (
       <div style={{ 
@@ -58,7 +57,6 @@ function App() {
         <div className="app-container full-width full-height">
           <Routes>
             <Route path="/login" element={<Login />} />
-            <Route path="/auth/callback" element={<AuthCallback />} />
             <Route 
               path="/" 
               element={
