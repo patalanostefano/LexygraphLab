@@ -1,28 +1,31 @@
-FROM maven:3.8.6-openjdk-17 as build
+# Stage 1: Build with Maven and Java 17
+FROM maven:3.9.6-eclipse-temurin-17 AS build
 
 WORKDIR /app
 
-# Copy pom.xml first for better layer caching
-COPY pom.xml .
-RUN mvn dependency:go-offline
+# Copy all project files (pom.xml + src) together
+COPY . .
 
-# Copy source code and build
-COPY src ./src
-RUN mvn package -DskipTests
+# Build the project, skipping tests
+RUN mvn clean package -DskipTests
 
-FROM openjdk:17-slim
+# Stage 2: Run the application with a slim JDK
+FROM eclipse-temurin:17-jdk-alpine
 
 WORKDIR /app
 
-# Copy built JAR from build stage
+# Copy the built JAR from the build stage
 COPY --from=build /app/target/*.jar app.jar
 
 # Set environment variables
 ENV SPRING_PROFILES_ACTIVE=dev
 
+# Expose default Spring Boot port
 EXPOSE 8080
 
+# Healthcheck (optional)
 HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
-  CMD curl -f http://localhost:8080/api/health || exit 1
+  CMD wget --spider -q http://localhost:8080/api/health || exit 1
 
+# Run the app
 ENTRYPOINT ["java", "-jar", "app.jar"]
