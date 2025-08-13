@@ -26,7 +26,7 @@ export const uploadDocument = async (file, projectId, docId) => {
   }
 };
 
-// Get document by ID - GOES TO: localhost:8080/api/v1/documents/{userId}/{projectId}/{docId}
+// Get document by ID - GOES TO: localhost:8080/api/v1/documents/{userId}/{projectId}/{docId} //project name = project id in the database
 export const getDocument = async (projectId, docId) => {
   try {
     const userId = await getCurrentUserId(); // Supabase Auth call

@@ -9,6 +9,8 @@ import './styles/login-scope.css';
 
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
+import Projects from './pages/Projects';
+import Documents from './pages/Documents';
 
 const PrivateRoute = ({ children }) => {
   const { loading, isAuthenticated } = useAuth();
@@ -57,6 +59,8 @@ function App() {
         <div className="app-container full-width full-height">
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/projects" element={<Projects />} />
+            <Route path="/documents/:projectId" element={<Documents />} />
             <Route 
               path="/" 
               element={

@@ -15,6 +15,7 @@ import { useTheme } from '@mui/material/styles';
 import PersonIcon from '@mui/icons-material/Person';
 import LogoutIcon from '@mui/icons-material/Logout';
 import HelpIcon from '@mui/icons-material/Help';
+import FolderOpenIcon from '@mui/icons-material/FolderOpen';
 import { useNavigate } from 'react-router-dom';
 import { ThemeContext } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -175,48 +176,45 @@ const TypingEffect = ({ messages, typingSpeed = 40, deleteSpeed = 20, delayAfter
 // Componente pulsante futuristico con bordi luminosi - versione aggiornata
 const FuturisticButton = styled(Button)(({ theme }) => ({
   position: 'relative',
-  padding: '16px 48px', // Dimensioni aumentate ma non come prima
+  padding: '16px 48px',
   fontSize: '1.4rem',
   fontWeight: 700,
   letterSpacing: '0.8px',
   textTransform: 'none',
-  color: theme.palette.mode === 'dark' ? '#FFFFFF' : '#7C4DFF', // Colore testo luminoso per contrasto
-  background: theme.palette.mode === 'dark' ? alpha('#1C1C3C', 0.7) : alpha('#FFFFFF', 0.9), // Sfondo trasparente
+  color: theme.palette.mode === 'dark' ? '#FFFFFF' : '#7C4DFF',
+  background: theme.palette.mode === 'dark' ? alpha('#1C1C3C', 0.7) : alpha('#FFFFFF', 0.9),
   border: 'none',
   borderRadius: '18px',
   overflow: 'hidden',
-  minWidth: '220px', // Leggermente più grande
-  minHeight: '64px', // Leggermente più grande
+  minWidth: '220px',
+  minHeight: '64px',
   transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
   
-  // Effetto bordo luminoso
   '&::before': {
     content: '""',
     position: 'absolute',
     inset: 0,
     borderRadius: '18px',
-    padding: '2px', // Larghezza del bordo
+    padding: '2px',
     background: 'linear-gradient(45deg, #7C4DFF, #956AFF, #B79CFF, #956AFF, #7C4DFF)',
     backgroundSize: '300% 300%',
     animation: 'borderAnimation 8s linear infinite',
     WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
     WebkitMaskComposite: 'xor',
     maskComposite: 'exclude',
-    opacity: 0.6, // Opacità ridotta di default
+    opacity: 0.6,
     transition: 'all 0.4s ease',
   },
   
-  // Sfondo trasparente
   '&::after': {
     content: '""',
     position: 'absolute',
-    inset: '3px', // Distanza dal bordo
+    inset: '3px',
     borderRadius: '16px',
     zIndex: -1,
     transition: 'all 0.4s ease',
   },
   
-  // Effetto hover - solo il bordo si illumina
   '&:hover': {
     transform: 'translateY(-3px)',
     boxShadow: theme.palette.mode === 'dark' 
@@ -234,13 +232,12 @@ const FuturisticButton = styled(Button)(({ theme }) => ({
     },
     
     '&::before': {
-      opacity: 1, // Il bordo diventa più luminoso
-      boxShadow: '0 0 15px rgba(124, 77, 255, 0.5)', // Glow attorno al bordo
-      animation: 'borderAnimation 3s linear infinite', // Animazione più veloce
+      opacity: 1,
+      boxShadow: '0 0 15px rgba(124, 77, 255, 0.5)',
+      animation: 'borderAnimation 3s linear infinite',
     },
   },
   
-  // Effetto click
   '&:active': {
     transform: 'translateY(-1px) scale(0.98)',
     '& .button-glow': {
@@ -249,7 +246,6 @@ const FuturisticButton = styled(Button)(({ theme }) => ({
     },
   },
   
-  // Animazione del bordo
   '@keyframes borderAnimation': {
     '0%': { backgroundPosition: '0% 50%' },
     '50%': { backgroundPosition: '100% 50%' },
@@ -263,7 +259,6 @@ const DynamicStartButton = ({ onClick, isTransitioning }) => {
   const [animation, setAnimation] = useState(false);
   const buttonRef = useRef(null);
   
-  // Triggerare animazione al caricamento del componente
   useEffect(() => {
     const timer = setTimeout(() => {
       setAnimation(true);
@@ -272,7 +267,6 @@ const DynamicStartButton = ({ onClick, isTransitioning }) => {
     return () => clearTimeout(timer);
   }, []);
   
-  // Gestisce l'effetto di pulse quando il pulsante appare
   useEffect(() => {
     if (animation && buttonRef.current) {
       buttonRef.current.animate([
@@ -287,9 +281,7 @@ const DynamicStartButton = ({ onClick, isTransitioning }) => {
     }
   }, [animation]);
   
-  // Effetto click con ripple
   const handleClick = (e) => {
-    // Crea l'effetto di ripple
     const button = e.currentTarget;
     const circle = document.createElement('span');
     const diameter = Math.max(button.clientWidth, button.clientHeight);
@@ -311,14 +303,12 @@ const DynamicStartButton = ({ onClick, isTransitioning }) => {
     
     button.appendChild(circle);
     
-    // Transizione animata prima di navigare
     if (onClick) onClick(e);
   };
   
   return (
     <Box sx={{ 
       position: 'relative',
-      // Se in transizione, animazione di uscita
       ...(isTransitioning && {
         animation: 'buttonExit 0.6s forwards cubic-bezier(0.65, 0, 0.35, 1)',
         '@keyframes buttonExit': {
@@ -337,7 +327,6 @@ const DynamicStartButton = ({ onClick, isTransitioning }) => {
         }
       })
     }}>
-      {/* Effetto glow sottostante */}
       <Box
         className="button-glow"
         sx={{
@@ -363,7 +352,6 @@ const DynamicStartButton = ({ onClick, isTransitioning }) => {
         onClick={handleClick}
         disableRipple
       >
-        {/* Effetto scanner che attraversa il pulsante */}
         <Box
           className="button-scanner"
           sx={{
@@ -381,7 +369,6 @@ const DynamicStartButton = ({ onClick, isTransitioning }) => {
           }}
         />
         
-        {/* Testo con effetto luminoso */}
         <Typography 
           sx={{ 
             position: 'relative',
@@ -396,7 +383,6 @@ const DynamicStartButton = ({ onClick, isTransitioning }) => {
           Inizia
         </Typography>
         
-        {/* Particelle ambientali */}
         {animation && [...Array(6)].map((_, i) => (
           <Box
             key={i}
@@ -442,7 +428,6 @@ const DynamicStartButton = ({ onClick, isTransitioning }) => {
           />
         ))}
         
-        {/* Stilizzazione keyframes per l'effetto ripple */}
         <Box sx={{
           '@keyframes ripple': {
             to: {
@@ -503,12 +488,9 @@ function Dashboard() {
   // Funzione per gestire il logout con Supabase
   const handleLogout = async () => {
     try {
-      // Use the signOut method from useAuth
       await signOut();
-      // Navigate is handled automatically by our auth state change listener
     } catch (error) {
       console.error('Errore durante il logout:', error);
-      // Fallback for errors
       navigate('/login');
     }
   };
@@ -516,7 +498,6 @@ function Dashboard() {
   // Get greeting based on time of day
   const getTimeBasedGreeting = () => {
     const hour = new Date().getHours();
-    // Aggiunti i nuovi saluti personalizzati
     if (hour >= 0 && hour < 5) return "Ciao, nottambulo";
     if (hour >= 5 && hour < 7) return "Ciao, mattiniero";
     if (hour >= 7 && hour < 12) return "Buongiorno";
@@ -532,9 +513,8 @@ function Dashboard() {
     "Potenzia la tua pratica legale con VALIS"
   ];
 
-  // Handler for navigation to multiagent con transizione
-  const handleNavigateToMultiagent = (e) => {
-    // Imposta il punto di origine della transizione in base alla posizione del click
+  // Handler for navigation to projects con transizione
+  const handleNavigateToProjects = (e) => {
     if (e && e.clientX && e.clientY) {
       setTransitionOrigin({ 
         x: `${e.clientX}px`, 
@@ -542,13 +522,11 @@ function Dashboard() {
       });
     }
     
-    // Attiva la transizione
     setTransitioning(true);
     
-    // Esegui la navigazione dopo la transizione
     setTimeout(() => {
-      navigate('/multiagente');
-    }, 800); // Tempo leggermente inferiore all'animazione per una transizione fluida
+      navigate('/projects');
+    }, 800);
   };
 
   const handleNavigateToProfile = () => {
@@ -563,8 +541,8 @@ function Dashboard() {
     <Box sx={{ 
       display: 'flex', 
       flexDirection: 'column',
-      height: '100vh', // Layout fisso con altezza fissa
-      overflow: 'hidden', // Impedisce lo scrolling per mantenere layout fisso
+      height: '100vh',
+      overflow: 'hidden',
       background: theme.palette.mode === 'dark' 
         ? `radial-gradient(circle at 0% 20%, ${alpha('#2D2B55', 0.7)} 0%, transparent 30%),
            radial-gradient(circle at 100% 80%, ${alpha('#28284D', 0.7)} 0%, transparent 30%),
@@ -603,7 +581,6 @@ function Dashboard() {
           '0%': { backgroundPosition: '0% 0%' },
           '100%': { backgroundPosition: '100% 100%' },
         },
-        // Animazione di fade out durante la transizione
         ...(transitioning && {
           animation: 'fadeBackground 0.8s forwards',
           '@keyframes fadeBackground': {
@@ -636,7 +613,6 @@ function Dashboard() {
             transform: 'translate(-50%, -50%) scale(1.1)',
           },
         },
-        // Animazione di fade out durante la transizione
         ...(transitioning && {
           animation: 'fadeGlow 0.8s forwards',
           '@keyframes fadeGlow': {
@@ -653,7 +629,6 @@ function Dashboard() {
         alignItems: 'center',
         position: 'relative',
         zIndex: 10,
-        // Animazione di fade out durante la transizione
         ...(transitioning && {
           animation: 'fadeOut 0.5s forwards',
           '@keyframes fadeOut': {
@@ -667,6 +642,11 @@ function Dashboard() {
         <ValisLogo theme={theme} />
         
         <Box sx={{ display: 'flex', gap: 2 }}>
+          <Tooltip title="Gestisci Progetti" arrow>
+            <HeaderActionButton onClick={handleNavigateToProjects}>
+              <FolderOpenIcon />
+            </HeaderActionButton>
+          </Tooltip>
           <Tooltip title="Guida" arrow>
             <HeaderActionButton onClick={handleNavigateToGuide}>
               <HelpIcon />
@@ -684,7 +664,8 @@ function Dashboard() {
           </Tooltip>
         </Box>
       </Box>
-{/* Main content */}
+
+      {/* Main content */}
       <Container maxWidth="lg" sx={{ 
         position: 'relative', 
         zIndex: 2, 
@@ -693,7 +674,6 @@ function Dashboard() {
         flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
-        // Animazione durante la transizione
         ...(transitioning && {
           animation: 'contentExit 0.8s forwards cubic-bezier(0.19, 1, 0.22, 1)',
           '@keyframes contentExit': {
@@ -716,7 +696,6 @@ function Dashboard() {
           alignItems: 'center',
           width: '100%'
         }}>
-          {/* Welcome message - Enhanced typing effect */}
           <Fade in={!transitioning} timeout={1000}>
             <Box sx={{ 
               mb: 8, 
@@ -752,7 +731,6 @@ function Dashboard() {
             </Box>
           </Fade>
 
-          {/* Pulsante Inizia futuristico */}
           <Fade in={!transitioning} timeout={1500}>
             <Box sx={{ 
               display: 'flex',
@@ -761,7 +739,7 @@ function Dashboard() {
               my: 4,
               position: 'relative'
             }}>
-              <DynamicStartButton onClick={handleNavigateToMultiagent} isTransitioning={transitioning} />
+              <DynamicStartButton onClick={handleNavigateToProjects} isTransitioning={transitioning} />
             </Box>
           </Fade>
         </Box>
