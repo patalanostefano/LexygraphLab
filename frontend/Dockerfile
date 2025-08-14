@@ -3,10 +3,14 @@ FROM node:20-alpine as build
 
 WORKDIR /app
 
+# Copy package files
 COPY package*.json ./
 RUN npm install 
 
+# Copy source code
 COPY . .
+
+# Build the app
 RUN npm run build
 
 # Stage 2: Serve with nginx
@@ -17,6 +21,10 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Copy build output
 COPY --from=build /app/build /usr/share/nginx/html
+
+# Add health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --spider -q http://localhost:80/ || exit 1
 
 EXPOSE 80
 

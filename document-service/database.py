@@ -1,5 +1,4 @@
 import base64
-import os
 from typing import List, Optional, Dict, Any
 
 try:
@@ -32,6 +31,36 @@ class DatabaseManager:
             print(f"❌ Supabase error: {e}")
             self.available = False
     
+    async def list_user_projects(self, user_id: str) -> List[Dict[str, Any]]:
+        """Get all projects for a user (derived from documents)"""
+        if not self.available:
+            return []
+        
+        try:
+            # Get distinct project_ids for the user with document counts
+            result = self.supabase.table('project_documents').select(
+                'project_id'
+            ).eq('user_id', user_id).execute()
+            
+            if not result.data:
+                return []
+            
+            # Count documents per project
+            project_counts = {}
+            for doc in result.data:
+                project_id = doc['project_id']
+                project_counts[project_id] = project_counts.get(project_id, 0) + 1
+            
+            # Return list of project info
+            projects = [
+                {'project_id': project_id, 'document_count': count}
+                for project_id, count in project_counts.items()
+            ]
+            
+            return projects
+        except Exception as e:
+            print(f"List projects error: {e}")
+            return []
     
     async def store_document(self, document_id: str, user_id: str, project_id: str, 
                            doc_id: str, title: str, file_data: bytes, text_content: str) -> bool:
@@ -103,10 +132,16 @@ class DatabaseManager:
         
         try:
             result = self.supabase.table('project_documents').select(
-                'doc_id', 'title', 'content'
+                'doc_id, title, content'
             ).eq('user_id', user_id).eq('project_id', project_id).execute()
             
-            return [{'doc_id': doc['doc_id'], 'title': doc['title'], 'content': doc['content']} for doc in result.data]
+            return [
+                {
+                    'doc_id': doc['doc_id'], 
+                    'title': doc['title'], 
+                    'content': doc['content']
+                } for doc in result.data
+            ]
         except Exception as e:
             print(f"List documents error: {e}")
             return []

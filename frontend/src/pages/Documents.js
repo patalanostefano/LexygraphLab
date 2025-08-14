@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { 
   Box, 
   Typography, 
@@ -12,7 +12,14 @@ import {
   TextField,
   Card,
   CardContent,
-  Chip
+  Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  CircularProgress,
+  Alert,
+  LinearProgress
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -21,8 +28,20 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import DeleteIcon from '@mui/icons-material/Delete';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import FolderIcon from '@mui/icons-material/Folder';
+import SearchIcon from '@mui/icons-material/Search';
+import UploadIcon from '@mui/icons-material/Upload';
+import DownloadIcon from '@mui/icons-material/Download';
+import TextSnippetIcon from '@mui/icons-material/TextSnippet';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { ThemeContext } from '../context/ThemeContext';
+import { 
+  getProjectDocuments, 
+  uploadDocument, 
+  downloadDocument, 
+  getDocumentText,
+  createPDFBlobUrl,
+  getDocument
+} from '../api/documents';
 
 // Logo VALIS component
 const ValisLogo = ({ theme }) => (
@@ -227,46 +246,211 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
   }
 }));
 
+// Hidden file input
+const VisuallyHiddenInput = styled('input')({
+  clip: 'rect(0 0 0 0)',
+  clipPath: 'inset(50%)',
+  height: 1,
+  overflow: 'hidden',
+  position: 'absolute',
+  bottom: 0,
+  left: 0,
+  whiteSpace: 'nowrap',
+  width: 1,
+});
+
 export default function Documents() {
   const navigate = useNavigate();
   const location = useLocation();
   const { projectId } = useParams();
   const { theme } = useContext(ThemeContext);
   
-  // Get project from navigation state or create a fallback if the page is reloaded
+  // Decode project ID from URL
+  const decodedProjectId = decodeURIComponent(projectId);
+  
+  // Get project from navigation state or create a fallback
   const initialProject = location.state?.project || {
-    id: parseInt(projectId),
-    name: `Project ${projectId}`,
-    documents: []
+    project_id: decodedProjectId,
+    document_count: 0
   };
 
   const [project, setProject] = useState(initialProject);
-  const [newDocName, setNewDocName] = useState('');
+  const [documents, setDocuments] = useState([]);
+  const [filteredDocuments, setFilteredDocuments] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [uploadModalOpen, setUploadModalOpen] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [documentTitle, setDocumentTitle] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
-  const addDocument = () => {
-    if (newDocName.trim()) {
-      setProject({
-        ...project,
-        documents: [...project.documents, newDocName.trim()]
-      });
-      setNewDocName('');
+  // Load documents on component mount
+  useEffect(() => {
+    loadDocuments();
+  }, [decodedProjectId]);
+
+  // Filter documents based on search query
+  useEffect(() => {
+    if (searchQuery.trim() === '') {
+      setFilteredDocuments(documents);
+    } else {
+      const filtered = documents.filter(doc => 
+        doc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        doc.doc_id.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+      setFilteredDocuments(filtered);
+    }
+  }, [documents, searchQuery]);
+
+  const loadDocuments = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const documentsData = await getProjectDocuments(decodedProjectId);
+      setDocuments(documentsData);
+      // Update project document count
+      setProject(prev => ({
+        ...prev,
+        document_count: documentsData.length
+      }));
+    } catch (err) {
+      console.error('Error loading documents:', err);
+      setError('Failed to load documents. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const deleteDocument = (docIndex) => {
-    setProject({
-      ...project,
-      documents: project.documents.filter((_, index) => index !== docIndex)
-    });
+  const handleFileSelect = (event) => {
+    const file = event.target.files[0];
+    if (file && file.type === 'application/pdf') {
+      setSelectedFile(file);
+      // Auto-fill document title with filename (without extension)
+      const filename = file.name;
+      const titleWithoutExt = filename.substring(0, filename.lastIndexOf('.')) || filename;
+      setDocumentTitle(titleWithoutExt);
+    } else {
+      setError('Please select a valid PDF file.');
+      setSelectedFile(null);
+    }
   };
 
-  const openDocument = (docName) => {
-    // You can replace this with your actual document opening logic
-    alert(`Opening document: ${docName}`);
+  const uploadDoc = async () => {
+    if (!selectedFile || !documentTitle.trim()) return;
+    
+    try {
+      setUploading(true);
+      setUploadProgress(0);
+      setError('');
+      
+      // Simulate upload progress
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => {
+          if (prev >= 90) return prev;
+          return prev + Math.random() * 20;
+        });
+      }, 200);
+
+      const result = await uploadDocument(
+        selectedFile,
+        decodedProjectId,
+        documentTitle.trim()
+      );
+      
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+      
+      // Reload documents list
+      await loadDocuments();
+      
+      // Reset form
+      setUploadModalOpen(false);
+      setSelectedFile(null);
+      setDocumentTitle('');
+      setUploadProgress(0);
+      
+    } catch (err) {
+      console.error('Error uploading document:', err);
+      setError('Failed to upload document. Please try again.');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDownload = async (doc) => {
+    try {
+      await downloadDocument(decodedProjectId, doc.doc_id, `${doc.title}.pdf`);
+    } catch (err) {
+      console.error('Error downloading document:', err);
+      setError('Failed to download document. Please try again.');
+    }
+  };
+
+  const handleViewText = async (doc) => {
+    try {
+      const textData = await getDocumentText(decodedProjectId, doc.doc_id);
+      // Open text in a new window or modal
+      const newWindow = window.open('', '_blank');
+      newWindow.document.write(`
+        <html>
+          <head>
+            <title>${doc.title} - Text Content</title>
+            <style>
+              body { 
+                font-family: Arial, sans-serif; 
+                margin: 40px; 
+                line-height: 1.6;
+                color: #333;
+              }
+              .header {
+                border-bottom: 2px solid #7C4DFF;
+                padding-bottom: 20px;
+                margin-bottom: 30px;
+              }
+              .content {
+                white-space: pre-wrap;
+                background: #f9f9f9;
+                padding: 20px;
+                border-radius: 8px;
+                border-left: 4px solid #7C4DFF;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <h1>${doc.title}</h1>
+              <p><strong>Document ID:</strong> ${doc.doc_id}</p>
+              <p><strong>Project:</strong> ${decodedProjectId}</p>
+            </div>
+            <div class="content">${textData.content || 'No text content available.'}</div>
+          </body>
+        </html>
+      `);
+    } catch (err) {
+      console.error('Error viewing document text:', err);
+      setError('Failed to load document text. Please try again.');
+    }
+  };
+
+  const handleViewPDF = async (doc) => {
+    try {
+      const pdfBlob = await getDocument(decodedProjectId, doc.doc_id);
+      const url = createPDFBlobUrl(pdfBlob);
+      window.open(url, '_blank');
+    } catch (err) {
+      console.error('Error viewing PDF:', err);
+      setError('Failed to load PDF. Please try again.');
+    }
   };
 
   const goBack = () => {
     navigate('/projects');
+  };
+
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
   };
 
   return (
@@ -357,11 +541,11 @@ export default function Documents() {
                     mb: 1
                   }}
                 >
-                  {project.name}
+                  {project.project_id}
                 </Typography>
                 <Chip
                   icon={<DescriptionIcon />}
-                  label={`${project.documents.length} document${project.documents.length !== 1 ? 's' : ''}`}
+                  label={`${documents.length} document${documents.length !== 1 ? 's' : ''}`}
                   sx={{
                     backgroundColor: theme.palette.mode === 'dark' ? alpha('#9A7CFF', 0.2) : alpha('#7C4DFF', 0.1),
                     color: theme.palette.mode === 'dark' ? '#B79CFF' : '#7C4DFF',
@@ -372,7 +556,7 @@ export default function Documents() {
               </Box>
             </Box>
 
-            {/* Add Document Section */}
+            {/* Search and Upload Section */}
             <Box sx={{ mb: 6 }}>
               <DocumentCard>
                 <CardContent sx={{ p: 4 }}>
@@ -382,110 +566,258 @@ export default function Documents() {
                     gap: 3,
                     flexWrap: { xs: 'wrap', sm: 'nowrap' }
                   }}>
-                    <Typography 
-                      variant="h5" 
-                      sx={{ 
-                        fontWeight: 600,
-                        color: theme.palette.mode === 'dark' ? '#FFFFFF' : '#14142B',
-                        minWidth: 'fit-content'
-                      }}
-                    >
-                      Add New Document
-                    </Typography>
+                    <SearchIcon sx={{ 
+                      color: theme.palette.mode === 'dark' ? alpha('#FFFFFF', 0.7) : alpha('#14142B', 0.7),
+                      fontSize: '1.5rem'
+                    }} />
                     <StyledTextField
                       fullWidth
-                      value={newDocName}
-                      onChange={(e) => setNewDocName(e.target.value)}
-                      placeholder="Enter document name..."
-                      onKeyPress={(e) => e.key === 'Enter' && addDocument()}
+                      value={searchQuery}
+                      onChange={handleSearchChange}
+                      placeholder="Search documents..."
                       sx={{ maxWidth: '400px' }}
                     />
                     <CreateButton 
-                      onClick={addDocument}
-                      startIcon={<AddIcon />}
+                      onClick={() => setUploadModalOpen(true)}
+                      startIcon={<UploadIcon />}
                       sx={{ minWidth: 'fit-content' }}
                     >
-                      Add Document
+                      Upload Document
                     </CreateButton>
                   </Box>
                 </CardContent>
               </DocumentCard>
             </Box>
 
-            {/* Documents List */}
-            <Box sx={{ 
-              display: 'flex', 
-              flexDirection: 'column',
-              gap: 2
-            }}>
-              {project.documents.map((doc, index) => (
-                <DocumentCard key={index}>
-                  <CardContent sx={{ p: 3 }}>
-                    <Box sx={{ 
-                      display: 'flex', 
-                      justifyContent: 'space-between', 
-                      alignItems: 'center',
-                      gap: 2
-                    }}>
-                      <Box sx={{ 
-                        display: 'flex', 
-                        alignItems: 'center',
-                        gap: 2,
-                        flex: 1
-                      }}>
-                        <DescriptionIcon sx={{ 
-                          fontSize: '1.5rem',
-                          color: theme.palette.primary.main 
-                        }} />
-                        <Typography 
-                          variant="h6" 
-                          sx={{ 
-                            fontWeight: 600,
-                            color: theme.palette.mode === 'dark' ? '#FFFFFF' : '#14142B',
-                          }}
-                        >
-                          {doc}
-                        </Typography>
-                      </Box>
-                      
-                      <Box sx={{ display: 'flex', gap: 1 }}>
-                        <ActionButton 
-                          onClick={() => openDocument(doc)}
-                          startIcon={<OpenInNewIcon />}
-                        >
-                          Open
-                        </ActionButton>
-                        <Tooltip title="Delete Document" arrow>
-                          <DeleteButton onClick={() => deleteDocument(index)}>
-                            <DeleteIcon sx={{ fontSize: '1.1rem' }} />
-                          </DeleteButton>
-                        </Tooltip>
-                      </Box>
-                    </Box>
-                  </CardContent>
-                </DocumentCard>
-              ))}
-            </Box>
+            {/* Error Alert */}
+            {error && (
+              <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError('')}>
+                {error}
+              </Alert>
+            )}
 
-            {/* Empty State */}
-            {project.documents.length === 0 && (
-              <Box sx={{ 
-                textAlign: 'center', 
-                py: 8,
-                color: theme.palette.mode === 'dark' ? alpha('#FFFFFF', 0.6) : alpha('#14142B', 0.6)
-              }}>
-                <DescriptionIcon sx={{ fontSize: '4rem', mb: 2, opacity: 0.5 }} />
-                <Typography variant="h5" sx={{ mb: 2, fontWeight: 600 }}>
-                  No documents yet
-                </Typography>
-                <Typography variant="body1">
-                  Add your first document above to get started!
-                </Typography>
+            {/* Loading State */}
+            {loading ? (
+              <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+                <CircularProgress />
               </Box>
+            ) : (
+              <>
+                {/* Documents List */}
+                <Box sx={{ 
+                  display: 'flex', 
+                  flexDirection: 'column',
+                  gap: 2
+                }}>
+                  {filteredDocuments.map((doc) => (
+                    <DocumentCard key={doc.doc_id}>
+                      <CardContent sx={{ p: 3 }}>
+                        <Box sx={{ 
+                          display: 'flex', 
+                          justifyContent: 'space-between', 
+                          alignItems: 'center',
+                          gap: 2,
+                          flexWrap: { xs: 'wrap', sm: 'nowrap' }
+                        }}>
+                          <Box sx={{ 
+                            display: 'flex', 
+                            alignItems: 'center',
+                            gap: 2,
+                            flex: 1,
+                            minWidth: 0
+                          }}>
+                            <DescriptionIcon sx={{ 
+                              fontSize: '1.5rem',
+                              color: theme.palette.primary.main,
+                              flexShrink: 0
+                            }} />
+                            <Box sx={{ minWidth: 0 }}>
+                              <Typography 
+                                variant="h6" 
+                                sx={{ 
+                                  fontWeight: 600,
+                                  color: theme.palette.mode === 'dark' ? '#FFFFFF' : '#14142B',
+                                  wordBreak: 'break-word'
+                                }}
+                              >
+                                {doc.title}
+                              </Typography>
+                              <Typography 
+                                variant="body2" 
+                                sx={{ 
+                                  color: theme.palette.mode === 'dark' ? alpha('#FFFFFF', 0.6) : alpha('#14142B', 0.6),
+                                  fontSize: '0.75rem'
+                                }}
+                              >
+                                ID: {doc.doc_id}
+                              </Typography>
+                            </Box>
+                          </Box>
+                          
+                          <Box sx={{ 
+                            display: 'flex', 
+                            gap: 1, 
+                            flexShrink: 0,
+                            flexWrap: 'wrap'
+                          }}>
+                            <Tooltip title="View PDF" arrow>
+                              <ActionButton 
+                                onClick={() => handleViewPDF(doc)}
+                                startIcon={<OpenInNewIcon />}
+                                size="small"
+                              >
+                                PDF
+                              </ActionButton>
+                            </Tooltip>
+                            <Tooltip title="View Text" arrow>
+                              <ActionButton 
+                                onClick={() => handleViewText(doc)}
+                                startIcon={<TextSnippetIcon />}
+                                size="small"
+                              >
+                                Text
+                              </ActionButton>
+                            </Tooltip>
+                            <Tooltip title="Download" arrow>
+                              <ActionButton 
+                                onClick={() => handleDownload(doc)}
+                                startIcon={<DownloadIcon />}
+                                size="small"
+                              >
+                                Download
+                              </ActionButton>
+                            </Tooltip>
+                          </Box>
+                        </Box>
+                      </CardContent>
+                    </DocumentCard>
+                  ))}
+                </Box>
+
+                {/* Empty State */}
+                {filteredDocuments.length === 0 && !loading && (
+                  <Box sx={{ 
+                    textAlign: 'center', 
+                    py: 8,
+                    color: theme.palette.mode === 'dark' ? alpha('#FFFFFF', 0.6) : alpha('#14142B', 0.6)
+                  }}>
+                    <DescriptionIcon sx={{ fontSize: '4rem', mb: 2, opacity: 0.5 }} />
+                    <Typography variant="h5" sx={{ mb: 2, fontWeight: 600 }}>
+                      {searchQuery ? 'No documents found' : 'No documents yet'}
+                    </Typography>
+                    <Typography variant="body1">
+                      {searchQuery 
+                        ? 'Try adjusting your search query'
+                        : 'Upload your first document to get started!'}
+                    </Typography>
+                  </Box>
+                )}
+              </>
             )}
           </Box>
         </Fade>
       </Container>
+
+      {/* Upload Document Modal */}
+      <Dialog 
+        open={uploadModalOpen} 
+        onClose={() => !uploading && setUploadModalOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{
+          backgroundColor: theme.palette.mode === 'dark' ? '#1C1C3C' : '#FFFFFF',
+          color: theme.palette.mode === 'dark' ? '#FFFFFF' : '#14142B',
+          borderBottom: `1px solid ${theme.palette.mode === 'dark' ? alpha('#FFFFFF', 0.1) : alpha('#000000', 0.1)}`
+        }}>
+          Upload Document
+        </DialogTitle>
+        <DialogContent sx={{
+          backgroundColor: theme.palette.mode === 'dark' ? '#1C1C3C' : '#FFFFFF',
+          pt: 3
+        }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+            {/* File Selection */}
+            <Box>
+              <Typography variant="body2" sx={{ mb: 2, fontWeight: 600 }}>
+                Select PDF File
+              </Typography>
+              <CreateButton
+                component="label"
+                startIcon={<UploadIcon />}
+                variant="outlined"
+                fullWidth
+                sx={{ mb: 1 }}
+              >
+                Choose PDF File
+                <VisuallyHiddenInput
+                  type="file"
+                  accept=".pdf,application/pdf"
+                  onChange={handleFileSelect}
+                />
+              </CreateButton>
+              {selectedFile && (
+                <Typography variant="body2" sx={{ 
+                  color: theme.palette.primary.main,
+                  fontWeight: 600
+                }}>
+                  Selected: {selectedFile.name}
+                </Typography>
+              )}
+            </Box>
+
+            {/* Document Title */}
+            <StyledTextField
+              fullWidth
+              label="Document Title"
+              value={documentTitle}
+              onChange={(e) => setDocumentTitle(e.target.value)}
+              placeholder="Enter document title..."
+              disabled={uploading}
+            />
+
+            {/* Upload Progress */}
+            {uploading && (
+              <Box>
+                <Typography variant="body2" sx={{ mb: 1 }}>
+                  Uploading... {Math.round(uploadProgress)}%
+                </Typography>
+                <LinearProgress 
+                  variant="determinate" 
+                  value={uploadProgress}
+                  sx={{
+                    height: 8,
+                    borderRadius: 4,
+                    '& .MuiLinearProgress-bar': {
+                      backgroundColor: theme.palette.primary.main
+                    }
+                  }}
+                />
+              </Box>
+            )}
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{
+          backgroundColor: theme.palette.mode === 'dark' ? '#1C1C3C' : '#FFFFFF',
+          borderTop: `1px solid ${theme.palette.mode === 'dark' ? alpha('#FFFFFF', 0.1) : alpha('#000000', 0.1)}`,
+          p: 3
+        }}>
+          <Button 
+            onClick={() => setUploadModalOpen(false)}
+            disabled={uploading}
+            sx={{ color: theme.palette.mode === 'dark' ? alpha('#FFFFFF', 0.7) : alpha('#14142B', 0.7) }}
+          >
+            Cancel
+          </Button>
+          <CreateButton 
+            onClick={uploadDoc}
+            disabled={uploading || !selectedFile || !documentTitle.trim()}
+            startIcon={uploading ? <CircularProgress size={16} /> : <UploadIcon />}
+          >
+            {uploading ? 'Uploading...' : 'Upload Document'}
+          </CreateButton>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
