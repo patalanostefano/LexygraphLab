@@ -1,43 +1,47 @@
+# Usa un'immagine base di Python
 FROM python:3.11-slim
 
+# Imposta le variabili d'ambiente per migliorare le performance di Python
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+
+# Imposta la directory di lavoro nel container
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y gcc && rm -rf /var/lib/apt/lists/*
-
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY . .
-
-EXPOSE 8000
-
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]-get update && apt-get install -y \
+# Installa le dipendenze di sistema necessarie
+RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
     curl \
+    # Rimuove la cache di apt per ridurre le dimensioni dell'immagine
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first for better Docker layer caching
-COPY requirements.txt .
+# Installa tutte le dipendenze Python necessarie direttamente con pip
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir \
+        fastapi \
+        uvicorn \
+        requests \
+        pydantic \
+        pypdf \
+        pymupdf \
+        python-multipart\
+        supabase
 
-# Install Python dependencies
-RUN pip install --no-cache-dir --upgrade pip
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy application code
+# Copia il codice sorgente dell'applicazione nella directory di lavoro
 COPY . .
 
-# Create non-root user for security
+# Crea un utente non-root per questioni di sicurezza
 RUN useradd --create-home --shell /bin/bash app \
     && chown -R app:app /app
 USER app
 
-# Expose port
+# Espone la porta che l'applicazione utilizzerà
 EXPOSE 8000
 
-# Health check
+# Health check per verificare che l’API sia attiva
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
+    CMD curl -f http://localhost:8000/docs || exit 1
 
-# Command to run the application
+# Comando per avviare il servizio utilizzando uvicorn
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

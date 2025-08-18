@@ -1,16 +1,23 @@
 """
 Document Storage Service - FastAPI Implementation
 Handles PDF document storage, retrieval, and text extraction
+Now integrated with Chunker Service for automatic chunking
 """
 
-from typing import List, Optional
+from typing import List
 from fastapi import FastAPI, File, UploadFile, HTTPException, Form
 from fastapi.responses import Response
 from pydantic import BaseModel
 import uvicorn
+import requests
+import tempfile
+import os
 
 from database import DatabaseManager
 from pdf_processor import PDFProcessor
+
+# URL del chunker service (in Docker sarà il nome del servizio)
+CHUNKER_URL = os.getenv("CHUNKER_URL", "http://chunker-service:8000/chunk")
 
 app = FastAPI(title="Document Storage Service")
 
@@ -23,6 +30,7 @@ class DocumentResponse(BaseModel):
     success: bool
     message: str
     document_id: str
+    chunks: List[dict] = []  # aggiunto per restituire i chunk
 
 class DocumentMetadata(BaseModel):
     doc_id: str
@@ -51,9 +59,34 @@ async def upload_document(
     success = await db_manager.store_document(
         document_id, user_id, project_id, doc_id, title, file_content, text_content
     )
-    
+
+    # Salva file temporaneo per invio al chunker
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
+        tmp.write(file_content)
+        temp_path = tmp.name
+
+    chunks_data = []
+    try:
+        with open(temp_path, "rb") as f:
+            files = {"file": (file.filename, f)}
+            try:
+                r = requests.post(CHUNKER_URL, files=files, timeout=60)
+                if r.status_code == 200:
+                    chunks_data = r.json().get("chunks", [])
+                else:
+                    raise HTTPException(status_code=500, detail=f"Chunker error: {r.text}")
+            except requests.RequestException as e:
+                raise HTTPException(status_code=500, detail=f"Error contacting chunker service: {str(e)}")
+    finally:
+        os.remove(temp_path)
+
     if success:
-        return DocumentResponse(success=True, message="Document uploaded successfully", document_id=document_id)
+        return DocumentResponse(
+            success=True,
+            message="Document uploaded and processed successfully",
+            document_id=document_id,
+            chunks=chunks_data
+        )
     else:
         raise HTTPException(status_code=500, detail="Failed to store document")
 
