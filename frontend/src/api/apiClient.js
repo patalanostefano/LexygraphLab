@@ -1,84 +1,128 @@
+// api/apiClient.js - Fixed version with consistent session-based auth
 import axios from 'axios';
 import { supabase } from '../config/supabaseClient';
 
-// This points to YOUR API GATEWAY, not Supabase directly
-const API_BASE_URL = 'http://localhost:8080'; // Your API Gateway
+const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:8080';
 
-// Create axios instance
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  }
+  headers: { 'Content-Type': 'application/json' },
+  timeout: 10000,
 });
 
-// Get current user ID helper - CALLS SUPABASE AUTH DIRECTLY FROM FRONTEND
+// FIXED: Use getSession() consistently with AuthContext for speed and reliability
 export const getCurrentUserId = async () => {
   try {
-    // This is a direct call to Supabase Auth API (not your backend)
-    const { data: { user }, error } = await supabase.auth.getUser();
-    if (error) throw error;
-    return user?.id || null;
+    console.log('🔍 getCurrentUserId: Checking Supabase session...');
+    
+    // Use getSession() for consistency with AuthContext (faster, frontend-safe)
+    const { data: { session }, error } = await supabase.auth.getSession();
+    
+    console.log('📝 Supabase session response:', {
+      session: session ? {
+        user_id: session.user?.id,
+        user_email: session.user?.email,
+        expires_at: session.expires_at,
+        access_token: session.access_token ? '[present]' : '[missing]'
+      } : null,
+      error: error
+    });
+    
+    if (error) {
+      console.error('❌ Supabase session error:', error);
+      throw error;
+    }
+    
+    if (!session?.user?.id) {
+      console.warn('⚠️ No valid session or user found');
+      return null;
+    }
+    
+    console.log('✅ User authenticated via session:', session.user.id);
+    return session.user.id;
   } catch (error) {
-    console.error('Error getting user ID:', error);
+    console.error('💥 Error getting user ID from session:', error);
     return null;
   }
 };
 
-// Request interceptor - Add user ID to requests instead of JWT
+// ALTERNATIVE: Synchronous version that uses AuthContext state
+// This avoids async calls in every API request
+let cachedUserId = null;
+let cachedSession = null;
+
+export const setCachedUserData = (userId, session) => {
+  cachedUserId = userId;
+  cachedSession = session;
+  console.log('📥 Cached user data updated:', { userId: userId ? '[present]' : '[none]' });
+};
+
+export const getCachedUserId = () => {
+  console.log('🏃‍♂️ Using cached user ID:', cachedUserId ? '[present]' : '[none]');
+  return cachedUserId;
+};
+
+// Request interceptor: Use cached userId when available, fallback to session check
 apiClient.interceptors.request.use(
   async (config) => {
     try {
-      // Get user ID from Supabase Auth (frontend call)
-      const userId = await getCurrentUserId();
+      console.log(`🚀 API Request: ${config.method?.toUpperCase()} ${config.url}`);
       
-      if (userId) {
-        // ALL THESE REQUESTS GO TO YOUR API GATEWAY (localhost:8080)
-        // NOT to Supabase directly
-        
-        // Add userId to URL params for GET requests
-        if (config.method === 'get') {
-          config.params = { ...config.params, userId };
-        } 
-        // Add userId to request body for POST/PUT requests
-        else if (config.data && !(config.data instanceof FormData)) {
-          config.data = { ...config.data, userId };
-        }
-        // For FormData, append userId
-        else if (config.data instanceof FormData) {
-          config.data.append('userId', userId);
-        }
-        
-        console.log(`API Request to Gateway: ${config.method?.toUpperCase()} ${config.url} with userId: ${userId}`);
-      } else {
-        console.warn('No authenticated user found for API request');
-        return Promise.reject(new Error('User not authenticated'));
+      // Try cached first (faster)
+      let userId = getCachedUserId();
+      
+      // Fallback to session check if no cache
+      if (!userId) {
+        console.log('🔄 No cached user, checking session...');
+        userId = await getCurrentUserId();
       }
       
-      return config;
+      if (userId) {
+        config.headers['X-User-Id'] = userId;
+        console.log(`👤 Added user header: ${userId}`);
+      } else {
+        console.log('⚠️ No user ID available for request');
+      }
     } catch (error) {
-      console.error('Request interceptor error:', error);
-      return Promise.reject(error);
+      console.log('❌ Error in request interceptor:', error);
+      // Don't fail the request due to auth issues
     }
-  }
+    return config;
+  },
+  (error) => Promise.reject(error)
 );
 
-// Response interceptor for error handling
+export const getUserIdFromContext = (contextUserId) => {
+  console.log('⚡ Using AuthContext user ID:', contextUserId ? '[present]' : '[none]');
+  return contextUserId;
+};
+
+// Response interceptor for logging and auth error handling
 apiClient.interceptors.response.use(
   (response) => {
-    console.log(`API Success: ${response.config.method?.toUpperCase()} ${response.config.url}`);
+    console.log(`✅ API Success: ${response.config.method?.toUpperCase()} ${response.config.url} - ${response.status}`);
     return response;
   },
   (error) => {
-    console.error(`API Error: ${error.config?.method?.toUpperCase()} ${error.config?.url}`);
+    console.error(`❌ API Error: ${error.config?.method?.toUpperCase()} ${error.config?.url}`);
     
     if (error.response) {
-      console.error('Error details:', {
+      console.error('📋 Error details:', {
         status: error.response.status,
+        statusText: error.response.statusText,
         data: error.response.data
       });
+      
+      // Handle auth errors by clearing cache
+      if (error.response.status === 401) {
+        console.log('🔑 Auth error detected, clearing cached user data');
+        setCachedUserData(null, null);
+      }
+    } else if (error.request) {
+      console.error('📡 Network error - no response received');
+    } else {
+      console.error('⚙️ Request setup error:', error.message);
     }
-    
     return Promise.reject(error);
   }
 );

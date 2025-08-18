@@ -8,7 +8,6 @@ ENV PYTHONUNBUFFERED=1
 # Imposta la directory di lavoro nel container
 WORKDIR /app
 
-# Installa le dipendenze di sistema necessarie
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \

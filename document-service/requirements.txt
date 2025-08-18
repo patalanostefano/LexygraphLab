@@ -4,3 +4,4 @@ python-multipart==0.0.6
 supabase
 PyMuPDF==1.23.8
 PyPDF2==3.0.1
+pydantic==2.5.0

@@ -1,0 +1,79 @@
+version: '3.8'
+
+services:
+  # API Gateway (Spring Boot)
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SERVICES_DOCUMENT_SERVICE_URL=http://document-service:8000
+    networks:
+      - app-network
+    depends_on:
+      document-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Document Service (FastAPI/Python)
+  document-service:
+    build:
+      context: ./document-service
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+  # Frontend (React/Nginx)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:80"
+    networks:
+      - app-network
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+    environment:
+      - REACT_APP_API_URL=http://localhost:8080
+    volumes:
+      # Mount source code with :cached for faster file sync on macOS/Windows
+      - ./frontend:/app:cached
+      # Prevent mounting node_modules from host to avoid FS slowdown
+      - /app/node_modules
+    mem_limit: 2g   # Give frontend more RAM
+    cpus: 2         # Give it 2 CPU cores
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:80/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  app-network:
+    driver: bridge
+
+# Volumes for development (optional)
+volumes:
+  document-data:
+    driver: local
