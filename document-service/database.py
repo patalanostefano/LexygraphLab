@@ -31,7 +31,7 @@ class DatabaseManager:
             print(f"❌ Supabase error: {e}")
             self.available = False
     
-    async def list_user_projects(self, user_id: str) -> List[Dict[str, Any]]:
+    def list_user_projects(self, user_id: str) -> List[Dict[str, Any]]:
         """Get all projects for a user (derived from documents)"""
         if not self.available:
             return []
@@ -62,7 +62,7 @@ class DatabaseManager:
             print(f"List projects error: {e}")
             return []
     
-    async def store_document(self, document_id: str, user_id: str, project_id: str, 
+    def store_document(self, document_id: str, user_id: str, project_id: str, 
                            doc_id: str, title: str, file_data: bytes, text_content: str) -> bool:
         if not self.available:
             return False
@@ -98,7 +98,7 @@ class DatabaseManager:
             print(f"❌ Store error: {e}")
             return False
     
-    async def get_document(self, document_id: str) -> Optional[bytes]:
+    def get_document(self, document_id: str) -> Optional[bytes]:
         if not self.available:
             return None
         
@@ -113,7 +113,7 @@ class DatabaseManager:
             print(f"❌ Get document error: {e}")
             return None
     
-    async def get_document_text(self, document_id: str) -> Optional[str]:
+    def get_document_text(self, document_id: str) -> Optional[str]:
         if not self.available:
             return None
         
@@ -126,7 +126,7 @@ class DatabaseManager:
             print(f"Get text error: {e}")
             return None
     
-    async def list_project_documents(self, user_id: str, project_id: str) -> List[Dict[str, Any]]:
+    def list_project_documents(self, user_id: str, project_id: str) -> List[Dict[str, Any]]:
         if not self.available:
             return []
         

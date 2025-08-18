@@ -13,7 +13,7 @@ import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 @Configuration
 public class GatewayConfig {
 
-    @Value("${services.document-service.url:http://document-service:8000}")
+    @Value("${services.document-service.url:http://localhost:8000}")
     private String documentServiceUrl;
 
     @Bean
@@ -35,17 +35,17 @@ public class GatewayConfig {
     public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
         return builder.routes()
 
-                // DOCUMENT SERVICE ROUTES
+                // DOCUMENT SERVICE ROUTES - FIXED PATHS
 
-                // Get user projects
+                // Get user projects - FIXED: Changed from {userId} to {user_id}
                 .route("user_projects", r -> r
-                        .path("/api/v1/projects/{userId}")
+                        .path("/api/v1/projects/{user_id}")
                         .and()
                         .method(HttpMethod.GET)
                         .filters(f -> f.setRequestHeader("X-Gateway-Source", "api-gateway"))
                         .uri(documentServiceUrl))
 
-                // Upload document
+                // Upload document - CORRECT PATH
                 .route("document_upload", r -> r
                         .path("/api/v1/documents/upload")
                         .and()
@@ -53,25 +53,33 @@ public class GatewayConfig {
                         .filters(f -> f.setRequestHeader("X-Gateway-Source", "api-gateway"))
                         .uri(documentServiceUrl))
 
-                // Get document PDF binary
+                // Get document PDF binary - FIXED: Changed to match service path
                 .route("document_retrieve", r -> r
-                        .path("/api/v1/documents/{userId}/{projectId}/{docId}")
+                        .path("/api/v1/documents/{user_id}/{project_id}/{doc_id}")
                         .and()
                         .method(HttpMethod.GET)
                         .filters(f -> f.setRequestHeader("X-Gateway-Source", "api-gateway"))
                         .uri(documentServiceUrl))
 
-                // Get document text content
+                // Get document PDF binary with /pdf suffix - NEW ROUTE
+                .route("document_retrieve_pdf", r -> r
+                        .path("/api/v1/documents/{user_id}/{project_id}/{doc_id}/pdf")
+                        .and()
+                        .method(HttpMethod.GET)
+                        .filters(f -> f.stripPrefix(1).setRequestHeader("X-Gateway-Source", "api-gateway"))
+                        .uri(documentServiceUrl))
+
+                // Get document text content - CORRECT PATH
                 .route("document_text", r -> r
-                        .path("/api/v1/documents/{userId}/{projectId}/{docId}/text")
+                        .path("/api/v1/documents/{user_id}/{project_id}/{doc_id}/text")
                         .and()
                         .method(HttpMethod.GET)
                         .filters(f -> f.setRequestHeader("X-Gateway-Source", "api-gateway"))
                         .uri(documentServiceUrl))
 
-                // List documents in a project
+                // List documents in a project - FIXED: Changed from {userId}/{projectId} to {user_id}/{project_id}
                 .route("documents_list", r -> r
-                        .path("/api/v1/documents/{userId}/{projectId}")
+                        .path("/api/v1/documents/{user_id}/{project_id}")
                         .and()
                         .method(HttpMethod.GET)
                         .filters(f -> f.setRequestHeader("X-Gateway-Source", "api-gateway"))
@@ -89,20 +97,6 @@ public class GatewayConfig {
                         .and()
                         .method(HttpMethod.GET)
                         .uri(documentServiceUrl))
-
-                // AGENT SERVICE ROUTES (if you have them)
-                .route("agent_process", r -> r
-                        .path("/api/v1/agents/process")
-                        .and()
-                        .method(HttpMethod.POST)
-                        .filters(f -> f.setRequestHeader("X-Gateway-Source", "api-gateway"))
-                        .uri("forward:/api/v1/agents/process"))
-
-                .route("agent_list", r -> r
-                        .path("/api/v1/agents/list")
-                        .and()
-                        .method(HttpMethod.GET)
-                        .uri("forward:/api/v1/agents/list"))
 
                 // GATEWAY HEALTH
                 .route("health_check", r -> r

@@ -33,7 +33,7 @@ pdf_processor = PDFProcessor()
 class DocumentResponse(BaseModel):
     success: bool
     message: str
-    document_id: str
+    doc_id: str  # FIXED: Changed from document_id to doc_id to match test expectations
 
 class DocumentMetadata(BaseModel):
     doc_id: str
@@ -61,7 +61,7 @@ async def health_check():
 async def get_user_projects(user_id: str):
     """Get all projects for a user (derived from existing documents)"""
     try:
-        projects = await db_manager.list_user_projects(user_id)
+        projects = db_manager.list_user_projects(user_id)
         return ProjectListResponse(projects=projects)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to retrieve projects: {str(e)}")
@@ -87,15 +87,16 @@ async def upload_document(
     text_content = pdf_processor.extract_text_from_bytes(file_content)
     document_id = f"{user_id}_{project_id}_{doc_id}"
     
-    success = await db_manager.store_document(
+    success = db_manager.store_document(
         document_id, user_id, project_id, doc_id, title, file_content, text_content
     )
     
     if success:
+        # FIXED: Return the actual doc_id instead of document_id
         return DocumentResponse(
             success=True, 
             message="Document uploaded successfully", 
-            document_id=document_id
+            doc_id=doc_id  # FIXED: Return the actual doc_id
         )
     else:
         raise HTTPException(status_code=500, detail="Failed to store document")
@@ -105,19 +106,25 @@ async def upload_document(
 async def get_document(user_id: str, project_id: str, doc_id: str):
     """Get document PDF binary"""
     document_id = f"{user_id}_{project_id}_{doc_id}"
-    document_data = await db_manager.get_document(document_id)
+    document_data = db_manager.get_document(document_id)
     
     if not document_data:
         raise HTTPException(status_code=404, detail="Document not found")
     
     return Response(content=document_data, media_type="application/pdf")
 
+# ADDED: Alternative endpoint with /pdf suffix for gateway compatibility
+@app.get("/api/v1/documents/{user_id}/{project_id}/{doc_id}/pdf")
+async def get_document_pdf(user_id: str, project_id: str, doc_id: str):
+    """Get document PDF binary (alternative endpoint with /pdf suffix)"""
+    return await get_document(user_id, project_id, doc_id)
+
 # Get document text content endpoint
 @app.get("/api/v1/documents/{user_id}/{project_id}/{doc_id}/text")
 async def get_document_text(user_id: str, project_id: str, doc_id: str):
     """Get document extracted text content"""
     document_id = f"{user_id}_{project_id}_{doc_id}"
-    text_content = await db_manager.get_document_text(document_id)
+    text_content = db_manager.get_document_text(document_id)
     
     if text_content is None:
         raise HTTPException(status_code=404, detail="Document not found")
@@ -128,7 +135,7 @@ async def get_document_text(user_id: str, project_id: str, doc_id: str):
 @app.get("/api/v1/documents/{user_id}/{project_id}", response_model=DocumentListResponse)
 async def list_project_documents(user_id: str, project_id: str):
     """Get all documents in a project"""
-    documents = await db_manager.list_project_documents(user_id, project_id)
+    documents = db_manager.list_project_documents(user_id, project_id)
     return DocumentListResponse(documents=documents)
 
 if __name__ == "__main__":
