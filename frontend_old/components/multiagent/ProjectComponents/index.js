@@ -12,7 +12,9 @@ function App() {
   return (
     <div>
       <button onClick={handleCreateProjectClick}>Crea nuovo progetto</button>
-      {isProjectDialogOpen && <NewProjectDialog onClose={() => setIsProjectDialogOpen(false)} />}
+      {isProjectDialogOpen && (
+        <NewProjectDialog onClose={() => setIsProjectDialogOpen(false)} />
+      )}
       {/* Altri componenti e logica dell'applicazione */}
     </div>
   );

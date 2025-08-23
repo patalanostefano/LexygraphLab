@@ -10,38 +10,30 @@ const apiClient = axios.create({
   timeout: 10000,
 });
 
-// FIXED: Use getSession() consistently with AuthContext for speed and reliability
 export const getCurrentUserId = async () => {
   try {
-    console.log('🔍 getCurrentUserId: Checking Supabase session...');
-    
-    // Use getSession() for consistency with AuthContext (faster, frontend-safe)
-    const { data: { session }, error } = await supabase.auth.getSession();
-    
-    console.log('📝 Supabase session response:', {
-      session: session ? {
-        user_id: session.user?.id,
-        user_email: session.user?.email,
-        expires_at: session.expires_at,
-        access_token: session.access_token ? '[present]' : '[missing]'
-      } : null,
-      error: error
-    });
-    
+    console.log('🔍 getCurrentUserId: Checking Supabase user...');
+
+    // FIXED: Use getUser() instead of getSession()
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
+
     if (error) {
-      console.error('❌ Supabase session error:', error);
+      console.error('❌ Supabase user error:', error);
       throw error;
     }
-    
-    if (!session?.user?.id) {
-      console.warn('⚠️ No valid session or user found');
+
+    if (!user?.id) {
+      console.warn('⚠️ No valid user found');
       return null;
     }
-    
-    console.log('✅ User authenticated via session:', session.user.id);
-    return session.user.id;
+
+    console.log('✅ User authenticated:', user.id);
+    return user.id;
   } catch (error) {
-    console.error('💥 Error getting user ID from session:', error);
+    console.error('💥 Error getting user ID:', error);
     return null;
   }
 };
@@ -54,11 +46,16 @@ let cachedSession = null;
 export const setCachedUserData = (userId, session) => {
   cachedUserId = userId;
   cachedSession = session;
-  console.log('📥 Cached user data updated:', { userId: userId ? '[present]' : '[none]' });
+  console.log('📥 Cached user data updated:', {
+    userId: userId ? '[present]' : '[none]',
+  });
 };
 
 export const getCachedUserId = () => {
-  console.log('🏃‍♂️ Using cached user ID:', cachedUserId ? '[present]' : '[none]');
+  console.log(
+    '🏃‍♂️ Using cached user ID:',
+    cachedUserId ? '[present]' : '[none]',
+  );
   return cachedUserId;
 };
 
@@ -66,17 +63,19 @@ export const getCachedUserId = () => {
 apiClient.interceptors.request.use(
   async (config) => {
     try {
-      console.log(`🚀 API Request: ${config.method?.toUpperCase()} ${config.url}`);
-      
+      console.log(
+        `🚀 API Request: ${config.method?.toUpperCase()} ${config.url}`,
+      );
+
       // Try cached first (faster)
       let userId = getCachedUserId();
-      
+
       // Fallback to session check if no cache
       if (!userId) {
         console.log('🔄 No cached user, checking session...');
         userId = await getCurrentUserId();
       }
-      
+
       if (userId) {
         config.headers['X-User-Id'] = userId;
         console.log(`👤 Added user header: ${userId}`);
@@ -89,30 +88,37 @@ apiClient.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 export const getUserIdFromContext = (contextUserId) => {
-  console.log('⚡ Using AuthContext user ID:', contextUserId ? '[present]' : '[none]');
+  console.log(
+    '⚡ Using AuthContext user ID:',
+    contextUserId ? '[present]' : '[none]',
+  );
   return contextUserId;
 };
 
 // Response interceptor for logging and auth error handling
 apiClient.interceptors.response.use(
   (response) => {
-    console.log(`✅ API Success: ${response.config.method?.toUpperCase()} ${response.config.url} - ${response.status}`);
+    console.log(
+      `✅ API Success: ${response.config.method?.toUpperCase()} ${response.config.url} - ${response.status}`,
+    );
     return response;
   },
   (error) => {
-    console.error(`❌ API Error: ${error.config?.method?.toUpperCase()} ${error.config?.url}`);
-    
+    console.error(
+      `❌ API Error: ${error.config?.method?.toUpperCase()} ${error.config?.url}`,
+    );
+
     if (error.response) {
       console.error('📋 Error details:', {
         status: error.response.status,
         statusText: error.response.statusText,
-        data: error.response.data
+        data: error.response.data,
       });
-      
+
       // Handle auth errors by clearing cache
       if (error.response.status === 401) {
         console.log('🔑 Auth error detected, clearing cached user data');
@@ -124,7 +130,7 @@ apiClient.interceptors.response.use(
       console.error('⚙️ Request setup error:', error.message);
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default apiClient;

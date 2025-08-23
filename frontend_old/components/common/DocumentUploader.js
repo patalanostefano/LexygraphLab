@@ -1,42 +1,46 @@
 import React, { useState } from 'react';
-import { 
-  Box, 
-  Button, 
-  Typography, 
-  Paper, 
-  List, 
-  ListItem, 
-  ListItemText, 
-  ListItemIcon, 
+import {
+  Box,
+  Button,
+  Typography,
+  Paper,
+  List,
+  ListItem,
+  ListItemText,
+  ListItemIcon,
   ListItemSecondaryAction,
   IconButton,
   LinearProgress,
   Snackbar,
-  Alert
+  Alert,
 } from '@mui/material';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
-import { documentsApi } from '../../api/api.js';  // Importa il modulo API
+import { documentsApi } from '../../api/api.js'; // Importa il modulo API
 
 function DocumentUploader() {
   const [files, setFiles] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [alert, setAlert] = useState({ show: false, message: '', severity: 'success' });
+  const [alert, setAlert] = useState({
+    show: false,
+    message: '',
+    severity: 'success',
+  });
 
   // Gestisce la selezione dei file
   const handleFileSelect = (e) => {
     if (e.target.files && e.target.files.length > 0) {
       const newFiles = Array.from(e.target.files);
-      setFiles(prevFiles => [...prevFiles, ...newFiles]);
+      setFiles((prevFiles) => [...prevFiles, ...newFiles]);
     }
   };
 
   // Gestisce la rimozione di un file dalla lista
   const handleFileDelete = (index) => {
-    setFiles(prevFiles => prevFiles.filter((_, i) => i !== index));
+    setFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
   };
 
   // Gestisce l'upload dei file
@@ -45,7 +49,7 @@ function DocumentUploader() {
       setAlert({
         show: true,
         message: 'Nessun file selezionato da caricare',
-        severity: 'warning'
+        severity: 'warning',
       });
       return;
     }
@@ -58,17 +62,17 @@ function DocumentUploader() {
       try {
         // Usa la funzione uploadDocument dal modulo API
         await documentsApi.uploadDocument(files[i], { name: files[i].name });
-        
+
         // Simulazione del progresso di caricamento
         setProgress(((i + 1) / files.length) * 100);
-        
+
         if (i === files.length - 1) {
           setUploading(false);
           setFiles([]);
           setAlert({
             show: true,
             message: 'File caricati con successo!',
-            severity: 'success'
+            severity: 'success',
           });
         }
       } catch (error) {
@@ -76,7 +80,7 @@ function DocumentUploader() {
         setAlert({
           show: true,
           message: 'Errore nel caricamento dei file.',
-          severity: 'error'
+          severity: 'error',
         });
         setUploading(false);
         break;
@@ -86,13 +90,15 @@ function DocumentUploader() {
 
   // Gestisce la chiusura del messaggio di alert
   const handleCloseAlert = () => {
-    setAlert(prev => ({ ...prev, show: false }));
+    setAlert((prev) => ({ ...prev, show: false }));
   };
 
   return (
     <Box sx={{ mt: 3 }}>
-      <Typography variant="h6" sx={{ mb: 2 }}>Carica Documenti</Typography>
-      
+      <Typography variant="h6" sx={{ mb: 2 }}>
+        Carica Documenti
+      </Typography>
+
       <Paper
         variant="outlined"
         sx={{
@@ -100,7 +106,7 @@ function DocumentUploader() {
           textAlign: 'center',
           cursor: 'pointer',
           borderStyle: 'dashed',
-          borderWidth: 2
+          borderWidth: 2,
         }}
         onClick={() => document.getElementById('file-input').click()}
       >
@@ -132,13 +138,13 @@ function DocumentUploader() {
                   <ListItemIcon>
                     <InsertDriveFileIcon />
                   </ListItemIcon>
-                  <ListItemText 
-                    primary={file.name} 
-                    secondary={`${(file.size / 1024).toFixed(1)} KB`} 
+                  <ListItemText
+                    primary={file.name}
+                    secondary={`${(file.size / 1024).toFixed(1)} KB`}
                   />
                   <ListItemSecondaryAction>
-                    <IconButton 
-                      edge="end" 
+                    <IconButton
+                      edge="end"
                       aria-label="delete"
                       onClick={() => handleFileDelete(index)}
                     >
@@ -153,14 +159,19 @@ function DocumentUploader() {
           {uploading ? (
             <Box sx={{ width: '100%', mt: 2 }}>
               <LinearProgress variant="determinate" value={progress} />
-              <Typography variant="body2" color="textSecondary" align="center" sx={{ mt: 1 }}>
+              <Typography
+                variant="body2"
+                color="textSecondary"
+                align="center"
+                sx={{ mt: 1 }}
+              >
                 Caricamento in corso... {progress}%
               </Typography>
             </Box>
           ) : (
-            <Button 
-              variant="contained" 
-              color="primary" 
+            <Button
+              variant="contained"
+              color="primary"
               startIcon={<FileUploadIcon />}
               onClick={handleUpload}
               sx={{ mt: 1 }}
@@ -171,13 +182,17 @@ function DocumentUploader() {
         </Box>
       )}
 
-      <Snackbar 
-        open={alert.show} 
-        autoHideDuration={6000} 
+      <Snackbar
+        open={alert.show}
+        autoHideDuration={6000}
         onClose={handleCloseAlert}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert onClose={handleCloseAlert} severity={alert.severity} variant="filled">
+        <Alert
+          onClose={handleCloseAlert}
+          severity={alert.severity}
+          variant="filled"
+        >
           {alert.message}
         </Alert>
       </Snackbar>

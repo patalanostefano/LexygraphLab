@@ -14,25 +14,30 @@ import Documents from './pages/Documents';
 
 const PrivateRoute = ({ children }) => {
   const { loading, isAuthenticated } = useAuth();
-  
+
   // Show loader while checking authentication
   if (loading) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh',
-        background: '#f5f5f5'
-      }}>
-        <div className="loading-spinner" style={{
-          border: '4px solid rgba(0, 0, 0, 0.1)',
-          borderRadius: '50%',
-          borderTop: '4px solid #3498db',
-          width: '40px',
-          height: '40px',
-          animation: 'spin 1s linear infinite'
-        }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+          background: '#f5f5f5',
+        }}
+      >
+        <div
+          className="loading-spinner"
+          style={{
+            border: '4px solid rgba(0, 0, 0, 0.1)',
+            borderRadius: '50%',
+            borderTop: '4px solid #3498db',
+            width: '40px',
+            height: '40px',
+            animation: 'spin 1s linear infinite',
+          }}
+        >
           <style>{`
             @keyframes spin {
               0% { transform: rotate(0deg); }
@@ -43,12 +48,12 @@ const PrivateRoute = ({ children }) => {
       </div>
     );
   }
-  
+
   if (!isAuthenticated()) {
     console.log('PrivateRoute: User not authenticated, redirecting to login');
     return <Navigate to="/login" />;
   }
-  
+
   return children;
 };
 
@@ -61,13 +66,13 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/projects" element={<Projects />} />
             <Route path="/documents/:projectId" element={<Documents />} />
-            <Route 
-              path="/" 
+            <Route
+              path="/"
               element={
                 <PrivateRoute>
                   <Dashboard />
                 </PrivateRoute>
-              } 
+              }
             />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>

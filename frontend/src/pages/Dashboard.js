@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
-import { 
-  Box, 
-  Typography, 
+import {
+  Box,
+  Typography,
   Tooltip,
   Container,
   Fade,
@@ -27,15 +27,18 @@ function Dashboard() {
   const navigate = useNavigate();
   const { theme } = useContext(ThemeContext);
   const [transitioning, setTransitioning] = useState(false);
-  const [transitionOrigin, setTransitionOrigin] = useState({ x: '50%', y: '50%' });
-  
+  const [transitionOrigin, setTransitionOrigin] = useState({
+    x: '50%',
+    y: '50%',
+  });
+
   // Usa valori di default sicuri nel caso in cui auth non sia ancora disponibile
   const auth = useAuth() || { user: null, signOut: () => {} };
   const user = auth.user;
   const signOut = auth.signOut;
-  
+
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
-  
+
   // Funzione per gestire il logout con Supabase
   const handleLogout = async () => {
     try {
@@ -45,36 +48,36 @@ function Dashboard() {
       navigate('/login');
     }
   };
-  
+
   // Get greeting based on time of day
   const getTimeBasedGreeting = () => {
     const hour = new Date().getHours();
-    if (hour >= 0 && hour < 5) return "Ciao, nottambulo";
-    if (hour >= 5 && hour < 7) return "Ciao, mattiniero";
-    if (hour >= 7 && hour < 12) return "Buongiorno";
-    if (hour >= 12 && hour < 18) return "Buon pomeriggio";
-    return "Buonasera";
+    if (hour >= 0 && hour < 5) return 'Ciao, nottambulo';
+    if (hour >= 5 && hour < 7) return 'Ciao, mattiniero';
+    if (hour >= 7 && hour < 12) return 'Buongiorno';
+    if (hour >= 12 && hour < 18) return 'Buon pomeriggio';
+    return 'Buonasera';
   };
 
   // Generate welcome messages based on time, including user name from Supabase if available
   const welcomeMessages = [
     `${getTimeBasedGreeting()}${user?.user_metadata?.name ? ', ' + user.user_metadata.name : ''}, benvenuto su VALIS`,
-    "Il tuo assistente legale intelligente",
-    "Sistema esperto per il tuo studio legale",
-    "Potenzia la tua pratica legale con VALIS"
+    'Il tuo assistente legale intelligente',
+    'Sistema esperto per il tuo studio legale',
+    'Potenzia la tua pratica legale con VALIS',
   ];
 
   // Handler for navigation to projects con transizione
   const handleNavigateToProjects = (e) => {
     if (e && e.clientX && e.clientY) {
-      setTransitionOrigin({ 
-        x: `${e.clientX}px`, 
-        y: `${e.clientY}px` 
+      setTransitionOrigin({
+        x: `${e.clientX}px`,
+        y: `${e.clientY}px`,
       });
     }
-    
+
     setTransitioning(true);
-    
+
     setTimeout(() => {
       navigate('/projects');
     }, 800);
@@ -92,17 +95,17 @@ function Dashboard() {
     <DashboardBackground transitioning={transitioning}>
       {/* Componente di transizione pagina */}
       <PageTransition active={transitioning}>
-        <CircleExpand 
-          active={transitioning} 
-          originX={transitionOrigin.x} 
-          originY={transitionOrigin.y} 
+        <CircleExpand
+          active={transitioning}
+          originX={transitionOrigin.x}
+          originY={transitionOrigin.y}
         />
       </PageTransition>
-      
+
       {/* Header con Logo e Controlli */}
       <PageHeader>
         <ValisLogo />
-        
+
         <Box sx={{ display: 'flex', gap: 2 }}>
           <Tooltip title="Gestisci Progetti" arrow>
             <HeaderActionButton onClick={handleNavigateToProjects}>
@@ -128,64 +131,78 @@ function Dashboard() {
       </PageHeader>
 
       {/* Main content */}
-      <Container maxWidth="lg" sx={{ 
-        position: 'relative', 
-        zIndex: 2, 
-        flexGrow: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        ...(transitioning && {
-          animation: 'contentExit 0.8s forwards cubic-bezier(0.19, 1, 0.22, 1)',
-          '@keyframes contentExit': {
-            '0%': { 
-              opacity: 1,
-              transform: 'scale(1)'
-            },
-            '100%': { 
-              opacity: 0,
-              transform: 'scale(0.95)'
-            }
-          }
-        })
-      }}>
-        <Box component="main" sx={{ 
+      <Container
+        maxWidth="lg"
+        sx={{
+          position: 'relative',
+          zIndex: 2,
           flexGrow: 1,
           display: 'flex',
           flexDirection: 'column',
           justifyContent: 'center',
           alignItems: 'center',
-          width: '100%'
-        }}>
+          ...(transitioning && {
+            animation:
+              'contentExit 0.8s forwards cubic-bezier(0.19, 1, 0.22, 1)',
+            '@keyframes contentExit': {
+              '0%': {
+                opacity: 1,
+                transform: 'scale(1)',
+              },
+              '100%': {
+                opacity: 0,
+                transform: 'scale(0.95)',
+              },
+            },
+          }),
+        }}
+      >
+        <Box
+          component="main"
+          sx={{
+            flexGrow: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+            width: '100%',
+          }}
+        >
           <Fade in={!transitioning} timeout={1000}>
-            <Box sx={{ 
-              mb: 6, // Reduced from 8
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              textAlign: 'center',
-              maxWidth: '800px' // Reduced from 900px
-            }}>
-              <Typography 
-                variant="h1" 
-                sx={{ 
+            <Box
+              sx={{
+                mb: 6, // Reduced from 8
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                textAlign: 'center',
+                maxWidth: '800px', // Reduced from 900px
+              }}
+            >
+              <Typography
+                variant="h1"
+                sx={{
                   fontWeight: 700,
                   mb: 2,
                   fontSize: { xs: '2rem', sm: '2.8rem', md: '3.5rem' }, // Reduced from larger sizes
-                  color: theme.palette.mode === 'dark' ? theme.palette.primary.light : theme.palette.primary.main,
+                  color:
+                    theme.palette.mode === 'dark'
+                      ? theme.palette.primary.light
+                      : theme.palette.primary.main,
                   letterSpacing: '-0.02em',
                   lineHeight: 1.2,
                   padding: '0 20px',
-                  background: theme.palette.mode === 'dark'
-                    ? `linear-gradient(135deg, ${theme.palette.primary.light} 0%, ${theme.palette.primary.main} 100%)`
-                    : `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
+                  background:
+                    theme.palette.mode === 'dark'
+                      ? `linear-gradient(135deg, ${theme.palette.primary.light} 0%, ${theme.palette.primary.main} 100%)`
+                      : `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
                   backgroundClip: 'text',
                   WebkitBackgroundClip: 'text',
                   color: 'transparent',
-                  textShadow: theme.palette.mode === 'dark'
-                    ? '0 5px 30px rgba(179, 136, 255, 0.5)'
-                    : '0 5px 30px rgba(124, 77, 255, 0.3)',
+                  textShadow:
+                    theme.palette.mode === 'dark'
+                      ? '0 5px 30px rgba(179, 136, 255, 0.5)'
+                      : '0 5px 30px rgba(124, 77, 255, 0.3)',
                 }}
               >
                 <TypingEffect messages={welcomeMessages} />
@@ -194,14 +211,19 @@ function Dashboard() {
           </Fade>
 
           <Fade in={!transitioning} timeout={1500}>
-            <Box sx={{ 
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              my: 3, // Reduced from 4
-              position: 'relative'
-            }}>
-              <DynamicStartButton onClick={handleNavigateToProjects} isTransitioning={transitioning} />
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                my: 3, // Reduced from 4
+                position: 'relative',
+              }}
+            >
+              <DynamicStartButton
+                onClick={handleNavigateToProjects}
+                isTransitioning={transitioning}
+              />
             </Box>
           </Fade>
         </Box>

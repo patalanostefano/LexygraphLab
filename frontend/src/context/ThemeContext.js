@@ -7,11 +7,11 @@ export const ThemeContext = createContext({
   toggleColorMode: () => {},
   theme: null,
   systemThemeEnabled: true,
-  setSystemThemeEnabled: () => {}
+  setSystemThemeEnabled: () => {},
 });
 
 export const ThemeContextProvider = ({ children }) => {
-  // Aggiungiamo uno state per permettere all'utente di abilitare/disabilitare 
+  // Aggiungiamo uno state per permettere all'utente di abilitare/disabilitare
   // la sincronizzazione automatica con il tema di sistema
   const [systemThemeEnabled, setSystemThemeEnabled] = useState(() => {
     const savedPreference = localStorage.getItem('systemThemeEnabled');
@@ -24,19 +24,22 @@ export const ThemeContextProvider = ({ children }) => {
     if (savedMode && !systemThemeEnabled) {
       return savedMode;
     }
-    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    return window.matchMedia &&
+      window.matchMedia('(prefers-color-scheme: dark)').matches
+      ? 'dark'
+      : 'light';
   });
 
   // Effetto per ascoltare i cambiamenti delle preferenze di tema del sistema
   useEffect(() => {
     if (!systemThemeEnabled) return; // Non ascoltare se la funzione è disabilitata
-    
+
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    
+
     const handleSystemThemeChange = (e) => {
       setMode(e.matches ? 'dark' : 'light');
     };
-    
+
     // Aggiungi il listener con supporto per browser più vecchi
     if (mediaQuery.addEventListener) {
       mediaQuery.addEventListener('change', handleSystemThemeChange);
@@ -44,7 +47,7 @@ export const ThemeContextProvider = ({ children }) => {
       // Fallback per browser meno recenti
       mediaQuery.addListener(handleSystemThemeChange);
     }
-    
+
     // Pulizia all'unmount
     return () => {
       if (mediaQuery.removeEventListener) {
@@ -69,7 +72,7 @@ export const ThemeContextProvider = ({ children }) => {
           localStorage.setItem('themeMode', newMode);
           return newMode;
         });
-        
+
         // Se l'utente cambia manualmente il tema, disabilitiamo l'auto-rilevamento
         if (systemThemeEnabled) {
           setSystemThemeEnabled(false);
@@ -78,14 +81,15 @@ export const ThemeContextProvider = ({ children }) => {
       systemThemeEnabled,
       setSystemThemeEnabled: (value) => {
         setSystemThemeEnabled(value);
-        
+
         // Se riattiva la sincronizzazione con il sistema, aggiorna immediatamente il tema
         if (value === true) {
-          const prefersDarkMode = window.matchMedia && 
-                                  window.matchMedia('(prefers-color-scheme: dark)').matches;
+          const prefersDarkMode =
+            window.matchMedia &&
+            window.matchMedia('(prefers-color-scheme: dark)').matches;
           setMode(prefersDarkMode ? 'dark' : 'light');
         }
-      }
+      },
     }),
     [systemThemeEnabled],
   );
@@ -204,16 +208,18 @@ export const ThemeContextProvider = ({ children }) => {
                 fontWeight: 600,
               },
               containedPrimary: {
-                boxShadow: mode === 'light' 
-                  ? '0 8px 20px rgba(124, 77, 255, 0.15)' 
-                  : '0 8px 20px rgba(179, 136, 255, 0.2)', 
+                boxShadow:
+                  mode === 'light'
+                    ? '0 8px 20px rgba(124, 77, 255, 0.15)'
+                    : '0 8px 20px rgba(179, 136, 255, 0.2)',
                 '&:hover': {
-                  boxShadow: mode === 'light' 
-                    ? '0 12px 30px rgba(124, 77, 255, 0.25)' 
-                    : '0 12px 30px rgba(179, 136, 255, 0.3)',
+                  boxShadow:
+                    mode === 'light'
+                      ? '0 12px 30px rgba(124, 77, 255, 0.25)'
+                      : '0 12px 30px rgba(179, 136, 255, 0.3)',
                   transform: 'translateY(-2px)',
-                }
-              }
+                },
+              },
             },
           },
           MuiCard: {
@@ -221,9 +227,10 @@ export const ThemeContextProvider = ({ children }) => {
               root: {
                 borderRadius: 16,
                 overflow: 'hidden',
-                border: mode === 'light'
-                  ? '1px solid rgba(124, 77, 255, 0.08)'
-                  : '1px solid rgba(179, 136, 255, 0.1)',
+                border:
+                  mode === 'light'
+                    ? '1px solid rgba(124, 77, 255, 0.08)'
+                    : '1px solid rgba(179, 136, 255, 0.1)',
               },
             },
           },
@@ -234,20 +241,23 @@ export const ThemeContextProvider = ({ children }) => {
                 borderRadius: 16,
               },
               elevation1: {
-                boxShadow: mode === 'light' 
-                  ? '0 4px 12px rgba(124, 77, 255, 0.08)' 
-                  : '0 4px 12px rgba(0, 0, 0, 0.2)', 
+                boxShadow:
+                  mode === 'light'
+                    ? '0 4px 12px rgba(124, 77, 255, 0.08)'
+                    : '0 4px 12px rgba(0, 0, 0, 0.2)',
               },
               elevation2: {
-                boxShadow: mode === 'light' 
-                  ? '0 8px 20px rgba(124, 77, 255, 0.1)' 
-                  : '0 8px 20px rgba(0, 0, 0, 0.25)',
+                boxShadow:
+                  mode === 'light'
+                    ? '0 8px 20px rgba(124, 77, 255, 0.1)'
+                    : '0 8px 20px rgba(0, 0, 0, 0.25)',
               },
               elevation3: {
-                boxShadow: mode === 'light' 
-                  ? '0 12px 30px rgba(124, 77, 255, 0.12)' 
-                  : '0 12px 30px rgba(0, 0, 0, 0.3)', 
-              }
+                boxShadow:
+                  mode === 'light'
+                    ? '0 12px 30px rgba(124, 77, 255, 0.12)'
+                    : '0 12px 30px rgba(0, 0, 0, 0.3)',
+              },
             },
           },
           MuiTextField: {
@@ -289,12 +299,13 @@ export const ThemeContextProvider = ({ children }) => {
                   backgroundColor: mode === 'dark' ? '#1F2937' : '#F1F5F9',
                 },
                 backgroundAttachment: 'fixed',
-                background: mode === 'dark'
-                  ? `radial-gradient(circle at 0% 0%, rgba(179, 136, 255, 0.4) 0%, transparent 30%),
+                background:
+                  mode === 'dark'
+                    ? `radial-gradient(circle at 0% 0%, rgba(179, 136, 255, 0.4) 0%, transparent 30%),
                      radial-gradient(circle at 100% 0%, rgba(157, 92, 255, 0.3) 0%, transparent 40%),
                      radial-gradient(circle at 50% 100%, rgba(124, 77, 255, 0.25) 0%, transparent 50%),
                      linear-gradient(180deg, #0B0B1A 0%, #050510 100%)`
-                  : `radial-gradient(circle at 0% 0%, rgba(124, 77, 255, 0.1) 0%, transparent 30%),
+                    : `radial-gradient(circle at 0% 0%, rgba(124, 77, 255, 0.1) 0%, transparent 30%),
                      radial-gradient(circle at 100% 0%, rgba(124, 77, 255, 0.08) 0%, transparent 30%),
                      radial-gradient(circle at 50% 100%, rgba(124, 77, 255, 0.1) 0%, transparent 50%),
                      #F5F7FA`,
@@ -307,9 +318,10 @@ export const ThemeContextProvider = ({ children }) => {
                 transition: 'all 0.3s cubic-bezier(0.05, 0.7, 0.1, 1)',
                 '&:hover': {
                   transform: 'translateY(-2px)',
-                  backgroundColor: mode === 'dark'
-                    ? 'rgba(179, 136, 255, 0.15)'
-                    : 'rgba(124, 77, 255, 0.08)',
+                  backgroundColor:
+                    mode === 'dark'
+                      ? 'rgba(179, 136, 255, 0.15)'
+                      : 'rgba(124, 77, 255, 0.08)',
                 },
                 '&:active': {
                   transform: 'translateY(0) scale(0.97)',
@@ -321,19 +333,22 @@ export const ThemeContextProvider = ({ children }) => {
             styleOverrides: {
               tooltip: {
                 borderRadius: 8,
-                backgroundColor: mode === 'dark'
-                  ? 'rgba(20, 20, 43, 0.95)'
-                  : 'rgba(30, 41, 59, 0.95)',
+                backgroundColor:
+                  mode === 'dark'
+                    ? 'rgba(20, 20, 43, 0.95)'
+                    : 'rgba(30, 41, 59, 0.95)',
                 padding: '8px 12px',
                 fontSize: '0.75rem',
-                boxShadow: mode === 'dark'
-                  ? '0 4px 20px rgba(0, 0, 0, 0.4)'
-                  : '0 4px 20px rgba(0, 0, 0, 0.1)',
+                boxShadow:
+                  mode === 'dark'
+                    ? '0 4px 20px rgba(0, 0, 0, 0.4)'
+                    : '0 4px 20px rgba(0, 0, 0, 0.1)',
               },
               arrow: {
-                color: mode === 'dark'
-                  ? 'rgba(20, 20, 43, 0.95)'
-                  : 'rgba(30, 41, 59, 0.95)',
+                color:
+                  mode === 'dark'
+                    ? 'rgba(20, 20, 43, 0.95)'
+                    : 'rgba(30, 41, 59, 0.95)',
               },
             },
           },
@@ -343,7 +358,9 @@ export const ThemeContextProvider = ({ children }) => {
   );
 
   return (
-    <ThemeContext.Provider value={{ ...colorMode, theme, systemThemeEnabled, setSystemThemeEnabled }}>
+    <ThemeContext.Provider
+      value={{ ...colorMode, theme, systemThemeEnabled, setSystemThemeEnabled }}
+    >
       <ThemeProvider theme={theme}>
         <CssBaseline />
         {children}

@@ -4,10 +4,9 @@ Handles PDF document storage, retrieval, and text extraction
 Now integrated with Chunker Service for automatic chunking
 """
 
-from typing import List
+from typing import List, Optional
 from fastapi import FastAPI, File, UploadFile, HTTPException, Form
 from fastapi.responses import Response
-from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
 import requests
@@ -23,14 +22,6 @@ CHUNKER_URL = os.getenv("CHUNKER_URL", "http://chunker-service:8000/chunk")
 
 app = FastAPI(title="Document Storage Service")
 
-# Add CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 # Initialize services
 db_manager = DatabaseManager()
@@ -121,7 +112,6 @@ async def upload_document(
         os.remove(temp_path)
 
     if success:
-
         # FIXED: Return the actual doc_id instead of document_id
         return DocumentResponse(
             success=True, 

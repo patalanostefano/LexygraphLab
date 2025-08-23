@@ -3,13 +3,15 @@
 ## Setup & Build
 
 1. **Set Environment Variables**
+
 ```bash
 export SUPABASE_URL="https://your-project.supabase.co"
 export SUPABASE_KEY="your-supabase-anon-key"
 ```
 
 2. **Setup Supabase Database**
-Run this SQL in your Supabase SQL editor:
+   Run this SQL in your Supabase SQL editor:
+
 ```sql
 CREATE TABLE pdf_storage (
     id TEXT PRIMARY KEY,
@@ -32,6 +34,7 @@ CREATE TABLE project_documents (
 ```
 
 3. **Build and Run Docker Container**
+
 ```bash
 # Build image
 docker build -t document-service .
@@ -46,6 +49,7 @@ docker run -p 8000:8000 \
 ## Test the API
 
 **Upload PDF:**
+
 ```bash
 curl -X POST "http://localhost:8000/api/v1/documents/upload" \
   -F "file=@your-file.pdf" \
@@ -56,16 +60,19 @@ curl -X POST "http://localhost:8000/api/v1/documents/upload" \
 ```
 
 **Get PDF:**
+
 ```bash
 curl "http://localhost:8000/api/v1/documents/user123/proj456/doc1" --output test.pdf
 ```
 
 **Get Text:**
+
 ```bash
 curl "http://localhost:8000/api/v1/documents/user123/proj456/doc1/text"
 ```
 
 **List Documents:**
+
 ```bash
 curl "http://localhost:8000/api/v1/documents/user123/proj456"
 ```

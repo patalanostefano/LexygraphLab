@@ -20,10 +20,17 @@ public class GatewayConfig {
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
         corsConfiguration.setAllowCredentials(true);
+        
+        // Use specific origins only
         corsConfiguration.addAllowedOrigin("http://localhost:3000"); // React dev server
         corsConfiguration.addAllowedOrigin("http://frontend:80");    // Docker container
+        
+        // Allow all headers and methods
         corsConfiguration.addAllowedHeader("*");
         corsConfiguration.addAllowedMethod("*");
+        
+        // Set max age for preflight requests
+        corsConfiguration.setMaxAge(3600L);
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", corsConfiguration);
@@ -37,7 +44,7 @@ public class GatewayConfig {
 
                 // DOCUMENT SERVICE ROUTES - FIXED PATHS
 
-                // Get user projects - FIXED: Changed from {userId} to {user_id}
+                // Get user projects - FIXED: Simplified filters
                 .route("user_projects", r -> r
                         .path("/api/v1/projects/{user_id}")
                         .and()
@@ -53,7 +60,7 @@ public class GatewayConfig {
                         .filters(f -> f.setRequestHeader("X-Gateway-Source", "api-gateway"))
                         .uri(documentServiceUrl))
 
-                // Get document PDF binary - FIXED: Changed to match service path
+                // Get document PDF binary
                 .route("document_retrieve", r -> r
                         .path("/api/v1/documents/{user_id}/{project_id}/{doc_id}")
                         .and()
@@ -61,15 +68,15 @@ public class GatewayConfig {
                         .filters(f -> f.setRequestHeader("X-Gateway-Source", "api-gateway"))
                         .uri(documentServiceUrl))
 
-                // Get document PDF binary with /pdf suffix - NEW ROUTE
+                // Get document PDF binary with /pdf suffix
                 .route("document_retrieve_pdf", r -> r
                         .path("/api/v1/documents/{user_id}/{project_id}/{doc_id}/pdf")
                         .and()
                         .method(HttpMethod.GET)
-                        .filters(f -> f.stripPrefix(1).setRequestHeader("X-Gateway-Source", "api-gateway"))
+                        .filters(f -> f.setRequestHeader("X-Gateway-Source", "api-gateway"))
                         .uri(documentServiceUrl))
 
-                // Get document text content - CORRECT PATH
+                // Get document text content
                 .route("document_text", r -> r
                         .path("/api/v1/documents/{user_id}/{project_id}/{doc_id}/text")
                         .and()
@@ -77,7 +84,7 @@ public class GatewayConfig {
                         .filters(f -> f.setRequestHeader("X-Gateway-Source", "api-gateway"))
                         .uri(documentServiceUrl))
 
-                // List documents in a project - FIXED: Changed from {userId}/{projectId} to {user_id}/{project_id}
+                // List documents in a project
                 .route("documents_list", r -> r
                         .path("/api/v1/documents/{user_id}/{project_id}")
                         .and()

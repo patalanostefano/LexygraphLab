@@ -49,6 +49,7 @@ All endpoints follow the pattern:
 - `GET/POST/PUT/DELETE /api/v1/<service>/<endpoint>`
 
 For example:
+
 - Documents API: `/api/v1/documents/*`
 - Collections API: `/api/v1/collections/*`
 - Health check: `/api/health`
@@ -82,8 +83,8 @@ Your frontend should include the JWT token in each request to the API Gateway:
 // Example fetch request
 const response = await fetch('http://localhost:8080/api/v1/documents', {
   headers: {
-    'Authorization': `Bearer ${supabaseAccessToken}`
-  }
+    Authorization: `Bearer ${supabaseAccessToken}`,
+  },
 });
 ```
 

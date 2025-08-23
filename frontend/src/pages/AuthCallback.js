@@ -12,21 +12,24 @@ const AuthCallback = () => {
     const handleAuthCallback = async () => {
       try {
         console.log('AuthCallback: Processing auth callback...');
-        
-        // Handle the auth callback from Supabase
-        const { data, error } = await supabase.auth.getSession();
-        
+
+        // FIXED: Use getUser() instead of getSession()
+        const {
+          data: { user },
+          error,
+        } = await supabase.auth.getUser();
+
         if (error) {
-          console.error('AuthCallback: Error getting session:', error);
+          console.error('AuthCallback: Error getting user:', error);
           setRedirectTo('/login');
           return;
         }
 
-        if (data?.session) {
-          console.log('AuthCallback: Session found, user authenticated');
+        if (user) {
+          console.log('AuthCallback: User found, authenticated');
           setRedirectTo('/');
         } else {
-          console.log('AuthCallback: No session found, redirecting to login');
+          console.log('AuthCallback: No user found, redirecting to login');
           setRedirectTo('/login');
         }
       } catch (error) {
@@ -39,29 +42,33 @@ const AuthCallback = () => {
 
     // Add a small delay to ensure URL hash is processed
     const timer = setTimeout(handleAuthCallback, 100);
-    
+
     return () => clearTimeout(timer);
   }, [location]);
 
   if (loading) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh',
-        flexDirection: 'column',
-        gap: '20px',
-        background: '#f5f5f5'
-      }}>
-        <div style={{
-          border: '4px solid rgba(0, 0, 0, 0.1)',
-          borderRadius: '50%',
-          borderTop: '4px solid #3498db',
-          width: '40px',
-          height: '40px',
-          animation: 'spin 1s linear infinite'
-        }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+          flexDirection: 'column',
+          gap: '20px',
+          background: '#f5f5f5',
+        }}
+      >
+        <div
+          style={{
+            border: '4px solid rgba(0, 0, 0, 0.1)',
+            borderRadius: '50%',
+            borderTop: '4px solid #3498db',
+            width: '40px',
+            height: '40px',
+            animation: 'spin 1s linear infinite',
+          }}
+        >
           <style>{`
             @keyframes spin {
               0% { transform: rotate(0deg); }

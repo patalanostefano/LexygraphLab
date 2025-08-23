@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Box, 
-  Typography, 
+import {
+  Box,
+  Typography,
   Button,
   Dialog,
   AppBar,
@@ -10,7 +10,7 @@ import {
   Paper,
   Tooltip,
   CircularProgress,
-  Alert
+  Alert,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import CloseIcon from '@mui/icons-material/Close';
@@ -40,37 +40,49 @@ export const DocumentPreviewDialog = ({ open, onClose, document }) => {
         setError(null);
         return;
       }
-      
+
       setLoading(true);
       setError(null);
-      
+
       try {
         // Prima prova a ottenere il contenuto del documento
         let docContent = null;
         try {
           docContent = await documentsApi.getDocumentContent(document.id);
         } catch (contentError) {
-          console.log('Content not available, trying extracted text:', contentError);
+          console.log(
+            'Content not available, trying extracted text:',
+            contentError,
+          );
         }
-        
+
         if (docContent && (docContent.content || docContent.text)) {
           setContent(formatContent(docContent.content || docContent.text));
         } else {
           // Se non c'è contenuto, prova con il testo estratto
           try {
-            const extractedText = await documentsApi.getExtractedText(document.id);
+            const extractedText = await documentsApi.getExtractedText(
+              document.id,
+            );
             if (extractedText && extractedText.text) {
               setContent(formatPlainText(extractedText.text));
             } else {
-              setError('Contenuto del documento non disponibile per l\'anteprima');
+              setError(
+                "Contenuto del documento non disponibile per l'anteprima",
+              );
             }
           } catch (extractError) {
-            console.error('Errore nell\'estrazione del testo:', extractError);
-            setError('Impossibile caricare il contenuto del documento. Il documento potrebbe non essere ancora elaborato o il formato non è supportato per l\'anteprima.');
+            console.error("Errore nell'estrazione del testo:", extractError);
+            setError(
+              "Impossibile caricare il contenuto del documento. Il documento potrebbe non essere ancora elaborato o il formato non è supportato per l'anteprima.",
+            );
           }
         }
       } catch (error) {
-        console.error(`Errore durante il caricamento del documento ${document.id}:`, error);
+        console.error(
+          `Errore durante il caricamento del documento ${document.id}:`,
+          error,
+        );
         setError('Errore durante il caricamento del documento');
       } finally {
         setLoading(false);
@@ -83,12 +95,16 @@ export const DocumentPreviewDialog = ({ open, onClose, document }) => {
   // Formatta il contenuto HTML
   const formatContent = (content) => {
     if (!content) return '';
-    
+
     // Se il contenuto è già HTML formattato, restituiscilo così com'è
-    if (content.includes('<p>') || content.includes('<div>') || content.includes('<h1>')) {
+    if (
+      content.includes('<p>') ||
+      content.includes('<div>') ||
+      content.includes('<h1>')
+    ) {
       return content;
     }
-    
+
     // Altrimenti, formatta il testo semplice come HTML
     return formatPlainText(content);
   };
@@ -96,10 +112,10 @@ export const DocumentPreviewDialog = ({ open, onClose, document }) => {
   // Formatta il testo semplice come HTML
   const formatPlainText = (text) => {
     if (!text) return '';
-    
+
     return text
       .split('\n\n')
-      .map(paragraph => {
+      .map((paragraph) => {
         const formattedParagraph = paragraph.replace(/\n/g, '<br>');
         return `<p>${formattedParagraph}</p>`;
       })
@@ -109,9 +125,11 @@ export const DocumentPreviewDialog = ({ open, onClose, document }) => {
   // Funzione per scaricare il documento originale
   const handleDownload = async () => {
     if (!document) return;
-    
+
     try {
-      const downloadUrlData = await documentsApi.getDocumentDownloadUrl(document.id);
+      const downloadUrlData = await documentsApi.getDocumentDownloadUrl(
+        document.id,
+      );
       if (downloadUrlData && downloadUrlData.downloadUrl) {
         // Apri l'URL in una nuova finestra per scaricare
         window.open(downloadUrlData.downloadUrl, '_blank');
@@ -128,7 +146,7 @@ export const DocumentPreviewDialog = ({ open, onClose, document }) => {
   // Funzione per stampare l'anteprima
   const handlePrint = () => {
     if (!content) return;
-    
+
     const printWindow = window.open('', '_blank');
     printWindow.document.write(`
       <!DOCTYPE html>
@@ -165,7 +183,7 @@ export const DocumentPreviewDialog = ({ open, onClose, document }) => {
       </body>
       </html>
     `);
-    
+
     printWindow.document.close();
     printWindow.focus();
     setTimeout(() => printWindow.print(), 250);
@@ -173,27 +191,36 @@ export const DocumentPreviewDialog = ({ open, onClose, document }) => {
 
   // Scelta dell'icona in base al tipo di file
   const getFileIcon = () => {
-    if (!document?.type && !document?.mimeType) return <FileIcon fontSize="medium" />;
-    
+    if (!document?.type && !document?.mimeType)
+      return <FileIcon fontSize="medium" />;
+
     const fileType = document.type || document.mimeType || '';
-    
-    if (fileType.includes('pdf')) return <PictureAsPdfIcon fontSize="medium" color="error" />;
-    if (fileType.includes('word') || fileType.includes('document')) return <ArticleIcon fontSize="medium" color="primary" />;
-    if (fileType.includes('image')) return <ImageIcon fontSize="medium" color="success" />;
+
+    if (fileType.includes('pdf'))
+      return <PictureAsPdfIcon fontSize="medium" color="error" />;
+    if (fileType.includes('word') || fileType.includes('document'))
+      return <ArticleIcon fontSize="medium" color="primary" />;
+    if (fileType.includes('image'))
+      return <ImageIcon fontSize="medium" color="success" />;
     return <FileIcon fontSize="medium" />;
   };
 
   // Ottieni informazioni del documento
   const getDocumentInfo = () => {
     if (!document) return {};
-    
+
     return {
       name: document.name || 'Documento senza nome',
-      size: document.size ? `${(document.size / 1024).toFixed(1)} KB` : 'Dimensione sconosciuta',
-      date: document.date || document.createdAt || document.updatedAt ? 
-        new Date(document.date || document.createdAt || document.updatedAt).toLocaleString() : 
-        'Data sconosciuta',
-      type: document.type || document.mimeType || 'Tipo sconosciuto'
+      size: document.size
+        ? `${(document.size / 1024).toFixed(1)} KB`
+        : 'Dimensione sconosciuta',
+      date:
+        document.date || document.createdAt || document.updatedAt
+          ? new Date(
+              document.date || document.createdAt || document.updatedAt,
+            ).toLocaleString()
+          : 'Data sconosciuta',
+      type: document.type || document.mimeType || 'Tipo sconosciuto',
     };
   };
 
@@ -205,26 +232,26 @@ export const DocumentPreviewDialog = ({ open, onClose, document }) => {
       onClose={onClose}
       fullScreen
       PaperProps={{
-        sx: { bgcolor: theme.palette.mode === 'dark' ? '#121212' : '#f0f0f0' }
+        sx: { bgcolor: theme.palette.mode === 'dark' ? '#121212' : '#f0f0f0' },
       }}
     >
-      <AppBar 
-        position="static" 
-        color="primary" 
+      <AppBar
+        position="static"
+        color="primary"
         elevation={2}
         sx={{ borderRadius: 0 }}
       >
         <Toolbar>
-          <IconButton 
-            edge="start" 
-            color="inherit" 
+          <IconButton
+            edge="start"
+            color="inherit"
             onClick={onClose}
             sx={{ mr: 1 }}
             aria-label="Chiudi anteprima"
           >
             <CloseIcon />
           </IconButton>
-          
+
           <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
             {getFileIcon()}
             <Box sx={{ ml: 1.5 }}>
@@ -236,18 +263,18 @@ export const DocumentPreviewDialog = ({ open, onClose, document }) => {
               </Typography>
             </Box>
           </Box>
-          
+
           <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
             <Tooltip title="Stampa anteprima">
-              <IconButton 
-                onClick={handlePrint} 
+              <IconButton
+                onClick={handlePrint}
                 color="inherit"
                 disabled={!content || loading}
               >
                 <PrintIcon />
               </IconButton>
             </Tooltip>
-            
+
             <Button
               variant="outlined"
               color="inherit"
@@ -260,9 +287,9 @@ export const DocumentPreviewDialog = ({ open, onClose, document }) => {
           </Box>
         </Toolbar>
       </AppBar>
-      
-      <Box 
-        sx={{ 
+
+      <Box
+        sx={{
           height: 'calc(100vh - 64px)',
           overflow: 'auto',
           display: 'flex',
@@ -274,13 +301,15 @@ export const DocumentPreviewDialog = ({ open, onClose, document }) => {
         }}
       >
         {loading ? (
-          <Box sx={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            alignItems: 'center', 
-            justifyContent: 'center',
-            height: '100%'
-          }}>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '100%',
+            }}
+          >
             <CircularProgress size={60} sx={{ mb: 3 }} />
             <Typography variant="h6" sx={{ mb: 1 }}>
               Caricamento documento...
@@ -290,24 +319,24 @@ export const DocumentPreviewDialog = ({ open, onClose, document }) => {
             </Typography>
           </Box>
         ) : error ? (
-          <Box sx={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            alignItems: 'center', 
-            justifyContent: 'center',
-            height: '100%',
-            maxWidth: '600px',
-            textAlign: 'center'
-          }}>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '100%',
+              maxWidth: '600px',
+              textAlign: 'center',
+            }}
+          >
             <Alert severity="warning" sx={{ mb: 3, width: '100%' }}>
               <Typography variant="h6" gutterBottom>
                 Anteprima non disponibile
               </Typography>
-              <Typography variant="body2">
-                {error}
-              </Typography>
+              <Typography variant="body2">{error}</Typography>
             </Alert>
-            
+
             <Button
               variant="contained"
               startIcon={<FileDownloadIcon />}
@@ -327,35 +356,35 @@ export const DocumentPreviewDialog = ({ open, onClose, document }) => {
               color: 'black',
               boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
               borderRadius: '4px',
-              overflow: 'hidden'
+              overflow: 'hidden',
             }}
           >
-            <Box 
-              sx={{ 
-                p: 4, 
+            <Box
+              sx={{
+                p: 4,
                 minHeight: '29.7cm',
                 fontFamily: '"Calibri", sans-serif',
                 fontSize: '12pt',
                 lineHeight: 1.5,
                 wordWrap: 'break-word',
                 overflowWrap: 'break-word',
-                '& p': { 
+                '& p': {
                   marginBottom: '10pt',
                   maxWidth: '100%',
                 },
-                '& h1, & h2, & h3, & h4, & h5, & h6': { 
+                '& h1, & h2, & h3, & h4, & h5, & h6': {
                   fontWeight: 'bold',
                   maxWidth: '100%',
                   color: '#333',
                   marginTop: '15pt',
-                  marginBottom: '10pt'
+                  marginBottom: '10pt',
                 },
                 '& h1': { fontSize: '18pt', color: theme.palette.primary.main },
                 '& h2': { fontSize: '16pt', color: theme.palette.primary.dark },
                 '& h3': { fontSize: '14pt' },
                 '& img': {
                   maxWidth: '100%',
-                  height: 'auto'
+                  height: 'auto',
                 },
                 '& table': {
                   width: '100%',
@@ -363,39 +392,41 @@ export const DocumentPreviewDialog = ({ open, onClose, document }) => {
                   borderCollapse: 'collapse',
                   maxWidth: '100%',
                   marginBottom: '10pt',
-                  border: '1px solid #ddd'
+                  border: '1px solid #ddd',
                 },
                 '& td, & th': {
                   padding: '8px',
                   wordWrap: 'break-word',
                   maxWidth: '100%',
-                  border: '1px solid #ddd'
+                  border: '1px solid #ddd',
                 },
                 '& th': {
                   backgroundColor: '#f2f2f2',
-                  fontWeight: 'bold'
+                  fontWeight: 'bold',
                 },
                 '& ul, & ol': {
                   paddingLeft: '20pt',
                   maxWidth: '100%',
-                  marginBottom: '10pt'
+                  marginBottom: '10pt',
                 },
                 '& li': {
                   marginBottom: '5pt',
                   maxWidth: '100%',
-                }
+                },
               }}
               dangerouslySetInnerHTML={{ __html: content }}
             />
           </Paper>
         ) : (
-          <Box sx={{ 
-            display: 'flex', 
-            flexDirection: 'column', 
-            alignItems: 'center', 
-            justifyContent: 'center',
-            height: '100%'
-          }}>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '100%',
+            }}
+          >
             <Typography variant="h6" color="text.secondary" gutterBottom>
               Nessun contenuto disponibile
             </Typography>

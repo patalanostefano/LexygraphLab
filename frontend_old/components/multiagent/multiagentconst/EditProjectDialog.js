@@ -17,7 +17,7 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
-  IconButton
+  IconButton,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import FolderIcon from '@mui/icons-material/Folder';
@@ -30,12 +30,7 @@ import ArticleIcon from '@mui/icons-material/Article';
 import ImageIcon from '@mui/icons-material/Image';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 
-const EditProjectDialog = ({
-  open,
-  onClose,
-  project,
-  onUpdate
-}) => {
+const EditProjectDialog = ({ open, onClose, project, onUpdate }) => {
   const [projectToEdit, setProjectToEdit] = useState(null);
   const [files, setFiles] = useState([]);
   const theme = useTheme();
@@ -56,7 +51,7 @@ const EditProjectDialog = ({
   const handleDeleteDocument = (docId) => {
     setProjectToEdit((p) => ({
       ...p,
-      documents: (p.documents || []).filter((d) => d.id !== docId)
+      documents: (p.documents || []).filter((d) => d.id !== docId),
     }));
   };
 
@@ -68,15 +63,12 @@ const EditProjectDialog = ({
       name: file.name,
       size: file.size,
       mimeType: file.type,
-      date: new Date().toISOString()
+      date: new Date().toISOString(),
     }));
 
     const updated = {
       ...projectToEdit,
-      documents: [
-        ...(projectToEdit.documents || []),
-        ...newFileDocs
-      ]
+      documents: [...(projectToEdit.documents || []), ...newFileDocs],
     };
 
     onUpdate(updated);
@@ -106,7 +98,7 @@ const EditProjectDialog = ({
                   <InputAdornment position="start">
                     <FolderIcon color="primary" />
                   </InputAdornment>
-                )
+                ),
               }}
             />
           </Grid>
@@ -126,7 +118,7 @@ const EditProjectDialog = ({
                   <InputAdornment position="start">
                     <BusinessIcon color="primary" />
                   </InputAdornment>
-                )
+                ),
               }}
             />
           </Grid>
@@ -166,9 +158,13 @@ const EditProjectDialog = ({
                       </ListItemIcon>
                       <ListItemText
                         primary={doc.name}
-                        secondary={doc.size ? `${(doc.size / 1024).toFixed(1)} KB • ${new Date(
-                          doc.date
-                        ).toLocaleDateString()}` : new Date(doc.date).toLocaleDateString()}
+                        secondary={
+                          doc.size
+                            ? `${(doc.size / 1024).toFixed(1)} KB • ${new Date(
+                                doc.date,
+                              ).toLocaleDateString()}`
+                            : new Date(doc.date).toLocaleDateString()
+                        }
                       />
                     </ListItem>
                   ))}
@@ -180,7 +176,7 @@ const EditProjectDialog = ({
                   p: 2,
                   textAlign: 'center',
                   border: `1px dashed ${theme.palette.divider}`,
-                  borderRadius: 1
+                  borderRadius: 1,
                 }}
               >
                 <Typography color="text.secondary">
@@ -204,12 +200,7 @@ const EditProjectDialog = ({
               {files.length
                 ? `${files.length} nuovi documenti`
                 : 'Carica documenti'}
-              <input
-                type="file"
-                hidden
-                multiple
-                onChange={handleFileChange}
-              />
+              <input type="file" hidden multiple onChange={handleFileChange} />
             </Button>
           </Grid>
 

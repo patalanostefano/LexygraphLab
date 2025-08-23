@@ -8,9 +8,9 @@ const DocumentDrawer = styled(Drawer)(({ theme }) => ({
     width: 380,
     padding: theme.spacing(0),
     [theme.breakpoints.down('sm')]: {
-      width: '100%'
-    }
-  }
+      width: '100%',
+    },
+  },
 }));
 
 export default DocumentDrawer;

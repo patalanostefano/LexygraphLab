@@ -2,9 +2,9 @@
 export const convertToWordCompatibleHTML = (content, documentName) => {
   // Converti la formattazione markdown in formattazione compatibile con DOCX
   // Versione migliorata per massimizzare la compatibilità con Word
-  
+
   let docxContent = content;
-  
+
   // Verifica se il contenuto è già in formato HTML
   if (!docxContent.includes('<!DOCTYPE html>')) {
     // Converti la formattazione markdown
@@ -13,11 +13,11 @@ export const convertToWordCompatibleHTML = (content, documentName) => {
     docxContent = docxContent.replace(/^# (.*$)/gm, '<h1>$1</h1>');
     docxContent = docxContent.replace(/^## (.*$)/gm, '<h2>$1</h2>');
     docxContent = docxContent.replace(/^### (.*$)/gm, '<h3>$1</h3>');
-    
+
     // Gestisci gli a capo e i paragrafi
     docxContent = docxContent.replace(/\n\n/g, '</p><p>');
     docxContent = docxContent.replace(/\n/g, '<br>');
-    
+
     // Assicurati che il testo sia avvolto in un paragrafo
     if (!docxContent.includes('<p>')) {
       docxContent = `<p>${docxContent}</p>`;
@@ -27,26 +27,29 @@ export const convertToWordCompatibleHTML = (content, documentName) => {
     try {
       const parser = new DOMParser();
       const htmlDoc = parser.parseFromString(docxContent, 'text/html');
-      
+
       // Estrai solo il testo
       const textContent = htmlDoc.body.textContent;
-      
+
       // Crea paragrafi dal testo
       docxContent = `<p>${textContent.replace(/\n\n/g, '</p><p>').replace(/\n/g, '<br>')}</p>`;
     } catch (e) {
       // Se fallisce, usa una regex semplice per rimuovere tag HTML
-      docxContent = docxContent.replace(/<[^>]*>/g, ' ').replace(/\s{2,}/g, ' ').trim();
+      docxContent = docxContent
+        .replace(/<[^>]*>/g, ' ')
+        .replace(/\s{2,}/g, ' ')
+        .trim();
       docxContent = `<p>${docxContent}</p>`;
     }
   }
-  
+
   // Aggiungi intestazione e piè di pagina
   const currentDate = new Date().toLocaleDateString('it-IT', {
-    day: '2-digit', 
-    month: '2-digit', 
-    year: 'numeric'
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
   });
-  
+
   // Crea documento HTML completo con metadati e stili per Word
   const wordCompatibleHTML = `
     <!DOCTYPE html>
@@ -106,7 +109,7 @@ export const convertToWordCompatibleHTML = (content, documentName) => {
     </body>
     </html>
   `;
-  
+
   return wordCompatibleHTML;
 };
 
@@ -121,7 +124,7 @@ export const DocumentTitleGenerator = {
         const parties = DocumentTitleGenerator.extractParties(content);
         const subject = DocumentTitleGenerator.extractSubject(content);
         return { parti: parties, oggetto: subject };
-      }
+      },
     },
     parere: {
       keywords: ['parere', 'memorandum', 'nota', 'consulenza'],
@@ -130,7 +133,7 @@ export const DocumentTitleGenerator = {
         const subject = DocumentTitleGenerator.extractSubject(content);
         const client = DocumentTitleGenerator.extractClient(content);
         return { materia: subject, cliente: client };
-      }
+      },
     },
     atto: {
       keywords: ['citazione', 'ricorso', 'comparsa', 'memoria', 'costituzione'],
@@ -139,7 +142,7 @@ export const DocumentTitleGenerator = {
         const type = DocumentTitleGenerator.extractActType(content);
         const court = DocumentTitleGenerator.extractCourt(content);
         return { tipo: type, tribunale: court };
-      }
+      },
     },
     verbale: {
       keywords: ['verbale', 'assemblea', 'riunione', 'consiglio'],
@@ -147,83 +150,111 @@ export const DocumentTitleGenerator = {
       extractInfo: (content) => {
         const body = DocumentTitleGenerator.extractGoverningBody(content);
         return { organo: body };
-      }
-    }
+      },
+    },
   },
-  
+
   // Metodi di estrazione delle informazioni
   extractParties: (content) => {
-    const partyMatch = content.match(/tra\s+([\w\s'"\.]+)\s+e\s+([\w\s'"\.]+)/i);
+    const partyMatch = content.match(
+      /tra\s+([\w\s'"\.]+)\s+e\s+([\w\s'"\.]+)/i,
+    );
     if (partyMatch && partyMatch.length > 2) {
-      const party1 = partyMatch[1].trim().split(/\s+/)[0].replace(/[^a-z0-9]/gi, '');
-      const party2 = partyMatch[2].trim().split(/\s+/)[0].replace(/[^a-z0-9]/gi, '');
+      const party1 = partyMatch[1]
+        .trim()
+        .split(/\s+/)[0]
+        .replace(/[^a-z0-9]/gi, '');
+      const party2 = partyMatch[2]
+        .trim()
+        .split(/\s+/)[0]
+        .replace(/[^a-z0-9]/gi, '');
       return `${party1}_${party2}`;
     }
-    return "Parti";
+    return 'Parti';
   },
-  
+
   extractSubject: (content) => {
     const subjectMatch = content.match(/oggetto:?\s+([\w\s'"\.]+?)[\.\n]/i);
     if (subjectMatch && subjectMatch.length > 1) {
-      const subject = subjectMatch[1].trim()
+      const subject = subjectMatch[1]
+        .trim()
         .split(/\s+/)
-        .filter(word => word.length > 3)
+        .filter((word) => word.length > 3)
         .slice(0, 2)
         .join('_')
         .replace(/[^a-z0-9_]/gi, '');
-      return subject || "Oggetto";
+      return subject || 'Oggetto';
     }
-    return "Oggetto";
+    return 'Oggetto';
   },
-  
+
   extractClient: (content) => {
-    const clientMatch = content.match(/cliente:?\s+([\w\s'"\.]+?)[\.\n]/i) || 
-                        content.match(/per:?\s+([\w\s'"\.]+?)[\.\n]/i);
+    const clientMatch =
+      content.match(/cliente:?\s+([\w\s'"\.]+?)[\.\n]/i) ||
+      content.match(/per:?\s+([\w\s'"\.]+?)[\.\n]/i);
     if (clientMatch && clientMatch.length > 1) {
-      return clientMatch[1].trim().split(/\s+/)[0].replace(/[^a-z0-9]/gi, '');
+      return clientMatch[1]
+        .trim()
+        .split(/\s+/)[0]
+        .replace(/[^a-z0-9]/gi, '');
     }
-    return "Cliente";
+    return 'Cliente';
   },
-  
+
   extractCourt: (content) => {
-    const courtMatch = content.match(/tribunale\s+di\s+([\w\s]+?)[\.\n]/i) ||
-                       content.match(/corte\s+(?:di|d')\s+([\w\s]+?)[\.\n]/i);
+    const courtMatch =
+      content.match(/tribunale\s+di\s+([\w\s]+?)[\.\n]/i) ||
+      content.match(/corte\s+(?:di|d')\s+([\w\s]+?)[\.\n]/i);
     if (courtMatch && courtMatch.length > 1) {
       return courtMatch[1].trim().replace(/\s+/g, '');
     }
-    return "Tribunale";
+    return 'Tribunale';
   },
-  
+
   extractActType: (content) => {
-    const types = ['citazione', 'ricorso', 'comparsa', 'memoria', 'opposizione'];
+    const types = [
+      'citazione',
+      'ricorso',
+      'comparsa',
+      'memoria',
+      'opposizione',
+    ];
     for (const type of types) {
       if (content.toLowerCase().includes(type)) {
         return type;
       }
     }
-    return "Processuale";
+    return 'Processuale';
   },
-  
+
   extractGoverningBody: (content) => {
-    const bodies = ['assemblea', 'consiglio', 'amministrazione', 'soci', 'sindaci'];
+    const bodies = [
+      'assemblea',
+      'consiglio',
+      'amministrazione',
+      'soci',
+      'sindaci',
+    ];
     for (const body of bodies) {
       if (content.toLowerCase().includes(body)) {
         return body;
       }
     }
-    return "Organo";
+    return 'Organo';
   },
-  
+
   // Funzione principale per generare un titolo
   generateTitle: (content) => {
-    if (!content) return "Documento_" + new Date().toISOString().slice(0, 10);
-    
+    if (!content) return 'Documento_' + new Date().toISOString().slice(0, 10);
+
     // Normalizza il contenuto per le analisi
     const normalizedContent = content.toLowerCase();
-    
+
     // Identifica il tipo di documento
     let documentType = null;
-    for (const [type, info] of Object.entries(DocumentTitleGenerator.documentTypes)) {
+    for (const [type, info] of Object.entries(
+      DocumentTitleGenerator.documentTypes,
+    )) {
       for (const keyword of info.keywords) {
         if (normalizedContent.includes(keyword)) {
           documentType = type;
@@ -232,62 +263,75 @@ export const DocumentTitleGenerator = {
       }
       if (documentType) break;
     }
-    
+
     // Se non è stato identificato un tipo specifico, usa un formato generico
     if (!documentType) {
       const words = content.split(/\s+/).slice(0, 20);
       const significantWords = words
-        .filter(word => word.length > 4 && !/^(dell[aeo]|nell[aeo]|all[aeo]|dall[aeo]|con|per|tra|fra)$/i.test(word))
+        .filter(
+          (word) =>
+            word.length > 4 &&
+            !/^(dell[aeo]|nell[aeo]|all[aeo]|dall[aeo]|con|per|tra|fra)$/i.test(
+              word,
+            ),
+        )
         .slice(0, 3)
         .join('_')
         .replace(/[^a-z0-9_]/gi, '');
-      
+
       const timestamp = new Date().toISOString().slice(0, 10).replace(/-/g, '');
       return `Doc_${significantWords || 'Generico'}_${timestamp}.docx`;
     }
-    
+
     // Estrai informazioni specifiche dal documento in base al tipo
     const typeInfo = DocumentTitleGenerator.documentTypes[documentType];
     const extractedInfo = typeInfo.extractInfo(content);
-    
+
     // Formatta il titolo
     let title = typeInfo.format;
     for (const [key, value] of Object.entries(extractedInfo)) {
       title = title.replace(`{${key}}`, value);
     }
-    
+
     // Aggiungi la data
     const date = new Date().toISOString().slice(0, 10).replace(/-/g, '');
     title = title.replace('{data}', date);
-    
+
     return title + '.docx';
-  }
+  },
 };
 
 // Funzione migliorata per generare un file Word compatibile
-export const generateWordDocument = (content, filename = "documento.docx") => {
+export const generateWordDocument = (content, filename = 'documento.docx') => {
   // Estrai il testo pulito, ma mantieni la formattazione HTML esistente
   let textContent = content;
-  
+
   // Se content contiene proprietà rawContent preesistente, usala
   if (content && typeof content === 'object' && content.rawContent) {
     return content.rawContent;
   }
-  
+
   // Se è HTML, assicurati che sia ben formattato
-  if (typeof content === 'string' && 
-      (content.includes('<!DOCTYPE html>') || content.includes('<html') || 
-       content.includes('<p>') || content.includes('<div>'))) {
+  if (
+    typeof content === 'string' &&
+    (content.includes('<!DOCTYPE html>') ||
+      content.includes('<html') ||
+      content.includes('<p>') ||
+      content.includes('<div>'))
+  ) {
     // È già in formato HTML, lo usiamo direttamente
     textContent = content;
   } else if (typeof content === 'string') {
     // È testo semplice, convertilo in HTML
-    textContent = content.split('\n\n').map(para => `<p>${para.replace(/\n/g, '<br>')}</p>`).join('');
+    textContent = content
+      .split('\n\n')
+      .map((para) => `<p>${para.replace(/\n/g, '<br>')}</p>`)
+      .join('');
   } else if (content && typeof content === 'object') {
     // È un oggetto, prendi la proprietà content
     textContent = content.content || '';
   }
-  
+
   // Crea un documento Word-compatibile
   return `<!DOCTYPE html>
 <html xmlns:o="urn:schemas-microsoft-com:office:office" 
@@ -331,35 +375,38 @@ export const generateWordDocument = (content, filename = "documento.docx") => {
 };
 
 // Funzione per scaricare documento come .docx
-export const downloadWordDocument = (content, filename = "documento.docx") => {
+export const downloadWordDocument = (content, filename = 'documento.docx') => {
   // Se non ha estensione .docx, aggiungerla
-  if (typeof filename === 'string' && !filename.toLowerCase().endsWith('.docx')) {
+  if (
+    typeof filename === 'string' &&
+    !filename.toLowerCase().endsWith('.docx')
+  ) {
     filename += '.docx';
   }
-  
+
   // Genera il contenuto Word
   const wordContent = generateWordDocument(content, filename);
-  
+
   // Crea un Blob con il MIME type corretto
-  const blob = new Blob([wordContent], { 
-    type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' 
+  const blob = new Blob([wordContent], {
+    type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   });
-  
+
   // Crea un URL per il blob
   const url = URL.createObjectURL(blob);
-  
+
   // Crea un link per il download
   const a = document.createElement('a');
   a.href = url;
   a.download = filename;
   document.body.appendChild(a);
-  
+
   // Simula il click e poi rimuovi il link
   a.click();
   setTimeout(() => {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }, 100);
-  
+
   return true;
 };

@@ -21,23 +21,29 @@ export const DocumentItem = ({ document, onDelete }) => {
   };
 
   return (
-    <Box 
+    <Box
       sx={{
         mb: 1,
         borderRadius: 1,
-        bgcolor: theme.palette.mode === 'dark' ? alpha('#1C1C3C', 0.6) : alpha('#F5F5F5', 0.5),
+        bgcolor:
+          theme.palette.mode === 'dark'
+            ? alpha('#1C1C3C', 0.6)
+            : alpha('#F5F5F5', 0.5),
         p: 1,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        cursor: 'pointer' // Indica che è cliccabile
+        cursor: 'pointer', // Indica che è cliccabile
       }}
       onClick={handleDocumentClick} // Gestisci il clic sul documento
     >
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
         <FileIcon sx={{ mr: 1 }} />
         <Box>
-          <Typography variant="body1" sx={{ fontSize: '0.9rem', fontWeight: 500 }}>
+          <Typography
+            variant="body1"
+            sx={{ fontSize: '0.9rem', fontWeight: 500 }}
+          >
             {document.name}
           </Typography>
           <Typography variant="caption" color="text.secondary">
@@ -48,12 +54,12 @@ export const DocumentItem = ({ document, onDelete }) => {
       <IconButton size="small" onClick={() => onDelete(document.id)}>
         <DeleteIcon fontSize="small" />
       </IconButton>
-      
+
       {/* Se il documento è stato cliccato, mostra il contenuto */}
       {documentContent && (
         <Box sx={{ mt: 2 }}>
           <Typography variant="body2" color="text.secondary">
-            {documentContent.text || "Contenuto del documento non disponibile"}
+            {documentContent.text || 'Contenuto del documento non disponibile'}
           </Typography>
         </Box>
       )}

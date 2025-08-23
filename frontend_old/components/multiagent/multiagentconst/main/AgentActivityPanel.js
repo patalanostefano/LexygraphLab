@@ -1,5 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Box, Button, Typography, CircularProgress, alpha } from '@mui/material';
+import {
+  Box,
+  Button,
+  Typography,
+  CircularProgress,
+  alpha,
+} from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 // Componente per un singolo messaggio
@@ -9,12 +15,12 @@ import Message from './Message';
  * Pannello attività degli agenti con sostituzione completa di Assistente con Valis
  * e configurato per mostrare solo risposte da Valis
  */
-export default function AgentActivityPanel({ 
-  messages = [], 
-  isProcessing = false, 
-  projectName = "",
+export default function AgentActivityPanel({
+  messages = [],
+  isProcessing = false,
+  projectName = '',
   onReturn,
-  selectedAgents = []
+  selectedAgents = [],
 }) {
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
@@ -26,9 +32,10 @@ export default function AgentActivityPanel({
     if (typingMessage) {
       // Se c'è un messaggio in digitazione, mostra tutti i messaggi precedenti più quello in digitazione
       const lastIndex = messages.length - 1;
-      const messagesToShow = lastIndex >= 0 
-        ? [...messages.slice(0, lastIndex), typingMessage]
-        : [typingMessage];
+      const messagesToShow =
+        lastIndex >= 0
+          ? [...messages.slice(0, lastIndex), typingMessage]
+          : [typingMessage];
       setDisplayMessages(messagesToShow);
     } else {
       // Altrimenti mostra tutti i messaggi
@@ -59,25 +66,28 @@ export default function AgentActivityPanel({
         setTypingMessage({
           ...lastMessage,
           content: '',
-          typing: true
+          typing: true,
         });
 
         // Simula la digitazione graduale del contenuto
         let currentText = '';
         const fullText = lastMessage.content;
         let charIndex = 0;
-        
+
         const typingInterval = setInterval(() => {
           if (charIndex < fullText.length) {
             // Aggiungi da 1 a 3 caratteri per volta per una velocità di digitazione più naturale
-            const charsToAdd = Math.min(Math.floor(Math.random() * 3) + 1, fullText.length - charIndex);
+            const charsToAdd = Math.min(
+              Math.floor(Math.random() * 3) + 1,
+              fullText.length - charIndex,
+            );
             currentText += fullText.slice(charIndex, charIndex + charsToAdd);
             charIndex += charsToAdd;
-            
-            setTypingMessage(prev => ({
+
+            setTypingMessage((prev) => ({
               ...prev,
               content: currentText,
-              typing: true
+              typing: true,
             }));
           } else {
             // Completata la digitazione
@@ -85,7 +95,7 @@ export default function AgentActivityPanel({
             setTypingMessage(null);
           }
         }, 30); // Regola la velocità di digitazione
-        
+
         return () => clearInterval(typingInterval);
       }
     }
@@ -100,10 +110,10 @@ export default function AgentActivityPanel({
   // CORREZIONE: Sistemiamo in profondità i riferimenti ad assistente
   // e assicuriamoci che tutti i messaggi degli agenti provengano da Valis
   const modifyMessages = (msgs) => {
-    return msgs.map(msg => {
+    return msgs.map((msg) => {
       // Se è un messaggio dell'utente, lascialo invariato
       if (msg.type === 'user') return msg;
-      
+
       // Tutti i messaggi degli agenti hanno Valis come mittente
       return { ...msg, agent: 'Valis' };
     });
@@ -114,27 +124,31 @@ export default function AgentActivityPanel({
   const correctedMessages = modifyMessages(displayMessages);
 
   return (
-    <Box sx={{ 
-      display: 'flex', 
-      flexDirection: 'column', 
-      height: '100%', 
-      borderRadius: 1,
-      overflow: 'hidden',
-      border: '1px solid',
-      borderColor: 'divider',
-      bgcolor: 'background.paper',
-      boxShadow: '0 1px 6px rgba(0,0,0,0.05)'
-    }}>
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        borderRadius: 1,
+        overflow: 'hidden',
+        border: '1px solid',
+        borderColor: 'divider',
+        bgcolor: 'background.paper',
+        boxShadow: '0 1px 6px rgba(0,0,0,0.05)',
+      }}
+    >
       {/* Header */}
-      <Box sx={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center', 
-        p: 1.5,
-        backgroundColor: 'background.paper',
-        borderBottom: '1px solid',
-        borderColor: 'divider'
-      }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          p: 1.5,
+          backgroundColor: 'background.paper',
+          borderBottom: '1px solid',
+          borderColor: 'divider',
+        }}
+      >
         <Button
           variant="outlined"
           size="small"
@@ -143,22 +157,31 @@ export default function AgentActivityPanel({
         >
           Progetti
         </Button>
-        
-        <Typography variant="subtitle1" sx={{ fontWeight: 600, textAlign: 'right', flex: 1, pr: 2, fontSize: '1.1rem' }}>
+
+        <Typography
+          variant="subtitle1"
+          sx={{
+            fontWeight: 600,
+            textAlign: 'right',
+            flex: 1,
+            pr: 2,
+            fontSize: '1.1rem',
+          }}
+        >
           {projectName ? projectName : 'Conversazione'}
         </Typography>
       </Box>
 
       {/* Lista messaggi */}
-      <Box 
+      <Box
         ref={messagesContainerRef}
-        className="messages-container" 
-        sx={{ 
-          flex: 1, 
-          overflowY: 'auto', 
+        className="messages-container"
+        sx={{
+          flex: 1,
+          overflowY: 'auto',
           overflowX: 'hidden',
           p: 2,
-          bgcolor: theme => alpha(theme.palette.background.default, 0.5)
+          bgcolor: (theme) => alpha(theme.palette.background.default, 0.5),
         }}
       >
         {correctedMessages.length > 0 ? (
@@ -171,13 +194,29 @@ export default function AgentActivityPanel({
                 timestamp={msg.timestamp}
                 agent={msg.type === 'agent' ? 'Valis' : null}
                 typing={msg.typing || false}
-                forwardRef={idx === correctedMessages.length - 1 ? messagesEndRef : null}
+                forwardRef={
+                  idx === correctedMessages.length - 1 ? messagesEndRef : null
+                }
               />
             ))}
           </>
         ) : (
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', textAlign: 'center', p: 2 }}>
-            <Typography variant="body1" color="text.secondary" sx={{ fontSize: '1.05rem', mb: 2 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              height: '100%',
+              textAlign: 'center',
+              p: 2,
+            }}
+          >
+            <Typography
+              variant="body1"
+              color="text.secondary"
+              sx={{ fontSize: '1.05rem', mb: 2 }}
+            >
               Inizia una nuova conversazione digitando un messaggio.
             </Typography>
             {selectedAgents.length > 0 && (
@@ -191,15 +230,17 @@ export default function AgentActivityPanel({
 
       {/* Indicatore di elaborazione */}
       {isProcessing && !typingMessage && (
-        <Box sx={{ 
-          p: 1.5, 
-          display: 'flex', 
-          alignItems: 'center', 
-          backgroundColor: 'background.paper', 
-          borderTop: '1px solid', 
-          borderColor: 'divider',
-          boxShadow: '0 -2px 6px rgba(0,0,0,0.03)'
-        }}>
+        <Box
+          sx={{
+            p: 1.5,
+            display: 'flex',
+            alignItems: 'center',
+            backgroundColor: 'background.paper',
+            borderTop: '1px solid',
+            borderColor: 'divider',
+            boxShadow: '0 -2px 6px rgba(0,0,0,0.03)',
+          }}
+        >
           <CircularProgress size={18} sx={{ mr: 1.5 }} />
           <Typography variant="body2" color="text.secondary" fontWeight={500}>
             Elaborazione in corso...

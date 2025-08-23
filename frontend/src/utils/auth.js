@@ -5,24 +5,24 @@ import { supabase } from '../config/supabaseClient';
 export const registerUser = async (email, password, options = {}) => {
   console.log(`Attempting registration with: ${email}`);
   console.log('Calling Supabase for registration...');
-  
+
   try {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
         redirectTo: options.redirectTo || window.location.origin + '/dashboard',
-        ...options
-      }
+        ...options,
+      },
     });
-    
+
     console.log('Registration response:', data);
-    
+
     if (error) {
       console.error('Registration error:', error);
       throw error;
     }
-    
+
     return data;
   } catch (error) {
     console.error('Registration error:', error);
@@ -33,18 +33,18 @@ export const registerUser = async (email, password, options = {}) => {
 // Login user
 export const loginUser = async (email, password) => {
   console.log(`Attempting login with: ${email}`);
-  
+
   try {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
-      password
+      password,
     });
-    
+
     if (error) {
       console.error('Login error:', error);
       throw error;
     }
-    
+
     return data;
   } catch (error) {
     console.error('Login error:', error);
