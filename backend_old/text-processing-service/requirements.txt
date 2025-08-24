@@ -1,4 +1,0 @@
-boto3==1.26.165
-nltk==3.8.1
-spacy==3.5.3
-aws-lambda-powertools==2.22.0
