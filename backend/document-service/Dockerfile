@@ -25,7 +25,8 @@ RUN pip install --no-cache-dir --upgrade pip \
         pypdf \
         pymupdf \
         python-multipart\
-        supabase
+        supabase\
+        numpy
 
 # Copia il codice sorgente dell'applicazione nella directory di lavoro
 COPY . .

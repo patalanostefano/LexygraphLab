@@ -35,9 +35,7 @@ public class GatewayConfig {
     public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
         return builder.routes()
 
-                // DOCUMENT SERVICE ROUTES - FIXED PATHS
-
-                // Get user projects - FIXED: Changed from {userId} to {user_id}
+                // DOCUMENT SERVICE ROUTES
                 .route("user_projects", r -> r
                         .path("/api/v1/projects/{user_id}")
                         .and()
@@ -45,7 +43,6 @@ public class GatewayConfig {
                         .filters(f -> f.setRequestHeader("X-Gateway-Source", "api-gateway"))
                         .uri(documentServiceUrl))
 
-                // Upload document - CORRECT PATH
                 .route("document_upload", r -> r
                         .path("/api/v1/documents/upload")
                         .and()
@@ -53,7 +50,6 @@ public class GatewayConfig {
                         .filters(f -> f.setRequestHeader("X-Gateway-Source", "api-gateway"))
                         .uri(documentServiceUrl))
 
-                // Get document PDF binary - FIXED: Changed to match service path
                 .route("document_retrieve", r -> r
                         .path("/api/v1/documents/{user_id}/{project_id}/{doc_id}")
                         .and()
@@ -61,15 +57,6 @@ public class GatewayConfig {
                         .filters(f -> f.setRequestHeader("X-Gateway-Source", "api-gateway"))
                         .uri(documentServiceUrl))
 
-                // Get document PDF binary with /pdf suffix - NEW ROUTE
-                .route("document_retrieve_pdf", r -> r
-                        .path("/api/v1/documents/{user_id}/{project_id}/{doc_id}/pdf")
-                        .and()
-                        .method(HttpMethod.GET)
-                        .filters(f -> f.stripPrefix(1).setRequestHeader("X-Gateway-Source", "api-gateway"))
-                        .uri(documentServiceUrl))
-
-                // Get document text content - CORRECT PATH
                 .route("document_text", r -> r
                         .path("/api/v1/documents/{user_id}/{project_id}/{doc_id}/text")
                         .and()
@@ -77,13 +64,20 @@ public class GatewayConfig {
                         .filters(f -> f.setRequestHeader("X-Gateway-Source", "api-gateway"))
                         .uri(documentServiceUrl))
 
-                // List documents in a project - FIXED: Changed from {userId}/{projectId} to {user_id}/{project_id}
                 .route("documents_list", r -> r
                         .path("/api/v1/documents/{user_id}/{project_id}")
                         .and()
                         .method(HttpMethod.GET)
                         .filters(f -> f.setRequestHeader("X-Gateway-Source", "api-gateway"))
                         .uri(documentServiceUrl))
+
+                .route("document_query", r -> r
+                        .path("/api/v1/documents/query")
+                        .and()
+                        .method(HttpMethod.POST)
+                        .filters(f -> f.setRequestHeader("X-Gateway-Source", "api-gateway"))
+                        .uri(documentServiceUrl))
+
 
                 // HEALTH CHECKS
                 .route("document_service_health", r -> r
