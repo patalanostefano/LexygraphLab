@@ -112,6 +112,7 @@ async def upload_document(
         os.remove(temp_path)
 
     if success:
+
         # FIXED: Return the actual doc_id instead of document_id
         return DocumentResponse(
             success=True, 
