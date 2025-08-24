@@ -7,7 +7,7 @@ services:
       context: ./api-gateway
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"
+      - '8080:8080'
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - SERVICES_DOCUMENT_SERVICE_URL=http://document-service:8000
@@ -17,7 +17,8 @@ services:
       document-service:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/api/health"]
+      test:
+        ['CMD', 'wget', '--spider', '-q', 'http://localhost:8080/api/health']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -29,14 +30,14 @@ services:
       context: ./document-service
       dockerfile: Dockerfile
     ports:
-      - "8000:8000"
+      - '8000:8000'
     environment:
       - PYTHONPATH=/app
       - PYTHONUNBUFFERED=1
     networks:
       - app-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      test: ['CMD', 'curl', '-f', 'http://localhost:8000/health']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -48,7 +49,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "3000:80"
+      - '3000:80'
     networks:
       - app-network
     depends_on:
@@ -61,10 +62,10 @@ services:
       - ./frontend:/app:cached
       # Prevent mounting node_modules from host to avoid FS slowdown
       - /app/node_modules
-    mem_limit: 2g   # Give frontend more RAM
-    cpus: 2         # Give it 2 CPU cores
+    mem_limit: 2g # Give frontend more RAM
+    cpus: 2 # Give it 2 CPU cores
     healthcheck:
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:80/"]
+      test: ['CMD', 'wget', '--spider', '-q', 'http://localhost:80/']
       interval: 30s
       timeout: 10s
       retries: 3

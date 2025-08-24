@@ -16,7 +16,7 @@ import {
   ListItemText,
   IconButton,
   AppBar,
-  Toolbar
+  Toolbar,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import AddIcon from '@mui/icons-material/Add';
@@ -33,11 +33,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import SettingsIcon from '@mui/icons-material/Settings'; // AGGIUNTO: Icona per Impostazioni
 import DocumentSelectorDialog from '../multiagentconst/DocumentSelectorDialog';
 
-const NewProjectDialog = ({ 
-  open, 
-  onClose, 
-  onCreate
-}) => {
+const NewProjectDialog = ({ open, onClose, onCreate }) => {
   const [newProjectName, setNewProjectName] = useState('');
   const [clientName, setClientName] = useState('');
   const [files, setFiles] = useState([]);
@@ -52,12 +48,12 @@ const NewProjectDialog = ({
   const handleCreateProject = () => {
     if (!newProjectName.trim()) return;
 
-    const fileDocs = files.map(file => ({
+    const fileDocs = files.map((file) => ({
       id: `doc-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       name: file.name,
       size: file.size,
       mimeType: file.type,
-      date: new Date().toISOString()
+      date: new Date().toISOString(),
     }));
 
     const newProject = {
@@ -65,7 +61,7 @@ const NewProjectDialog = ({
       name: newProjectName,
       client: clientName,
       date: new Date().toLocaleDateString(),
-      documents: fileDocs
+      documents: fileDocs,
     };
 
     onCreate(newProject);
@@ -82,7 +78,7 @@ const NewProjectDialog = ({
             <Typography variant="h6" sx={{ flex: 1, fontWeight: 600 }}>
               Crea Nuovo Progetto
             </Typography>
-            
+
             <IconButton onClick={onClose} edge="end">
               <CloseIcon />
             </IconButton>
@@ -99,13 +95,13 @@ const NewProjectDialog = ({
                 margin="dense"
                 variant="outlined"
                 value={newProjectName}
-                onChange={e => setNewProjectName(e.target.value)}
+                onChange={(e) => setNewProjectName(e.target.value)}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
                       <FolderIcon color="primary" />
                     </InputAdornment>
-                  )
+                  ),
                 }}
               />
             </Grid>
@@ -116,13 +112,13 @@ const NewProjectDialog = ({
                 margin="dense"
                 variant="outlined"
                 value={clientName}
-                onChange={e => setClientName(e.target.value)}
+                onChange={(e) => setClientName(e.target.value)}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
                       <BusinessIcon color="primary" />
                     </InputAdornment>
-                  )
+                  ),
                 }}
               />
             </Grid>
@@ -155,7 +151,10 @@ const NewProjectDialog = ({
                 <Typography variant="subtitle2" gutterBottom>
                   File caricati:
                 </Typography>
-                <Paper variant="outlined" sx={{ p: 1.5, mt: 1, maxHeight: 150, overflow: 'auto' }}>
+                <Paper
+                  variant="outlined"
+                  sx={{ p: 1.5, mt: 1, maxHeight: 150, overflow: 'auto' }}
+                >
                   <List dense>
                     {files.map((file, i) => (
                       <ListItem
@@ -165,7 +164,9 @@ const NewProjectDialog = ({
                           <IconButton
                             edge="end"
                             size="small"
-                            onClick={() => setFiles(fs => fs.filter((_, idx) => idx !== i))}
+                            onClick={() =>
+                              setFiles((fs) => fs.filter((_, idx) => idx !== i))
+                            }
                           >
                             <DeleteIcon fontSize="small" />
                           </IconButton>

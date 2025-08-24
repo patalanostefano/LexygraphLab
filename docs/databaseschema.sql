@@ -46,3 +46,21 @@ CREATE TABLE execution_results (
     final_result TEXT,
     status TEXT DEFAULT 'processing' -- processing, completed, failed
 );
+
+
+-- Table for storing document chunks with embeddings as JSON
+CREATE TABLE document_chunks (
+    id TEXT PRIMARY KEY, -- Format: userId_projectId_docId_chunkIndex
+    user_id UUID NOT NULL REFERENCES auth.users(id),
+    project_id TEXT NOT NULL,
+    doc_id TEXT NOT NULL,
+    chunk_index INTEGER NOT NULL,
+    chunk_text TEXT NOT NULL,
+    embedding JSON NOT NULL, -- Store embedding as JSON array
+    embedding_size INTEGER NOT NULL, -- Store the size for validation
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Indexes for better query performance
+CREATE INDEX idx_document_chunks_doc ON document_chunks(user_id, project_id, doc_id);
+CREATE INDEX idx_document_chunks_composite ON document_chunks(user_id, project_id, doc_id, chunk_index);

@@ -6,13 +6,22 @@ import { TextField, alpha, styled } from '@mui/material';
 export const StyledTextField = styled(TextField)(({ theme }) => ({
   '& .MuiOutlinedInput-root': {
     borderRadius: '12px',
-    backgroundColor: theme.palette.mode === 'dark' ? alpha('#FFFFFF', 0.05) : alpha('#000000', 0.02),
+    backgroundColor:
+      theme.palette.mode === 'dark'
+        ? alpha('#FFFFFF', 0.05)
+        : alpha('#000000', 0.02),
     '& fieldset': {
-      borderColor: theme.palette.mode === 'dark' ? alpha('#9A7CFF', 0.3) : alpha('#7C4DFF', 0.3),
+      borderColor:
+        theme.palette.mode === 'dark'
+          ? alpha('#9A7CFF', 0.3)
+          : alpha('#7C4DFF', 0.3),
       borderWidth: '2px',
     },
     '&:hover fieldset': {
-      borderColor: theme.palette.mode === 'dark' ? alpha('#9A7CFF', 0.5) : alpha('#7C4DFF', 0.5),
+      borderColor:
+        theme.palette.mode === 'dark'
+          ? alpha('#9A7CFF', 0.5)
+          : alpha('#7C4DFF', 0.5),
     },
     '&.Mui-focused fieldset': {
       borderColor: theme.palette.primary.main,
@@ -22,9 +31,12 @@ export const StyledTextField = styled(TextField)(({ theme }) => ({
   '& .MuiInputBase-input': {
     color: theme.palette.mode === 'dark' ? '#FFFFFF' : '#14142B',
     '&::placeholder': {
-      color: theme.palette.mode === 'dark' ? alpha('#FFFFFF', 0.5) : alpha('#14142B', 0.5),
-    }
-  }
+      color:
+        theme.palette.mode === 'dark'
+          ? alpha('#FFFFFF', 0.5)
+          : alpha('#14142B', 0.5),
+    },
+  },
 }));
 
 // Hidden file input

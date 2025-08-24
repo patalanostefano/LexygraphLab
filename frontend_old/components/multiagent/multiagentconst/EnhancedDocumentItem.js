@@ -10,7 +10,7 @@ import {
   MenuItem,
   ListItemIcon,
   Chip,
-  alpha
+  alpha,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { ThemeContext } from '../../../context/ThemeContext';
@@ -38,7 +38,7 @@ const EnhancedDocumentItem = ({
   onEdit,
   onPreview, // AGGIUNTO: Handler specifico per l'anteprima (documenti caricati)
   showActions = true,
-  variant = 'default' // 'default', 'compact', 'detailed'
+  variant = 'default', // 'default', 'compact', 'detailed'
 }) => {
   const { theme: themeContext } = useContext(ThemeContext);
   const theme = useTheme();
@@ -49,16 +49,18 @@ const EnhancedDocumentItem = ({
     e.stopPropagation();
     setMenuAnchorEl(e.currentTarget);
   };
-  
+
   const handleMenuClose = () => setMenuAnchorEl(null);
 
   // AGGIUNTO: Determina se il documento è generato o caricato
   const isGeneratedDocument = () => {
-    return document.isGenerated || 
-           document.generatedBy || 
-           document.version || 
-           document.source === 'agent' ||
-           document.type === 'generated';
+    return (
+      document.isGenerated ||
+      document.generatedBy ||
+      document.version ||
+      document.source === 'agent' ||
+      document.type === 'generated'
+    );
   };
 
   // Handler per il click principale
@@ -74,11 +76,12 @@ const EnhancedDocumentItem = ({
 
   const getFileIcon = () => {
     if (!document?.type && !document?.mimeType) return <FileIcon />;
-    
+
     const fileType = (document.type || document.mimeType || '').toLowerCase();
-    
+
     if (fileType.includes('pdf')) return <PictureAsPdfIcon color="error" />;
-    if (fileType.includes('word') || fileType.includes('document')) return <ArticleIcon color="primary" />;
+    if (fileType.includes('word') || fileType.includes('document'))
+      return <ArticleIcon color="primary" />;
     if (fileType.includes('image')) return <ImageIcon color="success" />;
     return <FileIcon />;
   };
@@ -100,8 +103,8 @@ const EnhancedDocumentItem = ({
             borderColor: theme.palette.secondary.main,
             color: theme.palette.secondary.main,
             '& .MuiChip-icon': {
-              fontSize: '0.8rem'
-            }
+              fontSize: '0.8rem',
+            },
           }}
         />
       );
@@ -120,8 +123,8 @@ const EnhancedDocumentItem = ({
             borderColor: theme.palette.primary.main,
             color: theme.palette.primary.main,
             '& .MuiChip-icon': {
-              fontSize: '0.8rem'
-            }
+              fontSize: '0.8rem',
+            },
           }}
         />
       );
@@ -133,7 +136,7 @@ const EnhancedDocumentItem = ({
     if (isGeneratedDocument()) {
       return `Documento generato da ${document.generatedBy || 'Agente'}. Clicca per visualizzare nell'editor.`;
     } else {
-      return 'Documento caricato. Clicca per visualizzare l\'anteprima.';
+      return "Documento caricato. Clicca per visualizzare l'anteprima.";
     }
   };
 
@@ -145,43 +148,47 @@ const EnhancedDocumentItem = ({
           sx={{
             mb: 1,
             borderRadius: 1,
-            bgcolor: theme.palette.mode === 'dark' 
-              ? alpha(theme.palette.background.paper, 0.4) 
-              : alpha(theme.palette.background.paper, 0.6),
+            bgcolor:
+              theme.palette.mode === 'dark'
+                ? alpha(theme.palette.background.paper, 0.4)
+                : alpha(theme.palette.background.paper, 0.6),
             p: 1,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            cursor: (onView || onPreview) ? 'pointer' : 'default',
+            cursor: onView || onPreview ? 'pointer' : 'default',
             border: '1px solid',
-            borderColor: isGeneratedDocument() 
+            borderColor: isGeneratedDocument()
               ? alpha(theme.palette.secondary.main, 0.3)
               : alpha(theme.palette.primary.main, 0.3),
             '&:hover': {
-              bgcolor: theme.palette.mode === 'dark' 
-                ? alpha(theme.palette.background.paper, 0.6) 
-                : alpha(theme.palette.background.paper, 0.8),
-              borderColor: isGeneratedDocument() 
+              bgcolor:
+                theme.palette.mode === 'dark'
+                  ? alpha(theme.palette.background.paper, 0.6)
+                  : alpha(theme.palette.background.paper, 0.8),
+              borderColor: isGeneratedDocument()
                 ? theme.palette.secondary.main
                 : theme.palette.primary.main,
               transform: 'translateY(-1px)',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
             },
-            transition: 'all 0.2s ease'
+            transition: 'all 0.2s ease',
           }}
           onClick={handleItemClick}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>
+          <Box
+            sx={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}
+          >
             {getFileIcon()}
             <Box sx={{ ml: 1, minWidth: 0, flex: 1 }}>
-              <Typography 
-                variant="body2" 
-                sx={{ 
-                  fontSize: '0.85rem', 
+              <Typography
+                variant="body2"
+                sx={{
+                  fontSize: '0.85rem',
                   fontWeight: 500,
                   noWrap: true,
                   overflow: 'hidden',
-                  textOverflow: 'ellipsis'
+                  textOverflow: 'ellipsis',
                 }}
               >
                 {document.name}
@@ -191,11 +198,7 @@ const EnhancedDocumentItem = ({
           </Box>
 
           {showActions && (
-            <IconButton
-              size="small"
-              onClick={handleMenuOpen}
-              sx={{ ml: 1 }}
-            >
+            <IconButton size="small" onClick={handleMenuOpen} sx={{ ml: 1 }}>
               <MoreVertIcon fontSize="small" />
             </IconButton>
           )}
@@ -211,65 +214,73 @@ const EnhancedDocumentItem = ({
         sx={{
           mb: 1.5,
           borderRadius: 1,
-          bgcolor: theme.palette.mode === 'dark'
-            ? alpha(theme.palette.background.paper, 0.4)
-            : alpha(theme.palette.background.paper, 0.6),
+          bgcolor:
+            theme.palette.mode === 'dark'
+              ? alpha(theme.palette.background.paper, 0.4)
+              : alpha(theme.palette.background.paper, 0.6),
           p: 1.5,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          cursor: (onView || onPreview) ? 'pointer' : 'default',
+          cursor: onView || onPreview ? 'pointer' : 'default',
           border: '1px solid',
-          borderColor: isGeneratedDocument() 
+          borderColor: isGeneratedDocument()
             ? alpha(theme.palette.secondary.main, 0.3)
             : alpha(theme.palette.primary.main, 0.3),
           '&:hover': {
-            bgcolor: theme.palette.mode === 'dark'
-              ? alpha(theme.palette.background.paper, 0.6)
-              : alpha(theme.palette.background.paper, 0.8),
-            borderColor: isGeneratedDocument() 
+            bgcolor:
+              theme.palette.mode === 'dark'
+                ? alpha(theme.palette.background.paper, 0.6)
+                : alpha(theme.palette.background.paper, 0.8),
+            borderColor: isGeneratedDocument()
               ? theme.palette.secondary.main
               : theme.palette.primary.main,
             transform: 'translateY(-2px)',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
           },
-          boxShadow: theme.palette.mode === 'dark'
-            ? '0 1px 3px rgba(0,0,0,0.2)'
-            : '0 1px 3px rgba(0,0,0,0.1)',
-          transition: 'all 0.2s ease'
+          boxShadow:
+            theme.palette.mode === 'dark'
+              ? '0 1px 3px rgba(0,0,0,0.2)'
+              : '0 1px 3px rgba(0,0,0,0.1)',
+          transition: 'all 0.2s ease',
         }}
         onClick={handleItemClick}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}>
+        <Box
+          sx={{ display: 'flex', alignItems: 'center', flex: 1, minWidth: 0 }}
+        >
           {getFileIcon()}
           <Box sx={{ ml: 1.5, minWidth: 0, flex: 1 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 0.5 }}>
-              <Typography 
-                variant="body1" 
-                sx={{ 
-                  fontSize: '0.9rem', 
+              <Typography
+                variant="body1"
+                sx={{
+                  fontSize: '0.9rem',
                   fontWeight: 500,
                   noWrap: true,
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
-                  flex: 1
+                  flex: 1,
                 }}
               >
                 {document.name}
               </Typography>
               {getDocumentTypeBadge()}
             </Box>
-            
+
             <Typography variant="caption" color="text.secondary">
               {typeof document.size === 'number'
                 ? `${(document.size / 1024).toFixed(1)} KB`
                 : document.size || ''}{' '}
               {document.size && ' • '}
-              {document.date || document.createdAt || document.updatedAt ? 
-                new Date(document.date || document.createdAt || document.updatedAt).toLocaleDateString() :
-                new Date().toLocaleDateString()
-              }
-              {isGeneratedDocument() && document.version && ` • ${document.version}`}
+              {document.date || document.createdAt || document.updatedAt
+                ? new Date(
+                    document.date || document.createdAt || document.updatedAt,
+                  ).toLocaleDateString()
+                : new Date().toLocaleDateString()}
+              {isGeneratedDocument() &&
+                document.version &&
+                ` • ${document.version}`}
             </Typography>
           </Box>
         </Box>
@@ -277,31 +288,36 @@ const EnhancedDocumentItem = ({
         {showActions && (
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             {/* AGGIUNTO: Pulsante anteprima rapida */}
-            <Tooltip title={isGeneratedDocument() ? 'Visualizza nel viewer' : 'Anteprima documento'}>
+            <Tooltip
+              title={
+                isGeneratedDocument()
+                  ? 'Visualizza nel viewer'
+                  : 'Anteprima documento'
+              }
+            >
               <IconButton
                 size="small"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleItemClick();
                 }}
-                sx={{ 
+                sx={{
                   mr: 0.5,
-                  color: isGeneratedDocument() ? 'secondary.main' : 'primary.main',
+                  color: isGeneratedDocument()
+                    ? 'secondary.main'
+                    : 'primary.main',
                   '&:hover': {
-                    bgcolor: isGeneratedDocument() 
+                    bgcolor: isGeneratedDocument()
                       ? alpha(theme.palette.secondary.main, 0.1)
-                      : alpha(theme.palette.primary.main, 0.1)
-                  }
+                      : alpha(theme.palette.primary.main, 0.1),
+                  },
                 }}
               >
                 <VisibilityIcon fontSize="small" />
               </IconButton>
             </Tooltip>
 
-            <IconButton
-              size="small"
-              onClick={handleMenuOpen}
-            >
+            <IconButton size="small" onClick={handleMenuOpen}>
               <MoreVertIcon fontSize="small" />
             </IconButton>
 
@@ -319,7 +335,10 @@ const EnhancedDocumentItem = ({
                 }}
               >
                 <ListItemIcon>
-                  <VisibilityIcon fontSize="small" color={isGeneratedDocument() ? 'secondary' : 'primary'} />
+                  <VisibilityIcon
+                    fontSize="small"
+                    color={isGeneratedDocument() ? 'secondary' : 'primary'}
+                  />
                 </ListItemIcon>
                 <Typography variant="body2">
                   {isGeneratedDocument() ? 'Visualizza' : 'Anteprima'}

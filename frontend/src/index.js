@@ -1,6 +1,7 @@
 // src/index.js
 import React from 'react';
-import ReactDOM from 'react-dom/client';
+import ReactDOM from 'react-dom';
+import './styles/pdf-viewer.css';
 import { BrowserRouter as Router } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import './styles/globals.css';
@@ -14,6 +15,5 @@ root.render(
         <App />
       </AuthProvider>
     </Router>
-  </React.StrictMode>
+  </React.StrictMode>,
 );
-

@@ -1,27 +1,33 @@
 # Multiagent Platform API Gateway Architecture
 
 ## Overview
+
 This document describes a simple API gateway architecture for a multiagent platform that handles document management and agent orchestration through Spring Boot microservices.
 
 ## System Components
 
 ### 1. Document Storage Service
+
 **Purpose**: Manage PDF document storage and retrieval using simple composite identifiers.
 
 **Key Features**:
+
 - Store raw PDF files in Supabase database
 - Extract and store plain text content for agent processing
 - Use composite ID format: `userId_projectId_docId`
 - Support document listing by project
 
 **Database Tables**:
+
 - `pdf_storage`: Binary PDF data storage
 - `project_documents`: Metadata and extracted text content
 
 ### 2. Agent Orchestrator Service
+
 **Purpose**: Coordinate multi-agent workflows through an intelligent orchestration system.
 
 **Workflow Process**:
+
 1. **Planning Phase**: Frontend sends prompt + document IDs → Orchestrator generates strategy
 2. **Confirmation Phase**: User confirms or modifies the plan iteratively
 3. **Execution Phase**: Orchestrator distributes tasks to individual agents
@@ -30,6 +36,7 @@ This document describes a simple API gateway architecture for a multiagent platf
 ## API Workflows
 
 ### Document Management Flow
+
 ```
 Frontend → API Gateway → Storage Service
 1. Upload PDF with userId/projectId/docId
@@ -43,12 +50,13 @@ Frontend → API Gateway → Storage Service
 ```
 
 ### Agent Orchestration Flow
+
 ```
 Frontend → API Gateway → Orchestrator
 1. POST /orchestrator/plan (prompt + document IDs)
 2. Receive strategy proposal
 
-Frontend → API Gateway → Orchestrator  
+Frontend → API Gateway → Orchestrator
 3. POST /orchestrator/plan/{planId}/confirm (confirm/modify)
 4. Iterate until plan is confirmed
 
@@ -63,13 +71,16 @@ API Gateway → Individual Agent Services
 ## Database Schema
 
 ### Core Tables
+
 - **pdf_storage**: Raw PDF binary data with composite IDs
 - **project_documents**: Document metadata and plain text content
 - **execution_plans**: Track orchestration strategies (optional)
 - **execution_results**: Store agent responses and final results (optional)
 
 ### ID Structure
+
 All documents use composite IDs in format: `userId_projectId_docId`
+
 - Enables simple partitioning and access control
 - Supports project-level document organization
 - Allows for easy user data isolation
@@ -77,10 +88,11 @@ All documents use composite IDs in format: `userId_projectId_docId`
 ## Configuration Requirements
 
 ### Environment Variables for Agents
+
 Agent services should be configured via environment variables:
+
 ```
 AGENT_1_ID=research_agent
 AGENT_2_ID=analysis_agent
 AGENT_3_ID=summary_agent
 ```
-

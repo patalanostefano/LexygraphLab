@@ -1,14 +1,16 @@
 // Fixed Projects.js
 import React, { useState, useContext, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { 
-  Box, 
-  Typography, 
+import {
+  Box,
+  Typography,
   CardContent,
   Tooltip,
   Alert,
-  CircularProgress
+  CircularProgress,
 } from '@mui/material';
+import PersonIcon from '@mui/icons-material/Person';
+import { Chip } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import AddIcon from '@mui/icons-material/Add';
@@ -21,7 +23,11 @@ import { getUserProjects } from '../api/documents';
 
 // Import shared components
 import ValisLogo from '../components/ValisLogo';
-import { HeaderActionButton, ActionButton, CreateButton } from '../components/Buttons';
+import {
+  HeaderActionButton,
+  ActionButton,
+  CreateButton,
+} from '../components/Buttons';
 import { ProjectCard } from '../components/Cards';
 import { StyledTextField } from '../components/TextFields';
 import { PageBackground, PageHeader, PageContent } from '../components/Layout';
@@ -31,7 +37,7 @@ import { Fade } from '@mui/material';
 export default function Projects() {
   const navigate = useNavigate();
   const { theme } = useContext(ThemeContext);
-  
+
   const [projects, setProjects] = useState([]);
   const [filteredProjects, setFilteredProjects] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -46,16 +52,21 @@ export default function Projects() {
 
   // Load projects on component mount
   useEffect(() => {
-    loadProjects();
-  }, []);
+    if (userId) {
+      loadProjects();
+    } else {
+      setLoading(false);
+      setUserAuthenticated(false);
+    }
+  }, [userId]);
 
   // Filter projects based on search query
   useEffect(() => {
     if (searchQuery.trim() === '') {
       setFilteredProjects(projects);
     } else {
-      const filtered = projects.filter(project => 
-        project.project_id.toLowerCase().includes(searchQuery.toLowerCase())
+      const filtered = projects.filter((project) =>
+        project.project_id.toLowerCase().includes(searchQuery.toLowerCase()),
       );
       setFilteredProjects(filtered);
     }
@@ -65,29 +76,30 @@ export default function Projects() {
     try {
       setLoading(true);
       setError('');
-      
+
+      // Check if userId is available first
+      if (!userId) {
+        setUserAuthenticated(false);
+        setProjects([]);
+        setError('Please log in to view your projects.');
+        return;
+      }
+
       const projectsData = await getUserProjects(userId);
-      
-      // If getUserProjects returns empty array due to no user, it's not an error
+
+      // getUserProjects should always return an array if successful
       if (Array.isArray(projectsData)) {
         setProjects(projectsData);
         setUserAuthenticated(true);
+        setError(''); // Clear any previous errors
       } else {
-        // Handle case where user is not authenticated yet
-        setUserAuthenticated(false);
-        setProjects([]);
+        throw new Error('Invalid response format');
       }
     } catch (err) {
       console.error('Error loading projects:', err);
-      
-      // Check if it's an authentication issue
-      if (err.message?.includes('not authenticated') || err.response?.status === 401) {
-        setError('Please log in to view your projects.');
-        setUserAuthenticated(false);
-      } else {
-        setError('Failed to load projects. Please try again.');
-      }
       setProjects([]);
+      setUserAuthenticated(false);
+      setError('Failed to load projects. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -95,31 +107,30 @@ export default function Projects() {
 
   const createProject = async () => {
     if (!newProjectName.trim()) return;
-    
+
     try {
       setCreating(true);
       setError('');
-      
+
       if (!userAuthenticated) {
         setError('Please log in to create projects.');
         return;
       }
-      
+
       // Create project locally - it will be persisted when first document is uploaded
       const newProject = {
         project_id: newProjectName.trim(),
-        document_count: 0
+        document_count: 0,
       };
-      
-      setProjects(prev => [...prev, newProject]);
+
+      setProjects((prev) => [...prev, newProject]);
       setCreateModalOpen(false);
       setNewProjectName('');
-      
+
       // Navigate to the new project immediately
-      navigate(`/documents/${encodeURIComponent(newProject.project_id)}`, { 
-        state: { project: newProject } 
+      navigate(`/documents/${encodeURIComponent(newProject.project_id)}`, {
+        state: { project: newProject },
       });
-      
     } catch (err) {
       console.error('Error creating project:', err);
       setError('Failed to create project. Please try again.');
@@ -129,8 +140,8 @@ export default function Projects() {
   };
 
   const openProject = (project) => {
-    navigate(`/documents/${encodeURIComponent(project.project_id)}`, { 
-      state: { project } 
+    navigate(`/documents/${encodeURIComponent(project.project_id)}`, {
+      state: { project },
     });
   };
 
@@ -147,14 +158,33 @@ export default function Projects() {
     loadProjects();
   };
 
-
   return (
     <PageBackground>
       {/* Header */}
       <PageHeader>
         <ValisLogo />
-        
-        <Box sx={{ display: 'flex', gap: 2 }}>
+
+        <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+          {/* TEST MODE: User ID Display */}
+          {userId && (
+            <Chip
+              icon={<PersonIcon />}
+              label={`User: ${userId.slice(0, 8)}...`}
+              variant="outlined"
+              size="small"
+              sx={{
+                bgcolor:
+                  theme.palette.mode === 'dark'
+                    ? alpha(theme.palette.primary.main, 0.1)
+                    : alpha(theme.palette.primary.main, 0.05),
+                borderColor: theme.palette.primary.main,
+                color: theme.palette.primary.main,
+                fontFamily: 'monospace',
+                fontSize: '0.75rem',
+              }}
+            />
+          )}
+
           <Tooltip title="Torna al Dashboard" arrow>
             <HeaderActionButton onClick={goBack}>
               <ArrowBackIcon />
@@ -168,22 +198,29 @@ export default function Projects() {
         <Fade in timeout={1000}>
           <Box>
             {/* Page Title */}
-            <Box sx={{ 
-              mb: 4,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 2
-            }}>
-              <FolderOpenIcon sx={{ 
-                fontSize: '2rem',
-                color: theme.palette.primary.main 
-              }} />
-              <Typography 
-                variant="h2" 
-                sx={{ 
+            <Box
+              sx={{
+                mb: 4,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 2,
+              }}
+            >
+              <FolderOpenIcon
+                sx={{
+                  fontSize: '2rem',
+                  color: theme.palette.primary.main,
+                }}
+              />
+              <Typography
+                variant="h2"
+                sx={{
                   fontWeight: 700,
                   fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' },
-                  color: theme.palette.mode === 'dark' ? theme.palette.primary.light : theme.palette.primary.main,
+                  color:
+                    theme.palette.mode === 'dark'
+                      ? theme.palette.primary.light
+                      : theme.palette.primary.main,
                   letterSpacing: '-0.02em',
                 }}
               >
@@ -196,16 +233,23 @@ export default function Projects() {
               <Box sx={{ mb: 4 }}>
                 <ProjectCard>
                   <CardContent sx={{ p: 2.5 }}>
-                    <Box sx={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      gap: 2,
-                      flexWrap: { xs: 'wrap', sm: 'nowrap' }
-                    }}>
-                      <SearchIcon sx={{ 
-                        color: theme.palette.mode === 'dark' ? alpha('#FFFFFF', 0.7) : alpha('#14142B', 0.7),
-                        fontSize: '1.1rem'
-                      }} />
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 2,
+                        flexWrap: { xs: 'wrap', sm: 'nowrap' },
+                      }}
+                    >
+                      <SearchIcon
+                        sx={{
+                          color:
+                            theme.palette.mode === 'dark'
+                              ? alpha('#FFFFFF', 0.7)
+                              : alpha('#14142B', 0.7),
+                          fontSize: '1.1rem',
+                        }}
+                      />
                       <StyledTextField
                         fullWidth
                         value={searchQuery}
@@ -214,7 +258,7 @@ export default function Projects() {
                         size="small"
                         sx={{ maxWidth: '300px' }}
                       />
-                      <CreateButton 
+                      <CreateButton
                         onClick={() => setCreateModalOpen(true)}
                         startIcon={<AddIcon />}
                         sx={{ minWidth: 'fit-content' }}
@@ -229,8 +273,8 @@ export default function Projects() {
 
             {/* Error Alert */}
             {error && (
-              <Alert 
-                severity="error" 
+              <Alert
+                severity="error"
                 sx={{ mb: 3 }}
                 action={
                   <ActionButton size="small" onClick={handleRetryLoad}>
@@ -252,47 +296,65 @@ export default function Projects() {
               <>
                 {/* Projects Grid */}
                 {userAuthenticated && filteredProjects.length > 0 && (
-                  <Box sx={{ 
-                    display: 'grid', 
-                    gridTemplateColumns: { 
-                      xs: '1fr', 
-                      md: 'repeat(2, 1fr)' 
-                    }, 
-                    gap: 2
-                  }}>
+                  <Box
+                    sx={{
+                      display: 'grid',
+                      gridTemplateColumns: {
+                        xs: '1fr',
+                        md: 'repeat(2, 1fr)',
+                      },
+                      gap: 2,
+                    }}
+                  >
                     {filteredProjects.map((project) => (
                       <ProjectCard key={project.project_id}>
-                        <CardContent sx={{ p: 2.5, height: '100%', display: 'flex', flexDirection: 'column' }}>
-                          <Box sx={{ 
-                            display: 'flex', 
-                            justifyContent: 'space-between', 
-                            alignItems: 'flex-start',
-                            mb: 2
-                          }}>
+                        <CardContent
+                          sx={{
+                            p: 2.5,
+                            height: '100%',
+                            display: 'flex',
+                            flexDirection: 'column',
+                          }}
+                        >
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'flex-start',
+                              mb: 2,
+                            }}
+                          >
                             <Box sx={{ flex: 1 }}>
-                              <Typography 
-                                variant="h5" 
-                                sx={{ 
+                              <Typography
+                                variant="h5"
+                                sx={{
                                   fontWeight: 700,
                                   fontSize: '1rem',
-                                  color: theme.palette.mode === 'dark' ? '#FFFFFF' : '#14142B',
-                                  mb: 1
+                                  color:
+                                    theme.palette.mode === 'dark'
+                                      ? '#FFFFFF'
+                                      : '#14142B',
+                                  mb: 1,
                                 }}
                               >
                                 {project.project_id}
                               </Typography>
-                              <Typography 
-                                variant="body2" 
-                                sx={{ 
-                                  color: theme.palette.mode === 'dark' ? alpha('#FFFFFF', 0.7) : alpha('#14142B', 0.7),
+                              <Typography
+                                variant="body2"
+                                sx={{
+                                  color:
+                                    theme.palette.mode === 'dark'
+                                      ? alpha('#FFFFFF', 0.7)
+                                      : alpha('#14142B', 0.7),
                                   display: 'flex',
                                   alignItems: 'center',
                                   gap: 1,
-                                  fontSize: '0.75rem'
+                                  fontSize: '0.75rem',
                                 }}
                               >
                                 <DescriptionIcon sx={{ fontSize: '0.85rem' }} />
-                                {project.document_count || 0} document{(project.document_count || 0) !== 1 ? 's' : ''}
+                                {project.document_count || 0} document
+                                {(project.document_count || 0) !== 1 ? 's' : ''}
                               </Typography>
                             </Box>
                             <ActionButton onClick={() => openProject(project)}>
@@ -302,32 +364,43 @@ export default function Projects() {
 
                           {/* Project Info */}
                           <Box sx={{ flex: 1 }}>
-                            <Box sx={{ 
-                              p: 1.5,
-                              backgroundColor: theme.palette.mode === 'dark' ? alpha('#FFFFFF', 0.05) : alpha('#000000', 0.02),
-                              borderRadius: '8px',
-                              border: `1px solid ${theme.palette.mode === 'dark' ? alpha('#FFFFFF', 0.1) : alpha('#000000', 0.1)}`
-                            }}>
-                              <Typography 
-                                variant="body2" 
-                                sx={{ 
+                            <Box
+                              sx={{
+                                p: 1.5,
+                                backgroundColor:
+                                  theme.palette.mode === 'dark'
+                                    ? alpha('#FFFFFF', 0.05)
+                                    : alpha('#000000', 0.02),
+                                borderRadius: '8px',
+                                border: `1px solid ${theme.palette.mode === 'dark' ? alpha('#FFFFFF', 0.1) : alpha('#000000', 0.1)}`,
+                              }}
+                            >
+                              <Typography
+                                variant="body2"
+                                sx={{
                                   fontWeight: 600,
                                   mb: 0.5,
                                   fontSize: '0.7rem',
-                                  color: theme.palette.mode === 'dark' ? alpha('#FFFFFF', 0.8) : alpha('#14142B', 0.8)
+                                  color:
+                                    theme.palette.mode === 'dark'
+                                      ? alpha('#FFFFFF', 0.8)
+                                      : alpha('#14142B', 0.8),
                                 }}
                               >
                                 Project ID: {project.project_id}
                               </Typography>
-                              <Typography 
-                                variant="body2" 
-                                sx={{ 
+                              <Typography
+                                variant="body2"
+                                sx={{
                                   fontSize: '0.65rem',
-                                  color: theme.palette.mode === 'dark' ? alpha('#FFFFFF', 0.6) : alpha('#14142B', 0.6)
+                                  color:
+                                    theme.palette.mode === 'dark'
+                                      ? alpha('#FFFFFF', 0.6)
+                                      : alpha('#14142B', 0.6),
                                 }}
                               >
-                                {(project.document_count || 0) === 0 
-                                  ? 'No documents yet - upload your first document to get started!' 
+                                {(project.document_count || 0) === 0
+                                  ? 'No documents yet - upload your first document to get started!'
                                   : `Contains ${project.document_count} documents`}
                               </Typography>
                             </Box>
@@ -339,44 +412,69 @@ export default function Projects() {
                 )}
 
                 {/* No Projects Message */}
-                {userAuthenticated && filteredProjects.length === 0 && !loading && (
-                  <Box sx={{ 
-                    textAlign: 'center', 
-                    py: 6,
-                    color: theme.palette.mode === 'dark' ? alpha('#FFFFFF', 0.6) : alpha('#14142B', 0.6)
-                  }}>
-                    <FolderOpenIcon sx={{ fontSize: '3rem', mb: 2, opacity: 0.3 }} />
-                    <Typography variant="h6" sx={{ mb: 1, fontSize: '1.1rem' }}>
-                      {searchQuery ? 'No projects found' : 'No projects yet'}
-                    </Typography>
-                    <Typography variant="body2" sx={{ fontSize: '0.85rem', mb: 3 }}>
-                      {searchQuery 
-                        ? 'Try adjusting your search terms' 
-                        : 'Create your first project to get started'}
-                    </Typography>
-                    {!searchQuery && (
-                      <CreateButton 
-                        onClick={() => setCreateModalOpen(true)}
-                        startIcon={<AddIcon />}
+                {userAuthenticated &&
+                  filteredProjects.length === 0 &&
+                  !loading && (
+                    <Box
+                      sx={{
+                        textAlign: 'center',
+                        py: 6,
+                        color:
+                          theme.palette.mode === 'dark'
+                            ? alpha('#FFFFFF', 0.6)
+                            : alpha('#14142B', 0.6),
+                      }}
+                    >
+                      <FolderOpenIcon
+                        sx={{ fontSize: '3rem', mb: 2, opacity: 0.3 }}
+                      />
+                      <Typography
+                        variant="h6"
+                        sx={{ mb: 1, fontSize: '1.1rem' }}
                       >
-                        Create Your First Project
-                      </CreateButton>
-                    )}
-                  </Box>
-                )}
+                        {searchQuery ? 'No projects found' : 'No projects yet'}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{ fontSize: '0.85rem', mb: 3 }}
+                      >
+                        {searchQuery
+                          ? 'Try adjusting your search terms'
+                          : 'Create your first project to get started'}
+                      </Typography>
+                      {!searchQuery && (
+                        <CreateButton
+                          onClick={() => setCreateModalOpen(true)}
+                          startIcon={<AddIcon />}
+                        >
+                          Create Your First Project
+                        </CreateButton>
+                      )}
+                    </Box>
+                  )}
 
                 {/* Not Authenticated Message */}
                 {!userAuthenticated && !loading && (
-                  <Box sx={{ 
-                    textAlign: 'center', 
-                    py: 6,
-                    color: theme.palette.mode === 'dark' ? alpha('#FFFFFF', 0.6) : alpha('#14142B', 0.6)
-                  }}>
-                    <FolderOpenIcon sx={{ fontSize: '3rem', mb: 2, opacity: 0.3 }} />
+                  <Box
+                    sx={{
+                      textAlign: 'center',
+                      py: 6,
+                      color:
+                        theme.palette.mode === 'dark'
+                          ? alpha('#FFFFFF', 0.6)
+                          : alpha('#14142B', 0.6),
+                    }}
+                  >
+                    <FolderOpenIcon
+                      sx={{ fontSize: '3rem', mb: 2, opacity: 0.3 }}
+                    />
                     <Typography variant="h6" sx={{ mb: 1, fontSize: '1.1rem' }}>
                       Authentication Required
                     </Typography>
-                    <Typography variant="body2" sx={{ fontSize: '0.85rem', mb: 3 }}>
+                    <Typography
+                      variant="body2"
+                      sx={{ fontSize: '0.85rem', mb: 3 }}
+                    >
                       Please log in to view and manage your projects
                     </Typography>
                     <ActionButton onClick={handleRetryLoad}>
@@ -397,9 +495,19 @@ export default function Projects() {
         title="Create New Project"
       >
         <Box sx={{ mt: 2 }}>
-          <Typography variant="body2" sx={{ mb: 2, color: theme.palette.mode === 'dark' ? alpha('#FFFFFF', 0.7) : alpha('#14142B', 0.7) }}>
-            Projects are created automatically when you upload your first document. 
-            This will create the project structure and take you to the document upload page.
+          <Typography
+            variant="body2"
+            sx={{
+              mb: 2,
+              color:
+                theme.palette.mode === 'dark'
+                  ? alpha('#FFFFFF', 0.7)
+                  : alpha('#14142B', 0.7),
+            }}
+          >
+            Projects are created automatically when you upload your first
+            document. This will create the project structure and take you to the
+            document upload page.
           </Typography>
           <StyledTextField
             fullWidth
@@ -416,15 +524,21 @@ export default function Projects() {
             disabled={creating}
           />
           <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-            <ActionButton 
+            <ActionButton
               onClick={() => setCreateModalOpen(false)}
               disabled={creating}
-              sx={{ 
+              sx={{
                 backgroundColor: 'transparent',
-                color: theme.palette.mode === 'dark' ? alpha('#FFFFFF', 0.7) : alpha('#14142B', 0.7),
+                color:
+                  theme.palette.mode === 'dark'
+                    ? alpha('#FFFFFF', 0.7)
+                    : alpha('#14142B', 0.7),
                 '&:hover': {
-                  backgroundColor: theme.palette.mode === 'dark' ? alpha('#FFFFFF', 0.05) : alpha('#14142B', 0.05)
-                }
+                  backgroundColor:
+                    theme.palette.mode === 'dark'
+                      ? alpha('#FFFFFF', 0.05)
+                      : alpha('#14142B', 0.05),
+                },
               }}
             >
               Cancel
@@ -432,7 +546,9 @@ export default function Projects() {
             <CreateButton
               onClick={createProject}
               disabled={!newProjectName.trim() || creating}
-              startIcon={creating ? <CircularProgress size={16} /> : <AddIcon />}
+              startIcon={
+                creating ? <CircularProgress size={16} /> : <AddIcon />
+              }
             >
               {creating ? 'Creating...' : 'Create & Open Project'}
             </CreateButton>

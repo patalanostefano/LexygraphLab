@@ -5,26 +5,20 @@ import {
   DialogContent,
   DialogActions,
   Button,
-  Typography
+  Typography,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 
-const DeleteConfirmDialog = ({
-  open,
-  onClose,
-  onConfirm,
-  projectName
-}) => (
+const DeleteConfirmDialog = ({ open, onClose, onConfirm, projectName }) => (
   <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-    <DialogTitle sx={{ pb: 1 }}>
-      Conferma eliminazione
-    </DialogTitle>
+    <DialogTitle sx={{ pb: 1 }}>Conferma eliminazione</DialogTitle>
     <DialogContent>
       <Typography variant="body1">
         Sei sicuro di voler eliminare il progetto "{projectName}"?
       </Typography>
       <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-        Questa azione non può essere annullata e tutti i dati associati al progetto verranno rimossi.
+        Questa azione non può essere annullata e tutti i dati associati al
+        progetto verranno rimossi.
       </Typography>
     </DialogContent>
     <DialogActions sx={{ px: 3, pb: 2 }}>

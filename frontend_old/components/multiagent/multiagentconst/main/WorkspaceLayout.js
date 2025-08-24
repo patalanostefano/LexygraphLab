@@ -28,7 +28,7 @@ export default function WorkspaceLayout({
   onEditArtifact = () => {},
   onRestoreActivity = () => {},
   onDeleteDocument = () => {},
-  onDocumentPreview = () => {} // AGGIUNTO: Handler per l'anteprima documenti
+  onDocumentPreview = () => {}, // AGGIUNTO: Handler per l'anteprima documenti
 }) {
   const [isFullScreenViewerOpen, setIsFullScreenViewerOpen] = useState(false);
   const [error, setError] = useState(null);
@@ -39,21 +39,23 @@ export default function WorkspaceLayout({
 
     // Verifica che il progetto esista
     if (!project) {
-      setError("Errore: Nessun progetto selezionato");
+      setError('Errore: Nessun progetto selezionato');
     }
   }, [project]);
 
   // Renderizza lo stato di errore solo in caso di problemi critici
   if (error) {
     return (
-      <Box sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100vh',
-        width: '100%'
-      }}>
+      <Box
+        sx={{
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+          width: '100%',
+        }}
+      >
         <Typography variant="h6" color="error" gutterBottom>
           {error}
         </Typography>
@@ -77,51 +79,59 @@ export default function WorkspaceLayout({
 
   // AGGIUNTO: Filtra i documenti per mostrare solo quelli caricati nel drawer
   // e quelli generati nell'ArtifactViewer
-  const uploadedDocuments = documents.filter(doc => {
+  const uploadedDocuments = documents.filter((doc) => {
     // Un documento è considerato "caricato" se:
     // - NON ha il flag isGenerated
     // - NON ha generatedBy
     // - NON ha version (tipico dei documenti generati)
     // - HA uploadedAt o è stato creato tramite upload
-    return !doc.isGenerated && 
-           !doc.generatedBy && 
-           !doc.version && 
-           (doc.uploadedAt || doc.source !== 'agent');
+    return (
+      !doc.isGenerated &&
+      !doc.generatedBy &&
+      !doc.version &&
+      (doc.uploadedAt || doc.source !== 'agent')
+    );
   });
 
   // AGGIUNTO: Filtra l'artifact per mostrare solo documenti generati
-  const isGeneratedArtifact = artifact && (
-    artifact.isGenerated === true ||
-    artifact.generatedBy ||
-    artifact.version ||
-    artifact.source === 'agent' ||
-    artifact.type === 'generated' ||
-    (artifact.content && !artifact.uploadedAt)
-  );
+  const isGeneratedArtifact =
+    artifact &&
+    (artifact.isGenerated === true ||
+      artifact.generatedBy ||
+      artifact.version ||
+      artifact.source === 'agent' ||
+      artifact.type === 'generated' ||
+      (artifact.content && !artifact.uploadedAt));
 
   // Renderizza il layout normale
   return (
-    <Box sx={{
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100vh',
-      width: '100%',
-      overflow: 'hidden',
-      p: 1 // Padding ridotto per più spazio ai contenuti
-    }}>
-      {/* Area principale: attività agenti + artifact/Lexychain */}
-      <Box sx={{
+    <Box
+      sx={{
         display: 'flex',
-        flex: 1,
+        flexDirection: 'column',
+        height: '100vh',
+        width: '100%',
         overflow: 'hidden',
-        gap: 1.5 // Spazio uniforme tra i pannelli, leggermente ridotto
-      }}>
-        {/* Sinistra: agent activity */}
-        <Box sx={{
-          width: { xs: '100%', md: '45%' },
+        p: 1, // Padding ridotto per più spazio ai contenuti
+      }}
+    >
+      {/* Area principale: attività agenti + artifact/Lexychain */}
+      <Box
+        sx={{
+          display: 'flex',
+          flex: 1,
           overflow: 'hidden',
-          display: 'flex'
-        }}>
+          gap: 1.5, // Spazio uniforme tra i pannelli, leggermente ridotto
+        }}
+      >
+        {/* Sinistra: agent activity */}
+        <Box
+          sx={{
+            width: { xs: '100%', md: '45%' },
+            overflow: 'hidden',
+            display: 'flex',
+          }}
+        >
           <AgentActivityPanel
             messages={messages}
             isProcessing={isProcessing}
@@ -138,7 +148,7 @@ export default function WorkspaceLayout({
             display: { xs: 'none', md: 'flex' },
             flexDirection: 'column',
             overflow: 'hidden',
-            gap: 1 // Spazio ridotto per dare più spazio ai contenuti
+            gap: 1, // Spazio ridotto per dare più spazio ai contenuti
           }}
         >
           {/* MODIFICATO: Passa solo documenti generati all'ArtifactViewer */}

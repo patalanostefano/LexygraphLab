@@ -8,7 +8,7 @@ import {
   Button,
   Grid,
   TextField,
-  InputAdornment
+  InputAdornment,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import FolderIcon from '@mui/icons-material/Folder';
@@ -53,7 +53,7 @@ const EditProjectDialog = ({ open, onClose, project, onUpdate }) => {
                   <InputAdornment position="start">
                     <FolderIcon color="primary" />
                   </InputAdornment>
-                )
+                ),
               }}
             />
           </Grid>
@@ -72,7 +72,7 @@ const EditProjectDialog = ({ open, onClose, project, onUpdate }) => {
                   <InputAdornment position="start">
                     <BusinessIcon color="primary" />
                   </InputAdornment>
-                )
+                ),
               }}
             />
           </Grid>

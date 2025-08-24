@@ -19,7 +19,7 @@ import {
   FormControlLabel,
   Checkbox,
   Snackbar,
-  Alert
+  Alert,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import FolderIcon from '@mui/icons-material/Folder';
@@ -34,14 +34,18 @@ const DocumentSelectorDialog = ({
   onSelect,
   collections = [],
   documentService,
-  multiSelect = false
+  multiSelect = false,
 }) => {
   const theme = useTheme();
   const [loading, setLoading] = useState(false);
   const [documents, setDocuments] = useState([]);
   const [selectedCollection, setSelectedCollection] = useState(null);
   const [search, setSearch] = useState('');
-  const [notification, setNotification] = useState({ open: false, message: '', severity: 'info' });
+  const [notification, setNotification] = useState({
+    open: false,
+    message: '',
+    severity: 'info',
+  });
   const [selectedDocuments, setSelectedDocuments] = useState([]);
 
   // Carica i documenti dalla collezione selezionata
@@ -52,7 +56,7 @@ const DocumentSelectorDialog = ({
       // In produzione useresti questo:
       // const response = await documentService.getCollectionDocuments(collectionId);
       // setDocuments(response.documents || []);
-      
+
       // Per ora simuliamo una risposta da API
       setTimeout(() => {
         const mockDocuments = [
@@ -60,23 +64,24 @@ const DocumentSelectorDialog = ({
             id: `doc-${Date.now()}-1`,
             name: 'Documento di prova 1.docx',
             size: 245 * 1024,
-            mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            updatedAt: new Date().toISOString()
+            mimeType:
+              'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            updatedAt: new Date().toISOString(),
           },
           {
             id: `doc-${Date.now()}-2`,
             name: 'Report annuale.pdf',
             size: 412 * 1024,
             mimeType: 'application/pdf',
-            updatedAt: new Date().toISOString()
+            updatedAt: new Date().toISOString(),
           },
           {
             id: `doc-${Date.now()}-3`,
             name: 'Foto ufficio.jpg',
             size: 1254 * 1024,
             mimeType: 'image/jpeg',
-            updatedAt: new Date().toISOString()
-          }
+            updatedAt: new Date().toISOString(),
+          },
         ];
         setDocuments(mockDocuments);
         setLoading(false);
@@ -85,8 +90,9 @@ const DocumentSelectorDialog = ({
       console.error('Errore durante il caricamento dei documenti:', error);
       setNotification({
         open: true,
-        message: 'Errore durante il caricamento dei documenti. Riprova più tardi.',
-        severity: 'error'
+        message:
+          'Errore durante il caricamento dei documenti. Riprova più tardi.',
+        severity: 'error',
       });
       setLoading(false);
     }
@@ -114,7 +120,7 @@ const DocumentSelectorDialog = ({
 
   // Filtra i documenti
   const filteredDocuments = documents.filter((doc) =>
-    doc.name.toLowerCase().includes(search.toLowerCase())
+    doc.name.toLowerCase().includes(search.toLowerCase()),
   );
 
   // Selezione documento
@@ -152,19 +158,27 @@ const DocumentSelectorDialog = ({
   };
 
   return (
-    <Dialog 
-      open={open} 
-      onClose={onClose} 
-      aria-labelledby="document-selector-title" 
-      maxWidth="md" 
+    <Dialog
+      open={open}
+      onClose={onClose}
+      aria-labelledby="document-selector-title"
+      maxWidth="md"
       fullWidth
       PaperProps={{
-        sx: { height: { sm: 'auto', md: '80vh' } }
+        sx: { height: { sm: 'auto', md: '80vh' } },
       }}
     >
       <DialogTitle id="document-selector-title">
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <Typography variant="h6">Seleziona documento{multiSelect ? 'i' : ''}</Typography>
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <Typography variant="h6">
+            Seleziona documento{multiSelect ? 'i' : ''}
+          </Typography>
           <IconButton edge="end" onClick={onClose} aria-label="close">
             <CloseIcon />
           </IconButton>
@@ -201,18 +215,43 @@ const DocumentSelectorDialog = ({
         </Box>
 
         {loading ? (
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', my: 4 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              my: 4,
+            }}
+          >
             <CircularProgress size={40} sx={{ mb: 2 }} />
             <Typography>Caricamento documenti...</Typography>
           </Box>
         ) : !selectedCollection ? (
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', my: 6 }}>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              my: 6,
+            }}
+          >
             <FolderIcon sx={{ fontSize: 60, color: 'text.disabled', mb: 2 }} />
-            <Typography color="text.secondary">Seleziona una collezione per visualizzare i documenti</Typography>
+            <Typography color="text.secondary">
+              Seleziona una collezione per visualizzare i documenti
+            </Typography>
           </Box>
         ) : filteredDocuments.length === 0 ? (
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', my: 6 }}>
-            <InsertDriveFileIcon sx={{ fontSize: 60, color: 'text.disabled', mb: 2 }} />
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              my: 6,
+            }}
+          >
+            <InsertDriveFileIcon
+              sx={{ fontSize: 60, color: 'text.disabled', mb: 2 }}
+            />
             <Typography color="text.secondary">
               {search
                 ? `Nessun documento trovato per \"${search}\"`
@@ -222,19 +261,33 @@ const DocumentSelectorDialog = ({
         ) : (
           <>
             {multiSelect && (
-              <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Box
+                sx={{
+                  mb: 2,
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                }}
+              >
                 <FormControlLabel
                   control={
                     <Checkbox
-                      checked={selectedDocuments.length === filteredDocuments.length && !!filteredDocuments.length}
-                      indeterminate={selectedDocuments.length > 0 && selectedDocuments.length < filteredDocuments.length}
+                      checked={
+                        selectedDocuments.length === filteredDocuments.length &&
+                        !!filteredDocuments.length
+                      }
+                      indeterminate={
+                        selectedDocuments.length > 0 &&
+                        selectedDocuments.length < filteredDocuments.length
+                      }
                       onChange={handleSelectAll}
                     />
                   }
                   label="Seleziona tutti"
                 />
                 <Typography variant="body2">
-                  {selectedDocuments.length} di {filteredDocuments.length} selezionati
+                  {selectedDocuments.length} di {filteredDocuments.length}{' '}
+                  selezionati
                 </Typography>
               </Box>
             )}
@@ -252,10 +305,11 @@ const DocumentSelectorDialog = ({
                         ? alpha(theme.palette.primary.main, 0.1)
                         : 'inherit',
                     '&:hover': {
-                      bgcolor: multiSelect && isDocumentSelected(doc.id)
-                        ? alpha(theme.palette.primary.main, 0.2)
-                        : alpha(theme.palette.action.hover, 0.1)
-                    }
+                      bgcolor:
+                        multiSelect && isDocumentSelected(doc.id)
+                          ? alpha(theme.palette.primary.main, 0.2)
+                          : alpha(theme.palette.action.hover, 0.1),
+                    },
                   }}
                 >
                   {multiSelect && (
@@ -282,7 +336,7 @@ const DocumentSelectorDialog = ({
                   <ListItemText
                     primary={doc.name}
                     secondary={`${(doc.size / 1024).toFixed(1)} KB • ${new Date(
-                      doc.updatedAt || doc.date
+                      doc.updatedAt || doc.date,
                     ).toLocaleDateString()}`}
                   />
                 </ListItem>
@@ -294,9 +348,9 @@ const DocumentSelectorDialog = ({
       <DialogActions>
         <Button onClick={onClose}>Annulla</Button>
         {multiSelect && (
-          <Button 
-            onClick={handleConfirmSelection} 
-            variant="contained" 
+          <Button
+            onClick={handleConfirmSelection}
+            variant="contained"
             disabled={!selectedDocuments.length}
           >
             Conferma selezione ({selectedDocuments.length})
@@ -309,7 +363,11 @@ const DocumentSelectorDialog = ({
         onClose={handleCloseNotification}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert onClose={handleCloseNotification} severity={notification.severity} sx={{ width: '100%' }}>
+        <Alert
+          onClose={handleCloseNotification}
+          severity={notification.severity}
+          sx={{ width: '100%' }}
+        >
           {notification.message}
         </Alert>
       </Snackbar>
