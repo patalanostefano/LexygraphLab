@@ -15,6 +15,9 @@ public class GatewayConfig {
 
     @Value("${services.document-service.url:http://localhost:8000}")
     private String documentServiceUrl;
+    
+    @Value("${services.extraction-agent.url:http://localhost:8001}")
+    private String extractionAgentUrl;
 
     @Bean
     public CorsWebFilter corsWebFilter() {
@@ -42,9 +45,9 @@ public class GatewayConfig {
     public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
         return builder.routes()
 
-                // DOCUMENT SERVICE ROUTES - FIXED PATHS
+                // DOCUMENT SERVICE ROUTES - EXISTING
 
-                // Get user projects - FIXED: Simplified filters
+                // Get user projects
                 .route("user_projects", r -> r
                         .path("/api/v1/projects/{user_id}")
                         .and()
@@ -98,8 +101,35 @@ public class GatewayConfig {
                         .filters(f -> f.setRequestHeader("X-Gateway-Source", "api-gateway"))
                         .uri(documentServiceUrl))
 
+                // EXTRACTION AGENT ROUTES - NEW
 
-                // HEALTH CHECKS
+                // Main extraction endpoint
+                .route("extraction_agent", r -> r
+                        .path("/api/v1/agents/extract")
+                        .and()
+                        .method(HttpMethod.POST)
+                        .filters(f -> f.setRequestHeader("X-Gateway-Source", "api-gateway"))
+                        .uri(extractionAgentUrl))
+
+                // Orchestrator compatibility endpoint
+                .route("agent_process", r -> r
+                        .path("/api/v1/agents/process")
+                        .and()
+                        .method(HttpMethod.POST)
+                        .filters(f -> f.setRequestHeader("X-Gateway-Source", "api-gateway"))
+                        .uri(extractionAgentUrl))
+
+                // Extraction agent health check
+                .route("extraction_agent_health", r -> r
+                        .path("/api/v1/agents/health")
+                        .and()
+                        .method(HttpMethod.GET)
+                        .filters(f -> f
+                                .setRequestHeader("X-Gateway-Source", "api-gateway")
+                                .rewritePath("/api/v1/agents/health", "/health"))
+                        .uri(extractionAgentUrl))
+
+                // HEALTH CHECKS - EXISTING
                 .route("document_service_health", r -> r
                         .path("/")
                         .and()
@@ -112,7 +142,7 @@ public class GatewayConfig {
                         .method(HttpMethod.GET)
                         .uri(documentServiceUrl))
 
-                // GATEWAY HEALTH
+                // GATEWAY HEALTH - EXISTING
                 .route("health_check", r -> r
                         .path("/api/health")
                         .and()
