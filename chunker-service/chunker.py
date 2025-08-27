@@ -262,11 +262,15 @@ async def embed_query(req: Dict[str, str]):
     if not query_text:
         raise HTTPException(status_code=400, detail="Query text is missing.")
     try:
-        embedding = Chunker.get_instance().embedder.embed_query(query_text)
+        embedding = Chunker.get_instance().embedder.get_embedding(query_text)
         return {"embedding": embedding}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get embedding: {str(e)}")
 
+
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy"}
 
 # 🔹 questa parte serve solo se lanci a mano con `python chunker.py`
 if __name__ == "__main__":

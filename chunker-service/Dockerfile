@@ -4,11 +4,10 @@ FROM python:3.11-slim
 # Imposta la directory di lavoro nel container
 WORKDIR /app
 
-# Installa le dipendenze di sistema necessarie (come build-essential e python3-dev)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     python3-dev \
-    # Pulisce la cache di apt per ridurre le dimensioni dell'immagine
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 RUN pip install --no-cache-dir \

@@ -1,6 +1,24 @@
-version: '3.8'
-
 services:
+  # Chunker Service (FastAPI/Python)
+  chunker-service:
+    build:
+      context: ./chunker-service
+      dockerfile: Dockerfile
+    # Espone la porta alla rete interna di Docker, consentendo al Document Service di connettersi.
+    expose:
+      - '8000'
+    environment:
+      - PYTHONUNBUFFERED=1
+    networks:
+      - app-network
+    healthcheck:
+      # L'endpoint /health è stato aggiunto al codice Python per il controllo dello stato.
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
   # API Gateway (Spring Boot)
   api-gateway:
     build:
@@ -20,8 +38,7 @@ services:
       extraction-agent:
         condition: service_healthy
     healthcheck:
-      test:
-        ['CMD', 'wget', '--spider', '-q', 'http://localhost:8080/api/health']
+      test: ['CMD', 'wget', '--spider', '-q', 'http://localhost:8080/api/health']
       interval: 30s
       timeout: 10s
       retries: 3
@@ -90,17 +107,14 @@ services:
     networks:
       - app-network
     depends_on:
-      api-gateway:
-        condition: service_healthy
+      - api-gateway
     environment:
       - REACT_APP_API_URL=http://localhost:8080
     volumes:
-      # Mount source code with :cached for faster file sync on macOS/Windows
       - ./frontend:/app:cached
-      # Prevent mounting node_modules from host to avoid FS slowdown
       - /app/node_modules
-    mem_limit: 2g # Give frontend more RAM
-    cpus: 2 # Give it 2 CPU cores
+    mem_limit: 2g
+    cpus: 2
     healthcheck:
       test: ['CMD', 'wget', '--spider', '-q', 'http://localhost:80/']
       interval: 30s
@@ -111,7 +125,6 @@ networks:
   app-network:
     driver: bridge
 
-# Volumes for development (optional)
 volumes:
   document-data:
     driver: local
