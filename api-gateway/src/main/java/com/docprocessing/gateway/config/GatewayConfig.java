@@ -19,6 +19,9 @@ public class GatewayConfig {
     @Value("${services.extraction-agent.url:http://localhost:8001}")
     private String extractionAgentUrl;
 
+    @Value("${services.search-agent.url:http://localhost:8002}")
+    private String searchAgentUrl;
+
     @Bean
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
@@ -101,7 +104,7 @@ public class GatewayConfig {
                         .filters(f -> f.setRequestHeader("X-Gateway-Source", "api-gateway"))
                         .uri(documentServiceUrl))
 
-                // EXTRACTION AGENT ROUTES - NEW
+                // EXTRACTION AGENT ROUTES - EXISTING
 
                 // Main extraction endpoint
                 .route("extraction_agent", r -> r
@@ -128,6 +131,34 @@ public class GatewayConfig {
                                 .setRequestHeader("X-Gateway-Source", "api-gateway")
                                 .rewritePath("/api/v1/agents/health", "/health"))
                         .uri(extractionAgentUrl))
+
+                // SEARCH AGENT ROUTES - NEW
+
+                // Main search endpoint
+                .route("search_agent", r -> r
+                        .path("/api/v1/search")
+                        .and()
+                        .method(HttpMethod.POST)
+                        .filters(f -> f.setRequestHeader("X-Gateway-Source", "api-gateway"))
+                        .uri(searchAgentUrl))
+
+                // Search agent status endpoint
+                .route("search_agent_status", r -> r
+                        .path("/api/v1/search/status")
+                        .and()
+                        .method(HttpMethod.GET)
+                        .filters(f -> f.setRequestHeader("X-Gateway-Source", "api-gateway"))
+                        .uri(searchAgentUrl))
+
+                // Search agent health check
+                .route("search_agent_health", r -> r
+                        .path("/api/v1/search/health")
+                        .and()
+                        .method(HttpMethod.GET)
+                        .filters(f -> f
+                                .setRequestHeader("X-Gateway-Source", "api-gateway")
+                                .rewritePath("/api/v1/search/health", "/health"))
+                        .uri(searchAgentUrl))
 
                 // HEALTH CHECKS - EXISTING
                 .route("document_service_health", r -> r
