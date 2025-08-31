@@ -33,6 +33,7 @@ import { StyledTextField } from '../components/TextFields';
 import { PageBackground, PageHeader, PageContent } from '../components/Layout';
 import { StyledModal } from '../components/Modals';
 import { Fade } from '@mui/material';
+import ChatIcon from '@mui/icons-material/Chat';
 
 export default function Projects() {
   const navigate = useNavigate();
@@ -142,6 +143,15 @@ export default function Projects() {
   const openProject = (project) => {
     navigate(`/documents/${encodeURIComponent(project.project_id)}`, {
       state: { project },
+    });
+  };
+
+  const openInAgents = (project) => {
+    navigate(`/agents/${encodeURIComponent(project.project_id)}`, {
+      state: {
+        project,
+        documents: filteredProjects,
+      },
     });
   };
 
@@ -405,6 +415,24 @@ export default function Projects() {
                               </Typography>
                             </Box>
                           </Box>
+
+                          {/* New Chat Button - Only show if there are documents */}
+                          {project.document_count > 0 && (
+                            <Box sx={{ mt: 1, display: 'flex', gap: 1 }}>
+                              <Tooltip title="Chat with Documents" arrow>
+                                <ActionButton
+                                  onClick={() => openInAgents(project)}
+                                  startIcon={<ChatIcon />}
+                                  sx={{ mr: 1 }}
+                                >
+                                  Chat
+                                </ActionButton>
+                              </Tooltip>
+                              <ActionButton onClick={() => openProject(project)}>
+                                Open Project
+                              </ActionButton>
+                            </Box>
+                          )}
                         </CardContent>
                       </ProjectCard>
                     ))}
