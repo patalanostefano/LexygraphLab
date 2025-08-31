@@ -5,7 +5,7 @@ Now integrated with Chunker Service for automatic chunking
 """
 
 from typing import List, Optional
-from fastapi import FastAPI, File, UploadFile, HTTPException, Form
+from fastapi import FastAPI, File, UploadFile, HTTPException, Form, Query
 from fastapi.responses import Response
 from pydantic import BaseModel
 import uvicorn
@@ -13,7 +13,6 @@ import requests
 import tempfile
 import os
 import uuid
-import json
 
 from database import DatabaseManager
 from pdf_processor import PDFProcessor
@@ -24,17 +23,17 @@ CHUNK_LIMIT_CHARS = 4000  # Define the limit for chunking
 
 app = FastAPI(title="Document Storage Service")
 
-
 # Initialize services
 db_manager = DatabaseManager()
 pdf_processor = PDFProcessor()
+
 
 # Pydantic models
 class DocumentResponse(BaseModel):
     success: bool
     message: str
     doc_id: str
-    chunks: List[dict] = []  # aggiunto per restituire i chunk
+    chunks: List[dict] = []
 
 
 class DocumentMetadata(BaseModel):
@@ -56,28 +55,15 @@ class ProjectListResponse(BaseModel):
     projects: List[ProjectInfo]
 
 
-class QueryRequest(BaseModel):
-    user_id: str
-    project_id: str
-    doc_id: str
-    query: str
-
-
-class ChunksResponse(BaseModel):
-    success: bool
-    message: str
-    chunks: List[dict]
-
-
 @app.get("/health")
 async def health_check():
     return {"status": "healthy", "service": "document-service"}
 
 
-# Get user projects (derived from documents)
+# Get user projects
 @app.get("/api/v1/projects/{user_id}", response_model=ProjectListResponse)
 async def get_user_projects(user_id: str):
-    """Get all projects for a user (derived from existing documents)"""
+    """Get all projects for a user"""
     try:
         projects = db_manager.list_user_projects(user_id)
         return ProjectListResponse(projects=projects)
@@ -98,7 +84,6 @@ async def upload_document(
     if not file.filename.lower().endswith('.pdf'):
         raise HTTPException(status_code=400, detail="Only PDF files are allowed")
 
-    # Generate doc_id if not provided
     if not doc_id:
         doc_id = str(uuid.uuid4())
 
@@ -114,7 +99,6 @@ async def upload_document(
     temp_path = None
     chunks_data = []
     try:
-        # Crea un file temporaneo per inviarlo al chunker-service
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
             tmp.write(file_content)
             temp_path = tmp.name
@@ -128,7 +112,6 @@ async def upload_document(
 
         chunks_from_service = r.json().get("chunks", [])
 
-        # Arricchiamo i chunk con metadata per DB
         chunks_to_store = [{
             "id": f"{document_id}_{i}",
             "user_id": user_id,
@@ -142,18 +125,15 @@ async def upload_document(
         if not db_manager.store_chunks(chunks_to_store):
             raise HTTPException(status_code=500, detail="Failed to store chunks in database.")
 
-        # Aggiungi questa parte per rimuovere gli embeddings prima di restituire la risposta
         for chunk in chunks_to_store:
-            if 'embedding' in chunk:
-                del chunk['embedding']
+            chunk.pop("embedding", None)
 
         chunks_data = chunks_to_store
-    
+
     except Exception as e:
         print(f"Error during chunking or storage: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to process document: {e}")
     finally:
-        # Rimuove sempre il file temporaneo, anche in caso di errore
         if temp_path and os.path.exists(temp_path):
             os.remove(temp_path)
 
@@ -181,71 +161,84 @@ async def get_document(user_id: str, project_id: str, doc_id: str):
     return Response(content=document_data, media_type="application/pdf")
 
 
-# ADDED: Alternative endpoint with /pdf suffix for gateway compatibility
+# Alternative endpoint with /pdf suffix
 @app.get("/api/v1/documents/{user_id}/{project_id}/{doc_id}/pdf")
 async def get_document_pdf(user_id: str, project_id: str, doc_id: str):
     """Get document PDF binary (alternative endpoint with /pdf suffix)"""
     return await get_document(user_id, project_id, doc_id)
 
 
-# Get document text content endpoint
+# Unified text + query endpoint
 @app.get("/api/v1/documents/{user_id}/{project_id}/{doc_id}/text")
-async def get_document_text(user_id: str, project_id: str, doc_id: str):
-    """Get document extracted text content"""
+async def get_document_text(
+    user_id: str,
+    project_id: str,
+    doc_id: str,
+    is_query: bool = Query(False, description="Set true if this is a query request"),
+    query: Optional[str] = Query(None, description="Query text if is_query=true")
+):
+    """
+    Restituisce il testo del documento oppure, se il documento è grande e viene fornita una query,
+    i chunk più rilevanti.
+    """
     document_id = f"{user_id}_{project_id}_{doc_id}"
     text_content = db_manager.get_document_text(document_id)
 
     if text_content is None:
         raise HTTPException(status_code=404, detail="Document not found")
+    
+    # Check document size first, regardless of the 'is_query' flag.
+    # If the document is small, always return the full text.
+    if len(text_content) <= CHUNK_LIMIT_CHARS:
+        return {
+            "success": True,
+            "mode": "full_text",
+            "message": "Document is within the character limit, returning full text.",
+            "chunks": [{"text": text_content}]
+        }
 
-    return {"document_id": document_id, "text_content": text_content}
+    # If the document is large, check for a query.
+    if is_query and query:
+        try:
+            r = requests.post(f"{CHUNKER_URL}/embed-query", json={"query": query}, timeout=30)
+            if r.status_code != 200:
+                raise HTTPException(status_code=500, detail=f"Embedding error: {r.text}")
+            query_embedding = r.json().get("embedding")
+        except requests.RequestException as e:
+            raise HTTPException(status_code=500, detail=f"Error contacting chunker service: {str(e)}")
+
+        best_chunks = db_manager.get_best_chunks(
+            user_id, project_id, doc_id, query_embedding, limit=7
+        )
+
+        return {
+            "success": True,
+            "mode": "query",
+            "message": "Returning relevant chunks based on query.",
+            "chunks": best_chunks
+        }
+    
+    # Fallback if no query is provided for a large document
+    # This part handles the case where the document is large but is_query is false
+    if not is_query:
+        return {
+            "success": True,
+            "mode": "chunked_text",
+            "message": "Document exceeds character limit, returning raw chunks.",
+            "chunks": [{"text": text_content[i:i+CHUNK_LIMIT_CHARS]}
+                       for i in range(0, len(text_content), CHUNK_LIMIT_CHARS)]
+        }
+
+    # This handles the edge case where is_query is true but no query text is provided
+    raise HTTPException(status_code=400, detail="Query flag is true but no query text provided")
 
 
-# List project documents endpoint
+# List project documents
 @app.get("/api/v1/documents/{user_id}/{project_id}", response_model=DocumentListResponse)
 async def list_project_documents(user_id: str, project_id: str):
     """Get all documents in a project"""
     documents = db_manager.list_project_documents(user_id, project_id)
     return DocumentListResponse(documents=documents)
-
-# NEW ENDPOINT: Query a document
-@app.post("/api/v1/documents/query", response_model=ChunksResponse)
-async def query_document(req: QueryRequest):
-    """Query a document: retrieve best chunks from DB"""
-    document_id = f"{req.user_id}_{req.project_id}_{req.doc_id}"
-
-    # Controllo che il documento esista
-    text_content = db_manager.get_document_text(document_id)
-    if text_content is None:
-        raise HTTPException(status_code=404, detail="Document not found.")
-
-    # Se il documento è corto restituisco tutto senza retrieval
-    if len(text_content) <= CHUNK_LIMIT_CHARS:
-        return ChunksResponse(
-            success=True,
-            message="Document is within the character limit, returning full text.",
-            chunks=[{"text": text_content}]
-        )
-
-    # Ottengo embedding della query
-    try:
-        r = requests.post(f"{CHUNKER_URL}/embed-query", json={"query": req.query}, timeout=30)
-        if r.status_code != 200:
-            raise HTTPException(status_code=500, detail=f"Embedding error: {r.text}")
-        query_embedding = r.json().get("embedding")
-    except requests.RequestException as e:
-        raise HTTPException(status_code=500, detail=f"Error contacting chunker service: {str(e)}")
-
-    # Retrieval top-k chunks dal DB
-    best_chunks = db_manager.get_best_chunks(
-        req.user_id, req.project_id, req.doc_id, query_embedding, limit=1
-    )
-
-    return ChunksResponse(
-        success=True,
-        message="Returning relevant chunks based on query.",
-        chunks=best_chunks
-    )
 
 
 if __name__ == "__main__":
