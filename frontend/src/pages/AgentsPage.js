@@ -19,6 +19,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { pdfjs } from 'react-pdf';
 import { getDocument } from '../api/documents';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '@mui/material/styles';
 
 // Update worker configuration
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
@@ -31,6 +32,7 @@ export default function PdfChatPage() {
   const navigate = useNavigate();
   const { projectId } = useParams();
   const { userId } = useAuth();
+  const theme = useTheme();
 
   // Get project and documents from navigation state
   const project = location.state?.project || {};
@@ -40,6 +42,9 @@ export default function PdfChatPage() {
   const [numPages, setNumPages] = useState(null);
   const [prompt, setPrompt] = useState("");
   const [pdfError, setPdfError] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [responseId, setResponseId] = useState(null);
+  const [isWaitingForConfirmation, setIsWaitingForConfirmation] = useState(false);
 
   useEffect(() => {
     if (location.state?.documents) {
@@ -154,9 +159,70 @@ export default function PdfChatPage() {
             flexGrow: 1, 
             p: 2, 
             overflow: 'auto',
-            backgroundColor: '#f5f5f5'
+            backgroundColor: '#f5f5f5',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2
           }}>
-            {/* Chat messages will be added here */}
+            {messages.map((message, index) => (
+              <Box
+                key={index}
+                sx={{
+                  display: 'flex',
+                  justifyContent: message.type === 'user' ? 'flex-end' : 'flex-start',
+                  width: '100%'
+                }}
+              >
+                <Paper
+                  elevation={1}
+                  sx={{
+                    p: 2,
+                    maxWidth: '70%',
+                    backgroundColor: message.type === 'user' 
+                      ? theme.palette.primary.main 
+                      : '#fff',
+                    color: message.type === 'user' ? '#fff' : 'inherit',
+                    borderRadius: message.type === 'user' 
+                      ? '20px 20px 5px 20px'
+                      : '20px 20px 20px 5px'
+                  }}
+                >
+                  <Typography variant="body1">
+                    {message.content}
+                  </Typography>
+                  
+                  {/* Show confirmation controls for agent responses */}
+                  {message.type === 'agent' && message.id === responseId && isWaitingForConfirmation && (
+                    <Box sx={{ mt: 2, display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
+                      <Button
+                        size="small"
+                        variant="contained"
+                        color="success"
+                        onClick={() => {
+                          setIsWaitingForConfirmation(false);
+                          setResponseId(null);
+                          // Add your confirmation handling here
+                        }}
+                      >
+                        Confirm
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="primary"
+                        onClick={() => {
+                          setPrompt(message.content);
+                          setIsWaitingForConfirmation(false);
+                          setResponseId(null);
+                        }}
+                      >
+                        Modify
+                      </Button>
+                    </Box>
+                  )}
+                </Paper>
+              </Box>
+            ))}
           </Box>
 
           {/* Input area */}
@@ -173,7 +239,7 @@ export default function PdfChatPage() {
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               variant="outlined"
-              disabled={!currentDocument}
+              disabled={!currentDocument || isWaitingForConfirmation}
             />
             <Box sx={{ 
               display: 'flex', 
@@ -182,10 +248,37 @@ export default function PdfChatPage() {
             }}>
               <Button 
                 variant="contained"
-                disabled={!currentDocument || !prompt.trim()}
-                onClick={() => {
-                  console.log("Send:", prompt);
-                  setPrompt("");
+                disabled={!currentDocument || !prompt.trim() || isWaitingForConfirmation}
+                onClick={async () => {
+                  // Add user message
+                  const userMessage = { type: 'user', content: prompt };
+                  setMessages(prev => [...prev, userMessage]);
+                  
+                  try {
+                    // Simulate agent response (replace with actual API call)
+                    const response = await new Promise(resolve => 
+                      setTimeout(() => resolve({
+                        id: Date.now(),
+                        content: `Response to: ${prompt}`
+                      }), 1000)
+                    );
+                    
+                    // Add agent message
+                    const agentMessage = { 
+                      type: 'agent', 
+                      id: response.id,
+                      content: response.content 
+                    };
+                    setMessages(prev => [...prev, agentMessage]);
+                    setResponseId(response.id);
+                    setIsWaitingForConfirmation(true);
+                    
+                    // Clear prompt
+                    setPrompt("");
+                  } catch (error) {
+                    console.error('Error getting response:', error);
+                    // Handle error appropriately
+                  }
                 }}
               >
                 Send
