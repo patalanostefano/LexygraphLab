@@ -1,3 +1,4 @@
+
 services:
   # Chunker Service (FastAPI/Python)
   chunker-service:
@@ -134,14 +135,14 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        - REACT_APP_API_URL=http://localhost:8080
     ports:
       - '3000:80'
     networks:
       - app-network
     depends_on:
       - api-gateway
-    environment:
-      - REACT_APP_API_URL=http://localhost:8080
     volumes:
       - ./frontend:/app:cached
       - /app/node_modules

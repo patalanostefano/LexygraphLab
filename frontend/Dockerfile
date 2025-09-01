@@ -3,6 +3,12 @@ FROM node:20-alpine as build
 
 WORKDIR /app
 
+# Add build argument for the API URL
+ARG REACT_APP_API_URL
+
+# Set the environment variable for the build process
+ENV REACT_APP_API_URL=$REACT_APP_API_URL
+
 # Copy package files
 COPY package*.json ./
 RUN npm install 

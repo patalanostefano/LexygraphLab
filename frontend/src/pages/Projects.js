@@ -150,7 +150,7 @@ export default function Projects() {
     navigate(`/agents/${encodeURIComponent(project.project_id)}`, {
       state: {
         project,
-        documents: filteredProjects,
+        // We'll load documents in the AgentsPage since we don't have them here
       },
     });
   };

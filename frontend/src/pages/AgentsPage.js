@@ -1,7 +1,9 @@
-// PdfChatPage.js
+// AgentsPage.js
 import React, { useState, useEffect } from "react";
 import { useLocation, useParams, useNavigate } from "react-router-dom";
 import { Document, Page } from "react-pdf";
+import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+import 'react-pdf/dist/esm/Page/TextLayer.css';
 import { 
   Button, 
   TextField, 
@@ -13,21 +15,21 @@ import {
   InputLabel,
   Typography,
   IconButton,
-  Tooltip 
+  Tooltip,
+  CircularProgress,
+  Alert
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { pdfjs } from 'react-pdf';
 import { getDocument } from '../api/documents';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '@mui/material/styles';
+import { getProjectDocuments } from '../api/documents';
 
-// Update worker configuration
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.js',
-  import.meta.url,
-).toString();
+// Configure PDF.js worker
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
 
-export default function PdfChatPage() {
+export default function AgentsPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { projectId } = useParams();
@@ -36,8 +38,8 @@ export default function PdfChatPage() {
 
   // Get project and documents from navigation state
   const project = location.state?.project || {};
-  const [documents, setDocuments] = useState([]);
-  const [currentDocument, setCurrentDocument] = useState(null);
+  const [documents, setDocuments] = useState(location.state?.documents || []);
+  const [currentDocument, setCurrentDocument] = useState(location.state?.selectedDocument || null);
   const [pdfContent, setPdfContent] = useState(null);
   const [numPages, setNumPages] = useState(null);
   const [prompt, setPrompt] = useState("");
@@ -45,25 +47,80 @@ export default function PdfChatPage() {
   const [messages, setMessages] = useState([]);
   const [responseId, setResponseId] = useState(null);
   const [isWaitingForConfirmation, setIsWaitingForConfirmation] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   useEffect(() => {
-    if (location.state?.documents) {
+    // If documents are provided from navigation, use them
+    if (location.state?.documents && location.state.documents.length > 0) {
       setDocuments(location.state.documents);
+      
+      // If a specific document was selected, load it
+      if (location.state?.selectedDocument) {
+        loadSelectedDocument(location.state.selectedDocument);
+      }
+    } else {
+      // Otherwise, load all documents for the project
+      loadProjectDocuments();
     }
-  }, [location.state]);
+  }, [location.state, projectId]);
+
+  const loadProjectDocuments = async () => {
+    try {
+      setLoading(true);
+      const documentsData = await getProjectDocuments(projectId, userId);
+      if (Array.isArray(documentsData)) {
+        setDocuments(documentsData);
+      }
+    } catch (error) {
+      console.error('Error loading project documents:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadSelectedDocument = async (doc) => {
+    setCurrentDocument(doc);
+    setPdfLoading(true);
+    setPdfError(null);
+    
+    try {
+      console.log('Loading PDF for document:', doc.doc_id);
+      const pdfBlob = await getDocument(projectId, doc.doc_id, userId);
+      console.log('PDF blob received:', pdfBlob.size, 'bytes');
+      
+      // Create a proper blob URL
+      const blobUrl = URL.createObjectURL(new Blob([pdfBlob], { type: 'application/pdf' }));
+      console.log('Blob URL created:', blobUrl);
+      
+      setPdfContent(blobUrl);
+    } catch (error) {
+      console.error('Error loading PDF:', error);
+      setPdfError(error.message || 'Failed to load PDF file');
+    } finally {
+      setPdfLoading(false);
+    }
+  };
 
   const handleDocumentSelect = async (event) => {
     const selectedDoc = documents.find(doc => doc.doc_id === event.target.value);
-    setCurrentDocument(selectedDoc);
-    
-    try {
-      const pdfBlob = await getDocument(projectId, selectedDoc.doc_id, userId);
-      setPdfContent(URL.createObjectURL(pdfBlob));
-    } catch (error) {
-      console.error('Error loading PDF:', error);
-      setPdfError(error);
+    if (selectedDoc) {
+      // Clean up previous PDF URL to prevent memory leaks
+      if (pdfContent) {
+        URL.revokeObjectURL(pdfContent);
+      }
+      await loadSelectedDocument(selectedDoc);
     }
   };
+
+  // Clean up blob URLs when component unmounts
+  useEffect(() => {
+    return () => {
+      if (pdfContent) {
+        URL.revokeObjectURL(pdfContent);
+      }
+    };
+  }, [pdfContent]);
 
   const handleBack = () => {
     navigate('/projects');
@@ -110,6 +167,7 @@ export default function PdfChatPage() {
               value={currentDocument?.doc_id || ''}
               onChange={handleDocumentSelect}
               label="Select Document"
+              disabled={loading || documents.length === 0}
             >
               {documents.map((doc) => (
                 <MenuItem key={doc.doc_id} value={doc.doc_id}>
@@ -117,6 +175,18 @@ export default function PdfChatPage() {
                 </MenuItem>
               ))}
             </Select>
+            {documents.length === 0 && !loading && (
+              <Typography 
+                variant="caption" 
+                sx={{ 
+                  mt: 1, 
+                  color: 'text.secondary',
+                  fontSize: '0.75rem'
+                }}
+              >
+                No documents available for this project
+              </Typography>
+            )}
           </FormControl>
 
           {/* PDF viewer */}
@@ -125,24 +195,79 @@ export default function PdfChatPage() {
             overflow: 'auto',
             p: 2
           }}>
-            {pdfContent ? (
+            {loading ? (
+              <Paper sx={{ p: 4, textAlign: 'center' }}>
+                <CircularProgress sx={{ mb: 2 }} />
+                <Typography>Loading documents...</Typography>
+              </Paper>
+            ) : pdfError ? (
+              <Paper sx={{ p: 4, textAlign: 'center' }}>
+                <Alert severity="error" sx={{ mb: 2 }}>
+                  {pdfError}
+                </Alert>
+                <Button 
+                  variant="outlined" 
+                  onClick={() => currentDocument && loadSelectedDocument(currentDocument)}
+                  disabled={pdfLoading}
+                >
+                  Retry Loading PDF
+                </Button>
+              </Paper>
+            ) : pdfLoading ? (
+              <Paper sx={{ p: 4, textAlign: 'center' }}>
+                <CircularProgress sx={{ mb: 2 }} />
+                <Typography>Loading PDF...</Typography>
+              </Paper>
+            ) : pdfContent ? (
               <Document
                 file={pdfContent}
-                onLoadSuccess={({ numPages }) => setNumPages(numPages)}
-                onLoadError={(error) => setPdfError(error)}
-                loading={<div>Loading PDF...</div>}
+                onLoadSuccess={({ numPages }) => {
+                  console.log('PDF loaded successfully, pages:', numPages);
+                  setNumPages(numPages);
+                  setPdfError(null);
+                }}
+                onLoadError={(error) => {
+                  console.error('PDF load error:', error);
+                  setPdfError(`Failed to load PDF: ${error.message || 'Unknown error'}`);
+                }}
+                loading={
+                  <Paper sx={{ p: 4, textAlign: 'center' }}>
+                    <CircularProgress sx={{ mb: 2 }} />
+                    <Typography>Loading PDF...</Typography>
+                  </Paper>
+                }
+                error={
+                  <Paper sx={{ p: 4, textAlign: 'center' }}>
+                    <Alert severity="error">
+                      Failed to load PDF file. Please try again.
+                    </Alert>
+                  </Paper>
+                }
               >
                 {Array.from(new Array(numPages), (_, index) => (
                   <Page
                     key={`page_${index + 1}`}
                     pageNumber={index + 1}
-                    width={400}
+                    width={Math.min(400, window.innerWidth * 0.35)}
+                    renderTextLayer={false}
+                    renderAnnotationLayer={false}
                   />
                 ))}
               </Document>
+            ) : documents.length === 0 ? (
+              <Paper sx={{ p: 4, textAlign: 'center' }}>
+                <Typography color="text.secondary">
+                  No documents available for this project.
+                </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                  Go back to the project page and upload some documents first.
+                </Typography>
+              </Paper>
             ) : (
-              <Paper sx={{ p: 2 }}>
-                <p>Select a document to view</p>
+              <Paper sx={{ p: 4, textAlign: 'center' }}>
+                <Typography color="text.secondary">
+                  Select a document to view and start chatting
+                </Typography>
               </Paper>
             )}
           </Box>
@@ -290,6 +415,3 @@ export default function PdfChatPage() {
     </Box>
   );
 }
-
-// In your App.js or routing configuration file
-<Route path="/agents/:projectId" element={<AgentsPage />} />

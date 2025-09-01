@@ -11,6 +11,7 @@ import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Projects from './pages/Projects';
 import Documents from './pages/Documents';
+import AgentsPage from './pages/AgentsPage';
 
 const PrivateRoute = ({ children }) => {
   const { loading, isAuthenticated } = useAuth();
@@ -66,6 +67,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/projects" element={<Projects />} />
             <Route path="/documents/:projectId" element={<Documents />} />
+            <Route path="/agents/:projectId" element={<AgentsPage />} />
             <Route
               path="/"
               element={

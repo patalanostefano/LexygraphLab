@@ -20,6 +20,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import UploadIcon from '@mui/icons-material/Upload';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import TextSnippetIcon from '@mui/icons-material/TextSnippet';
+import ChatIcon from '@mui/icons-material/Chat';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { ThemeContext } from '../context/ThemeContext';
 import {
@@ -328,6 +329,25 @@ export default function Documents() {
     loadDocuments();
   };
 
+  const openInAgents = (doc) => {
+    navigate(`/agents/${encodeURIComponent(decodedProjectId)}`, {
+      state: {
+        project,
+        documents: [doc], // Pass only the selected document
+        selectedDocument: doc,
+      },
+    });
+  };
+
+  const openAllInAgents = () => {
+    navigate(`/agents/${encodeURIComponent(decodedProjectId)}`, {
+      state: {
+        project,
+        documents: documents, // Pass all documents
+      },
+    });
+  };
+
   return (
     <PageBackground>
       {/* Header */}
@@ -335,6 +355,13 @@ export default function Documents() {
         <ValisLogo />
 
         <Box sx={{ display: 'flex', gap: 2 }}>
+          {userAuthenticated && documents.length > 0 && (
+            <Tooltip title="Chat with All Documents" arrow>
+              <HeaderActionButton onClick={openAllInAgents}>
+                <ChatIcon />
+              </HeaderActionButton>
+            </Tooltip>
+          )}
           <Tooltip title="Back to Projects" arrow>
             <HeaderActionButton onClick={goBack}>
               <ArrowBackIcon />
@@ -548,6 +575,22 @@ export default function Documents() {
                                 flexWrap: 'wrap',
                               }}
                             >
+                              <Tooltip title="Chat with Document" arrow>
+                                <ActionButton
+                                  onClick={() => openInAgents(doc)}
+                                  startIcon={<ChatIcon />}
+                                  size="small"
+                                  sx={{
+                                    backgroundColor: theme.palette.primary.main,
+                                    color: '#fff',
+                                    '&:hover': {
+                                      backgroundColor: theme.palette.primary.dark,
+                                    },
+                                  }}
+                                >
+                                  Chat
+                                </ActionButton>
+                              </Tooltip>
                               <Tooltip title="View PDF" arrow>
                                 <ActionButton
                                   onClick={() => handleViewPDF(doc)}
