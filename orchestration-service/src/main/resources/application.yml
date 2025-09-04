@@ -5,6 +5,12 @@ agents:
   extraction: ${SERVICES_EXTRACTION_AGENT_URL:http://extraction-agent:8001}
   search: ${SERVICES_SEARCH_AGENT_URL:http://search-agent:8002}
 
+orchestration:
+  timeoutMs: 90000          # timeout singola chiamata agente
+  retry:
+    count: 1                # numero di retry su errori transient (timeout / 5xx / rete)
+    backoffMs: 500          # backoff tra i retry
+
 spring:
   main:
     web-application-type: reactive
