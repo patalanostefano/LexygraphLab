@@ -22,6 +22,10 @@ public class GatewayConfig {
     @Value("${services.search-agent.url:http://localhost:8002}")
     private String searchAgentUrl;
 
+    // prendi l'URL da env o usa il default indicato
+    @Value("${SERVICES_ORCHESTRATION_SERVICE_URL:http://orchestration-service:8005}")
+    private String orchestrationServiceUrl;
+
     @Bean
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
@@ -173,6 +177,13 @@ public class GatewayConfig {
                         .method(HttpMethod.GET)
                         .uri(documentServiceUrl))
 
+
+                // ✅ orchestration-service (router degli agent)
+                .route("orchestration-service-route", r -> r
+                        .path("/api/v1/agents/route")
+                        .uri(orchestrationServiceUrl))
+
+                        
                 // GATEWAY HEALTH - EXISTING
                 .route("health_check", r -> r
                         .path("/api/health")
