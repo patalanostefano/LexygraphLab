@@ -1,4 +1,3 @@
-
 services:
   # Chunker Service (FastAPI/Python)
   chunker-service:
@@ -32,6 +31,7 @@ services:
       - SERVICES_DOCUMENT_SERVICE_URL=http://document-service:8000
       - SERVICES_EXTRACTION_AGENT_URL=http://extraction-agent:8001
       - SERVICES_SEARCH_AGENT_URL=http://search-agent:8002
+      - SERVICES_GENERATION_AGENT_URL=http://generation-agent:8003
       - SERVICES_ORCHESTRATION_SERVICE_URL=http://orchestration-service:8005
     networks:
       - app-network
@@ -41,6 +41,8 @@ services:
       extraction-agent:
         condition: service_healthy
       search-agent:
+        condition: service_healthy
+      generation-agent:
         condition: service_healthy
     healthcheck:
       test:
@@ -130,7 +132,38 @@ services:
         reservations:
           memory: 256M
           cpus: '0.25'
-    
+
+  # Generation Agent (FastAPI/Python + Gemini - Lightweight)
+  generation-agent:
+    build:
+      context: ./generation-agent
+      dockerfile: Dockerfile
+    ports:
+      - '8003:8003'
+    environment:
+      - PYTHONPATH=/app
+      - PYTHONUNBUFFERED=1
+      - DOCUMENT_SERVICE_URL=http://api-gateway:8080
+    networks:
+      - app-network
+    depends_on:
+      document-service:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8003/health']
+      interval: 30s
+      timeout: 15s
+      retries: 3
+      start_period: 30s
+    # Lightweight resource allocation since it uses external Gemini API
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
 
   orchestration-service:
     build:
@@ -139,6 +172,7 @@ services:
     environment:
       - SERVICES_EXTRACTION_AGENT_URL=http://extraction-agent:8001
       - SERVICES_SEARCH_AGENT_URL=http://search-agent:8002
+      - SERVICES_GENERATION_AGENT_URL=http://generation-agent:8003
     ports:
       - '8005:8005'
     networks:
@@ -148,13 +182,14 @@ services:
         condition: service_healthy
       search-agent:
         condition: service_healthy
+      generation-agent:
+        condition: service_healthy
     healthcheck:
       test: ['CMD', 'wget', '--spider', '-q', 'http://localhost:8005/health']
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 20s
-
 
   # Frontend (React/Nginx)
   frontend:
