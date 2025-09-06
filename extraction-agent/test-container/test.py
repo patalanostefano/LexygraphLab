@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Unit Test for Extraction Agent
+Unit Test for Extraction Agent with Gemini
 Simulates orchestrator request through API Gateway
 """
 
@@ -32,9 +32,11 @@ class ExtractionAgentTester:
             print(f"❌ Health check error: {str(e)}")
             return False
 
-    def test_extraction_endpoint(self, document_ids: List[str], execution_id: Optional[str] = None) -> Optional[str]:
+    def test_extraction_endpoint(self, document_ids: List[str], query: Optional[str] = None, execution_id: Optional[str] = None) -> Optional[dict]:
         """Test the main extraction endpoint"""
         print(f"\n🧪 Testing extraction endpoint with document IDs: {document_ids}")
+        if query:
+            print(f"📋 Query: {query}")
         
         payload = {
             "document_ids": document_ids,
@@ -43,6 +45,9 @@ class ExtractionAgentTester:
         
         if execution_id:
             payload["execution_id"] = execution_id
+            
+        if query:
+            payload["query"] = query
 
         try:
             response = requests.post(
@@ -57,7 +62,13 @@ class ExtractionAgentTester:
             if response.status_code == 200:
                 result = response.json()
                 print(f"✅ Extraction successful!")
-                print(f"Extracted entities: {result['extracted_entities']}")
+                print(f"Raw extracted entities: {result['extracted_entities']}")
+                
+                if result.get('structured_summary'):
+                    print(f"🤖 Gemini structured summary:\n{result['structured_summary']}")
+                else:
+                    print("ℹ️  No structured summary (no query provided or Gemini unavailable)")
+                
                 print(f"Message: {result['message']}")
                 
                 # Print detailed entities
@@ -65,7 +76,7 @@ class ExtractionAgentTester:
                 for entity_group in result.get('entities_by_label', []):
                     print(f"  {entity_group['label']}: {', '.join(entity_group['entities'])}")
                 
-                return result['extracted_entities']
+                return result
             else:
                 print(f"❌ Extraction failed: {response.status_code}")
                 print(f"Response: {response.text}")
@@ -75,13 +86,15 @@ class ExtractionAgentTester:
             print(f"❌ Request error: {str(e)}")
             return None
 
-    def test_orchestrator_compatibility(self, document_ids: List[str], execution_id: Optional[str] = None) -> Optional[str]:
+    def test_orchestrator_compatibility(self, document_ids: List[str], query: Optional[str] = None, execution_id: Optional[str] = None) -> Optional[dict]:
         """Test the orchestrator compatibility endpoint"""
         print(f"\n🤖 Testing orchestrator compatibility endpoint with document IDs: {document_ids}")
+        if query:
+            print(f"📋 Query/Prompt: {query}")
         
         payload = {
             "agentId": "extractor-agent",
-            "prompt": "Extract named entities from the provided documents",
+            "prompt": query if query else "Extract named entities from the provided documents",
             "documentIds": document_ids
         }
         
@@ -107,8 +120,12 @@ class ExtractionAgentTester:
                 if 'fullResult' in result:
                     full_result = result['fullResult']
                     print(f"Message: {full_result['message']}")
+                    if full_result.get('structured_summary'):
+                        print(f"🤖 Has structured summary: Yes")
+                    else:
+                        print(f"ℹ️  Has structured summary: No")
                 
-                return result['response']
+                return result
             else:
                 print(f"❌ Orchestrator endpoint failed: {response.status_code}")
                 print(f"Response: {response.text}")
@@ -118,9 +135,9 @@ class ExtractionAgentTester:
             print(f"❌ Request error: {str(e)}")
             return None
 
-    def run_comprehensive_test(self, document_ids: List[str]):
+    def run_comprehensive_test(self, document_ids: List[str], test_queries: List[str] = None):
         """Run comprehensive tests"""
-        print("🚀 Starting Extraction Agent Tests")
+        print("🚀 Starting Extraction Agent Tests (with Gemini)")
         print("=" * 50)
         
         # 1. Health check
@@ -133,29 +150,69 @@ class ExtractionAgentTester:
         print("⏳ Waiting 2 seconds for model readiness...")
         time.sleep(2)
         
-        # 2. Test main extraction endpoint
-        print("\n2. Main Extraction Endpoint:")
-        extraction_result = self.test_extraction_endpoint(document_ids, "test-execution-001")
+        if not test_queries:
+            test_queries = [
+                None,  # No query test
+                "What are the main people mentioned in these documents?",
+                "Find all organizations and locations in the text"
+            ]
         
-        # 3. Test orchestrator compatibility
-        print("\n3. Orchestrator Compatibility Endpoint:")
-        orchestrator_result = self.test_orchestrator_compatibility(document_ids, "test-execution-002")
+        results = []
         
-        # 4. Compare results
-        print("\n4. Results Comparison:")
-        if extraction_result and orchestrator_result:
-            print(f"✅ Both endpoints returned results!")
-            print(f"Results match: {extraction_result == orchestrator_result}")
+        for i, query in enumerate(test_queries):
+            print(f"\n{'='*20} TEST {i+1} {'='*20}")
             
-            print(f"\n📊 Final Concatenated Entities String:")
-            print(f"'{extraction_result}'")
-        else:
-            print("❌ One or both endpoints failed")
+            # 2. Test main extraction endpoint
+            print(f"\n2.{i+1}. Main Extraction Endpoint:")
+            extraction_result = self.test_extraction_endpoint(
+                document_ids, 
+                query, 
+                f"test-extraction-{i+1:03d}"
+            )
+            
+            # 3. Test orchestrator compatibility
+            print(f"\n3.{i+1}. Orchestrator Compatibility Endpoint:")
+            orchestrator_result = self.test_orchestrator_compatibility(
+                document_ids, 
+                query, 
+                f"test-orchestrator-{i+1:03d}"
+            )
+            
+            results.append({
+                'query': query,
+                'extraction': extraction_result,
+                'orchestrator': orchestrator_result
+            })
         
-        print("\n" + "=" * 50)
-        print("🏁 Tests completed!")
+        # 4. Summary
+        print(f"\n{'='*20} SUMMARY {'='*20}")
+        successful_tests = 0
+        for i, result in enumerate(results):
+            query_desc = result['query'] if result['query'] else "No query"
+            extraction_ok = result['extraction'] is not None
+            orchestrator_ok = result['orchestrator'] is not None
+            
+            print(f"Test {i+1} ({query_desc}): ", end="")
+            if extraction_ok and orchestrator_ok:
+                print("✅ PASSED")
+                successful_tests += 1
+            else:
+                print("❌ FAILED")
         
-        return extraction_result is not None and orchestrator_result is not None
+        print(f"\n🏁 Tests completed! {successful_tests}/{len(results)} passed")
+        
+        if successful_tests > 0:
+            print("\n📊 Sample Results:")
+            for i, result in enumerate(results):
+                if result['extraction']:
+                    query_desc = result['query'] if result['query'] else "No query"
+                    print(f"\nTest {i+1} ({query_desc}):")
+                    if result['extraction'].get('structured_summary'):
+                        print(f"  🤖 Structured Summary: {result['extraction']['structured_summary'][:100]}...")
+                    else:
+                        print(f"  📝 Raw Entities: {result['extraction']['extracted_entities'][:100]}...")
+        
+        return successful_tests == len(results)
 
 def main():
     """Main test function"""
@@ -164,6 +221,14 @@ def main():
     test_document_ids = [
         "2e6263a5-4238-488d-bdfe-77839ad24a67_provaprog1_16b79616-cf98-4628-a1af-d5ad84a8f9fd",  
         "2e6263a5-4238-488d-bdfe-77839ad24a67_provaprog1_5f4a9563-b76f-4782-869f-5c45fc710270"
+    ]
+    
+    # Test queries for Gemini processing
+    test_queries = [
+        None,  # Test without query
+        "What people are mentioned in these documents?",
+        "List all organizations and their locations",
+        "Extract key entities related to business or legal matters"
     ]
     
     # Check command line arguments
@@ -176,8 +241,13 @@ def main():
         # Document IDs from command line
         test_document_ids = sys.argv[2].split(',')
     
+    if len(sys.argv) > 3:
+        # Custom queries from command line
+        test_queries = [None] + sys.argv[3].split('|')
+    
     print(f"🎯 Target API Gateway: {api_gateway_url}")
     print(f"📄 Test Document IDs: {test_document_ids}")
+    print(f"🔍 Test Queries: {[q if q else 'No query' for q in test_queries]}")
     
     # IMPORTANT: Check if documents exist first
     print("\n🔍 Checking if test documents exist...")
@@ -202,18 +272,18 @@ def main():
         print("To test with real documents:")
         print("1. Upload a document first via the document service")
         print("2. Use the returned document ID in format: userId_projectId_docId")
-        print("3. Run: python test_extraction_agent.py http://localhost:8080 'real_user_real_project_real_doc'")
+        print("3. Run: python test_extraction_agent.py http://localhost:8080 'real_user_real_project_real_doc' 'query1|query2'")
         print("\n🧪 Proceeding with tests anyway (will show expected errors)...")
     
     # Run tests
     tester = ExtractionAgentTester(api_gateway_url)
-    success = tester.run_comprehensive_test(test_document_ids)
+    success = tester.run_comprehensive_test(test_document_ids, test_queries)
     
     if success:
         print("🎉 All tests passed!")
         sys.exit(0)
     else:
-        print("💥 Tests failed!")
+        print("💥 Some tests failed!")
         if not document_exists:
             print("ℹ️  This is expected since test documents don't exist")
         sys.exit(1)

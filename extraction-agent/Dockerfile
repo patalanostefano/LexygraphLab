@@ -31,7 +31,8 @@ RUN pip install --no-cache-dir --upgrade pip \
         tokenizers==0.15.0 \
         numpy==1.24.3 \
         python-multipart==0.0.6 \
-        accelerate==0.24.1
+        accelerate==0.24.1 \
+        google-generativeai==0.3.2
 
 # Pre-download model during build to avoid cold starts
 RUN python -c "from transformers import AutoTokenizer, AutoModelForTokenClassification; \

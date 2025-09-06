@@ -1,6 +1,6 @@
 """
 Extraction Agent Service - FastAPI Implementation
-Lightweight NER extraction service using Italian_NER_XXL model
+Lightweight NER extraction service using Italian_NER_XXL model + Gemini post-processing
 Optimized for CPU usage and reduced memory footprint
 """
 
@@ -14,6 +14,7 @@ from contextlib import asynccontextmanager
 import asyncio
 import logging
 import torch
+import google.generativeai as genai
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -22,9 +23,34 @@ logger = logging.getLogger(__name__)
 # Set PyTorch to use single thread for CPU inference (lighter)
 torch.set_num_threads(1)
 
+# Gemini API configuration
+GEMINI_API_KEYS = [
+    "AIzaSyBEsyakskQ7iZnDfnlDGQYwSB0QQJ5fMhA"
+]
+
 # Global variables for model components
 nlp_pipeline = None
 model_loaded = False
+gemini_model = None
+current_gemini_key_index = 0
+
+def configure_gemini():
+    """Configure Gemini with current API key"""
+    global gemini_model, current_gemini_key_index
+    try:
+        genai.configure(api_key=GEMINI_API_KEYS[current_gemini_key_index])
+        gemini_model = genai.GenerativeModel("gemini-1.5-flash")
+        logger.info(f"Configured Gemini with key index {current_gemini_key_index}")
+    except Exception as e:
+        logger.error(f"Failed to configure Gemini: {e}")
+        raise
+
+def try_next_gemini_key():
+    """Switch to next Gemini API key"""
+    global current_gemini_key_index
+    current_gemini_key_index = (current_gemini_key_index + 1) % len(GEMINI_API_KEYS)
+    configure_gemini()
+    logger.info(f"Switched to Gemini key index {current_gemini_key_index}")
 
 def load_ner_model():
     """Load the NER model and tokenizer at startup to avoid cold starts"""
@@ -59,6 +85,9 @@ def load_ner_model():
         model_loaded = True
         logger.info("NER model loaded successfully on CPU!")
         
+        # Configure Gemini
+        configure_gemini()
+        
     except Exception as e:
         logger.error(f"Failed to load NER model: {str(e)}")
         model_loaded = False
@@ -86,6 +115,7 @@ class ExtractionRequest(BaseModel):
     document_ids: List[str]  # Format: userId_projectId_docId
     agent_id: str = "extractor-agent"
     execution_id: Optional[str] = None
+    query: Optional[str] = None  # NEW: Query for Gemini post-processing
 
 class EntityResult(BaseModel):
     label: str
@@ -96,8 +126,9 @@ class ExtractionResponse(BaseModel):
     agent_id: str
     document_ids: List[str]
     execution_id: Optional[str]
-    extracted_entities: str  # Concatenated string format
+    extracted_entities: str  # Raw concatenated string format
     entities_by_label: List[EntityResult]
+    structured_summary: Optional[str] = None  # NEW: Gemini-processed summary
     message: str
 
 def extract_entities_from_text(text: str) -> tuple[str, List[EntityResult]]:
@@ -145,6 +176,51 @@ def extract_entities_from_text(text: str) -> tuple[str, List[EntityResult]]:
         logger.error(f"Error during NER extraction: {str(e)}")
         raise HTTPException(status_code=500, detail=f"NER extraction failed: {str(e)}")
 
+def summarize_with_gemini(query: str, extracted_entities: str) -> str:
+    """Summarize extracted entities with Gemini based on query"""
+    global gemini_model
+    
+    if not gemini_model:
+        logger.warning("Gemini not available, returning raw entities")
+        return extracted_entities
+    
+    if not query or not extracted_entities.strip():
+        return extracted_entities
+    
+    prompt = f"""Based on the following query and extracted entities, summarize the entities into a structured list that directly answers the query. Only include entities that are relevant to the query.
+
+Query: {query}
+
+Extracted entities: {extracted_entities}
+
+Please provide a structured summary focusing only on the entities that help answer the query. Format as a clear, organized list."""
+
+    # Try each Gemini API key until one works
+    for attempt in range(len(GEMINI_API_KEYS)):
+        try:
+            logger.info(f"Attempting Gemini summarization with key index {current_gemini_key_index}")
+            
+            response = gemini_model.generate_content(
+                prompt, 
+                generation_config={"temperature": 0.1}
+            )
+            
+            if response.text:
+                logger.info("Gemini summarization successful")
+                return response.text
+            else:
+                raise Exception("Empty response from Gemini")
+                
+        except Exception as e:
+            logger.warning(f"Gemini attempt {attempt + 1} failed: {e}")
+            if attempt < len(GEMINI_API_KEYS) - 1:
+                try_next_gemini_key()
+            else:
+                logger.error("All Gemini API keys failed")
+                return extracted_entities
+    
+    return extracted_entities
+
 async def fetch_document_text(document_id: str) -> str:
     """Fetch document text from document service via API Gateway"""
     try:
@@ -181,13 +257,14 @@ async def health_check():
     return {
         "status": "healthy", 
         "service": "extraction-agent",
-        "model_loaded": model_loaded
+        "model_loaded": model_loaded,
+        "gemini_configured": gemini_model is not None
     }
 
 # Main extraction endpoint
 @app.post("/api/v1/agents/extract", response_model=ExtractionResponse)
 async def extract_entities(request: ExtractionRequest):
-    """Extract entities from documents using Italian NER model"""
+    """Extract entities from documents using Italian NER model + Gemini post-processing"""
     
     if not model_loaded:
         raise HTTPException(status_code=503, detail="NER model not ready")
@@ -222,6 +299,15 @@ async def extract_entities(request: ExtractionRequest):
         # Extract entities
         concatenated_entities, entity_results = extract_entities_from_text(combined_text)
         
+        # Post-process with Gemini if query is provided
+        structured_summary = None
+        if request.query and concatenated_entities.strip():
+            try:
+                structured_summary = summarize_with_gemini(request.query, concatenated_entities)
+            except Exception as e:
+                logger.warning(f"Gemini post-processing failed: {e}")
+                structured_summary = concatenated_entities
+        
         return ExtractionResponse(
             success=True,
             agent_id=request.agent_id,
@@ -229,7 +315,9 @@ async def extract_entities(request: ExtractionRequest):
             execution_id=request.execution_id,
             extracted_entities=concatenated_entities,
             entities_by_label=entity_results,
-            message=f"Successfully extracted entities from {len(processed_docs)} documents"
+            structured_summary=structured_summary,
+            message=f"Successfully extracted entities from {len(processed_docs)} documents" + 
+                   (f" and processed with query: '{request.query}'" if request.query else "")
         )
         
     except HTTPException:
@@ -254,7 +342,8 @@ async def process_agent_task(request: dict):
     extraction_request = ExtractionRequest(
         document_ids=document_ids,
         agent_id=agent_id,
-        execution_id=execution_id
+        execution_id=execution_id,
+        query=prompt if prompt else None  # Use prompt as query
     )
     
     result = await extract_entities(extraction_request)
@@ -264,7 +353,7 @@ async def process_agent_task(request: dict):
         "prompt": prompt,
         "documentIds": document_ids,
         "executionId": execution_id,
-        "response": result.extracted_entities,
+        "response": result.structured_summary if result.structured_summary else result.extracted_entities,
         "completedAt": None,  # Could add timestamp if needed
         "fullResult": result
     }
