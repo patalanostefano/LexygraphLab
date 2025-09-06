@@ -168,18 +168,18 @@ async def get_document_pdf(user_id: str, project_id: str, doc_id: str):
     return await get_document(user_id, project_id, doc_id)
 
 
-# Unified text + query endpoint
 @app.get("/api/v1/documents/{user_id}/{project_id}/{doc_id}/text")
 async def get_document_text(
     user_id: str,
     project_id: str,
     doc_id: str,
     is_query: bool = Query(False, description="Set true if this is a query request"),
-    query: Optional[str] = Query(None, description="Query text if is_query=true")
+    query: Optional[str] = Query(None, description="Query text if is_query=true"),
+    full_chunks: bool = Query(False, description="Return all chunks even for large documents")
 ):
     """
     Restituisce il testo del documento oppure, se il documento è grande e viene fornita una query,
-    i chunk più rilevanti.
+    i chunk più rilevanti. Se full_chunks=true, restituisce sempre tutti i chunk.
     """
     document_id = f"{user_id}_{project_id}_{doc_id}"
     text_content = db_manager.get_document_text(document_id)
@@ -189,13 +189,45 @@ async def get_document_text(
     
     # Check document size first, regardless of the 'is_query' flag.
     # If the document is small, always return the full text.
-    if len(text_content) <= CHUNK_LIMIT_CHARS:
+    if len(text_content) <= CHUNK_LIMIT_CHARS and not full_chunks:
         return {
             "success": True,
             "mode": "full_text",
             "message": "Document is within the character limit, returning full text.",
             "chunks": [{"text": text_content}]
         }
+
+    # If full_chunks is requested, get all chunks from database
+    if full_chunks:
+        try:
+            all_chunks = db_manager.get_all_chunks(user_id, project_id, doc_id)
+            if all_chunks:
+                return {
+                    "success": True,
+                    "mode": "all_chunks", 
+                    "message": f"Returning all {len(all_chunks)} chunks for full document processing.",
+                    "chunks": all_chunks
+                }
+            else:
+                # Fallback to chunking the full text if no chunks in DB
+                chunks = [{"text": text_content[i:i+CHUNK_LIMIT_CHARS]}
+                         for i in range(0, len(text_content), CHUNK_LIMIT_CHARS)]
+                return {
+                    "success": True,
+                    "mode": "chunked_text",
+                    "message": "No chunks in database, returning text split into chunks.",
+                    "chunks": chunks
+                }
+        except Exception as e:
+            # Fallback to text chunking if database chunks fail
+            chunks = [{"text": text_content[i:i+CHUNK_LIMIT_CHARS]}
+                     for i in range(0, len(text_content), CHUNK_LIMIT_CHARS)]
+            return {
+                "success": True,
+                "mode": "chunked_text",
+                "message": "Database chunks unavailable, returning text split into chunks.",
+                "chunks": chunks
+            }
 
     # If the document is large, check for a query.
     if is_query and query:
@@ -219,7 +251,6 @@ async def get_document_text(
         }
     
     # Fallback if no query is provided for a large document
-    # This part handles the case where the document is large but is_query is false
     if not is_query:
         return {
             "success": True,
@@ -233,12 +264,42 @@ async def get_document_text(
     raise HTTPException(status_code=400, detail="Query flag is true but no query text provided")
 
 
+
 # List project documents
 @app.get("/api/v1/documents/{user_id}/{project_id}", response_model=DocumentListResponse)
 async def list_project_documents(user_id: str, project_id: str):
     """Get all documents in a project"""
     documents = db_manager.list_project_documents(user_id, project_id)
     return DocumentListResponse(documents=documents)
+
+
+#  new endpoint for getting all chunks
+@app.get("/api/v1/documents/{user_id}/{project_id}/{doc_id}/chunks")
+async def get_document_chunks(
+    user_id: str,
+    project_id: str,
+    doc_id: str,
+    limit: Optional[int] = Query(None, description="Limit number of chunks returned")
+):
+    """
+    Get all chunks for a document (useful for full document generation)
+    """
+    try:
+        chunks = db_manager.get_all_chunks(user_id, project_id, doc_id, limit)
+        
+        if not chunks:
+            raise HTTPException(status_code=404, detail="No chunks found for document")
+        
+        return {
+            "success": True,
+            "mode": "all_chunks",
+            "message": f"Retrieved {len(chunks)} chunks for document",
+            "chunks": chunks,
+            "total_chunks": len(chunks)
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to retrieve document chunks: {str(e)}")
 
 
 if __name__ == "__main__":

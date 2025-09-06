@@ -140,6 +140,34 @@ class DatabaseManager:
             print(f"Get text error: {e}")
             return None
 
+    def get_all_chunks(self, user_id: str, project_id: str, doc_id: str, limit: Optional[int] = None) -> List[Dict[str, Any]]:
+        """Get all chunks for a document (useful for full document generation)"""
+        if not self.available:
+            return []
+            
+        try:
+            query = self.supabase.table('document_chunks').select(
+                'chunk_index, chunk_text'
+            ).eq('user_id', user_id).eq('project_id', project_id).eq('doc_id', doc_id).order('chunk_index', desc=False)
+            
+            if limit:
+                query = query.limit(limit)
+                
+            result = query.execute()
+            
+            chunks = []
+            for chunk in result.data:
+                chunks.append({
+                    "chunk_index": chunk['chunk_index'],
+                    "text": chunk['chunk_text']
+                })
+            
+            return chunks
+            
+        except Exception as e:
+            print(f"Get all chunks error: {e}")
+            return []
+
     def list_project_documents(self, user_id: str, project_id: str) -> List[Dict[str, Any]]:
         if not self.available:
             return []
