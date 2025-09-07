@@ -21,7 +21,8 @@ logger = logging.getLogger(__name__)
 
 # Gemini API configuration
 GEMINI_API_KEYS = [
-    "AIzaSyBEsyakskQ7iZnDfnlDGQYwSB0QQJ5fMhA"
+    "AIzaSyBEsyakskQ7iZnDfnlDGQYwSB0QQJ5fMhA",
+    "AIzaSyAEEjrZnXFKR-uonJWnt46iPYdNLQzSqVI"
 ]
 
 # Global variables
@@ -114,19 +115,19 @@ def generate_with_gemini(query: str, text_content: str, full_doc: bool = False) 
     
     # Create prompt based on generation type
     if full_doc:
-        prompt = f"""Based on the following document content, please {query}
+        prompt = f"""Basandoti sul contenuto del seguente documento fornisci una risposta a {query}
 
-Document content:
+Documento:
 {text_content}
 
-Please provide a comprehensive and well-structured response based on the document content."""
+Fornisci una risposta concisa e ben strutturata o rigenera parti o riempi i campi(in questo caso riproduci fedelmente il documento) se necessario"""
     else:
-        prompt = f"""Based on the following text content, please answer this question or complete this task: {query}
+        prompt = f"""Basandoti sul contenuto del seguente documento fornisci una risposta a questo task: {query}
 
-Text content:
+contenuto:
 {text_content}
 
-Please provide a focused and relevant response that directly addresses the query."""
+Fornisci una risposta concisa e rilevante."""
 
     # Try each Gemini API key until one works
     for attempt in range(len(GEMINI_API_KEYS)):
@@ -179,11 +180,11 @@ def generate_chunked_content(query: str, chunks: List[str], full_doc: bool = Fal
     
     # Synthesize results if multiple chunks were processed
     if len(chunk_results) > 1:
-        synthesis_prompt = f"Synthesize and combine the following partial responses into a coherent, comprehensive answer for: {query}\n\n"
+        synthesis_prompt = f"Sintetizza e combina le seguenti risposte parziali in una risposta coerente e completa per: {query}\n\n"
         synthesis_prompt += "\n\n".join([f"Part {i+1}:\n{result}" for i, result in enumerate(chunk_results)])
         
         try:
-            final_result = generate_with_gemini("Create a unified, well-structured response", synthesis_prompt, True)
+            final_result = generate_with_gemini("Creare una risposta unificata e ben strutturata", synthesis_prompt, True)
             return final_result
         except Exception as e:
             logger.warning(f"Synthesis failed: {e}, returning combined results")

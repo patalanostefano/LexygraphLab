@@ -23,7 +23,8 @@ SERPER_API_KEY = "be6ccf9ec3eaff009a633de46aca91d0d348b7f4"
 
 # Gemini API keys with fallback mechanism
 GEMINI_API_KEYS = [
-    "AIzaSyBEsyakskQ7iZnDfnlDGQYwSB0QQJ5fMhA"
+    "AIzaSyBEsyakskQ7iZnDfnlDGQYwSB0QQJ5fMhA",
+    "AIzaSyAEEjrZnXFKR-uonJWnt46iPYdNLQzSqVI"
 ]
 
 class SearchRequest(BaseModel):
@@ -139,15 +140,14 @@ class SearchAgent:
             for result in results[:10]  # Limit to top 10 results
         ])
         
-        prompt = f"""Based on the following search results for the query "{query}", provide a comprehensive and well-structured summary:
+        prompt = f"""Basandoti sui seguenti risultati dal web per la domanda "{query}", fornisci uno strutturato riassunto:
 
 {search_context}
 
-Please provide:
-1. A clear, concise summary of the key information found
-2. Important insights or findings related to the query
-3. Any notable patterns or trends across the sources
-4. Brief mention of the most relevant sources
+Fornisci:
+1. Un chiaro sommario conciso che comprende ogni risultato dal più al meno rilevante per la domanda (giusto qualche frase per quelle meno rilevanti)
+2. la risposta deve essere unica l'utente non deve sapere che ricevi molte fonti
+3. sei un ricercatore su ambito giuridico se si tratta di articoli o sentenze cita tale fonte all interno di [] es. 
 
 Keep the summary informative but concise, and ensure it directly addresses the original query."""
 

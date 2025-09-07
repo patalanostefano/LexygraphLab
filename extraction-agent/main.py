@@ -25,7 +25,8 @@ torch.set_num_threads(1)
 
 # Gemini API configuration
 GEMINI_API_KEYS = [
-    "AIzaSyBEsyakskQ7iZnDfnlDGQYwSB0QQJ5fMhA"
+    "AIzaSyBEsyakskQ7iZnDfnlDGQYwSB0QQJ5fMhA",
+    "AIzaSyAEEjrZnXFKR-uonJWnt46iPYdNLQzSqVI"
 ]
 
 # Global variables for model components
@@ -187,13 +188,13 @@ def summarize_with_gemini(query: str, extracted_entities: str) -> str:
     if not query or not extracted_entities.strip():
         return extracted_entities
     
-    prompt = f"""Based on the following query and extracted entities, summarize the entities into a structured list that directly answers the query. Only include entities that are relevant to the query.
+    prompt = f"""Sulla base della query seguente e delle entità estratte, riepiloga le entità in un elenco strutturato che risponda direttamente alla query. Includi solo le entità pertinenti alla query.
 
 Query: {query}
 
-Extracted entities: {extracted_entities}
+Entita estratte: {extracted_entities}
 
-Please provide a structured summary focusing only on the entities that help answer the query. Format as a clear, organized list."""
+Si prega di fornire un riepilogo strutturato, concentrandosi solo sulle entità che contribuiscono a rispondere alla domanda. Formattare il tutto come un elenco chiaro e organizzato."""
 
     # Try each Gemini API key until one works
     for attempt in range(len(GEMINI_API_KEYS)):
