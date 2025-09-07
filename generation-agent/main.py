@@ -195,20 +195,36 @@ async def fetch_document_content(document_id: str, query: Optional[str] = None, 
     """Fetch document content from document service via API Gateway"""
     try:
         # Parse document_id: userId_projectId_docId
+        # Handle cases where project_id might contain underscores or spaces
         parts = document_id.split('_')
-        if len(parts) != 3:
-            raise ValueError(f"Invalid document_id format: {document_id}")
+        if len(parts) < 3:
+            raise ValueError(f"Invalid document_id format: {document_id}. Expected format: userId_projectId_docId")
         
-        user_id, project_id, doc_id = parts
+        # Extract user_id (first part), doc_id (last part), and project_id (everything in between)
+        user_id = parts[0]
+        doc_id = parts[-1]
+        project_id = '_'.join(parts[1:-1])  # Join middle parts in case project_id contains underscores
+        
+        logger.info(f"Parsed document_id: user_id={user_id}, project_id={project_id}, doc_id={doc_id}")
         
         # Call document service via API Gateway
-        url = f"{DOCUMENT_SERVICE_URL}/api/v1/documents/{user_id}/{project_id}/{doc_id}/text"
+        # URL encode the project_id to handle spaces and special characters
+        from urllib.parse import quote
+        encoded_project_id = quote(project_id, safe='')
+        url = f"{DOCUMENT_SERVICE_URL}/api/v1/documents/{user_id}/{encoded_project_id}/{doc_id}/text"
+        
+        logger.info(f"Requesting document content from: {url}")
         
         params = {}
         if is_query and query:
             params = {"is_query": True, "query": query}
         
         response = requests.get(url, params=params, timeout=30)
+        
+        logger.info(f"Document service response status: {response.status_code}")
+        if response.status_code != 200:
+            logger.error(f"Document service error: {response.text}")
+        
         response.raise_for_status()
         
         return response.json()
@@ -255,9 +271,14 @@ async def generate_content(request: GenerationRequest):
             logger.info(f"Fetching full document for generation: {request.document_id}")
             doc_data = await fetch_document_content(request.document_id, None, False)
         else:
-            # Query-based generation - get relevant chunks
+            # Query-based generation - get relevant chunks, but fallback to full content if empty
             logger.info(f"Fetching relevant content for query: {request.query}")
             doc_data = await fetch_document_content(request.document_id, request.query, True)
+            
+            # If query-based search returns no chunks, fallback to full document
+            if not doc_data.get("chunks") or len(doc_data["chunks"]) == 0:
+                logger.info(f"No relevant chunks found for query, falling back to full document")
+                doc_data = await fetch_document_content(request.document_id, None, False)
         
         if not doc_data.get("chunks"):
             raise HTTPException(

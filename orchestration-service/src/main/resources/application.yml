@@ -4,6 +4,7 @@ server:
 agents:
   extraction: ${SERVICES_EXTRACTION_AGENT_URL:http://extraction-agent:8001}
   search: ${SERVICES_SEARCH_AGENT_URL:http://search-agent:8002}
+  generation: ${SERVICES_GENERATION_AGENT_URL:http://generation-agent:8003}
 
 orchestration:
   timeoutMs: 90000          # timeout singola chiamata agente

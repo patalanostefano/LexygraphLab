@@ -24,7 +24,7 @@ import { pdfjs } from 'react-pdf';
 import { getDocument } from '../api/documents';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '@mui/material/styles';
-import { getProjectDocuments } from '../api/documents';
+import { getProjectDocuments, sendChatMessage } from '../api/documents';
 
 // Configure PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
@@ -45,35 +45,50 @@ export default function AgentsPage() {
   const [prompt, setPrompt] = useState("");
   const [pdfError, setPdfError] = useState(null);
   const [messages, setMessages] = useState([]);
-  const [responseId, setResponseId] = useState(null);
-  const [isWaitingForConfirmation, setIsWaitingForConfirmation] = useState(false);
   const [loading, setLoading] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
+  const [sendingMessage, setSendingMessage] = useState(false);
 
   useEffect(() => {
-    // If documents are provided from navigation, use them
-    if (location.state?.documents && location.state.documents.length > 0) {
-      setDocuments(location.state.documents);
-      
-      // If a specific document was selected, load it
-      if (location.state?.selectedDocument) {
-        loadSelectedDocument(location.state.selectedDocument);
-      }
-    } else {
-      // Otherwise, load all documents for the project
-      loadProjectDocuments();
+    console.log('AgentsPage useEffect triggered:', { 
+      projectId, 
+      userId, 
+      locationState: location.state,
+      documentsFromState: location.state?.documents?.length || 0
+    });
+
+    // Always load all documents for the project to ensure dropdown is populated
+    loadProjectDocuments();
+
+    // If a specific document was provided from navigation, load it after documents are loaded
+    if (location.state?.selectedDocument) {
+      loadSelectedDocument(location.state.selectedDocument);
     }
-  }, [location.state, projectId]);
+  }, [location.state, projectId, userId]);
 
   const loadProjectDocuments = async () => {
+    if (!projectId || !userId) {
+      console.error('Missing projectId or userId:', { projectId, userId });
+      return;
+    }
+
     try {
       setLoading(true);
+      console.log('Loading documents for project:', projectId, 'user:', userId);
+      
       const documentsData = await getProjectDocuments(projectId, userId);
+      console.log('Loaded documents:', documentsData);
+      
       if (Array.isArray(documentsData)) {
         setDocuments(documentsData);
+        console.log('Set documents in state:', documentsData.length, 'documents');
+      } else {
+        console.warn('Documents data is not an array:', documentsData);
+        setDocuments([]);
       }
     } catch (error) {
       console.error('Error loading project documents:', error);
+      setDocuments([]); // Set to empty array on error
     } finally {
       setLoading(false);
     }
@@ -126,6 +141,101 @@ export default function AgentsPage() {
     navigate('/projects');
   };
 
+  const handleSendMessage = async () => {
+    if (!currentDocument || !prompt.trim() || sendingMessage) {
+      return;
+    }
+
+    // Add user message to chat
+    const userMessage = { 
+      type: 'user', 
+      content: prompt,
+      timestamp: new Date().toISOString()
+    };
+    setMessages(prev => [...prev, userMessage]);
+    
+    const currentPrompt = prompt;
+    setPrompt(""); // Clear input immediately
+    setSendingMessage(true);
+
+    try {
+      console.log('Sending message to orchestrator:', {
+        message: currentPrompt,
+        documentId: currentDocument.doc_id,
+        userId,
+        projectId
+      });
+
+      // Call orchestrator service
+      const response = await sendChatMessage(
+        currentPrompt,
+        [currentDocument.doc_id],
+        userId,
+        projectId
+      );
+
+      console.log('Received response from orchestrator:', response);
+
+      // Add agent message to chat
+      const agentMessage = {
+        type: 'agent',
+        content: response.content,
+        timestamp: new Date().toISOString(),
+        agentId: response.agentId || 'generation-agent'
+      };
+      
+      setMessages(prev => [...prev, agentMessage]);
+      
+    } catch (error) {
+      console.error('Error sending message:', error);
+      
+      // Add error message to chat
+      const errorMessage = {
+        type: 'agent',
+        content: `I apologize, but I encountered an error: ${error.message}. Please try again.`,
+        timestamp: new Date().toISOString(),
+        isError: true
+      };
+      
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setSendingMessage(false);
+    }
+  };
+
+  const handleModifyResponse = (messageIndex) => {
+    const message = messages[messageIndex];
+    if (message && message.type === 'agent') {
+      // Set the agent's response as the current prompt for modification
+      setPrompt(`Please modify this response: "${message.content}"`);
+      
+      // Optionally, mark the message as being modified
+      setMessages(prev => prev.map((msg, idx) => 
+        idx === messageIndex 
+          ? { ...msg, beingModified: true }
+          : msg
+      ));
+    }
+  };
+
+  const handleConfirmResponse = (messageIndex) => {
+    const message = messages[messageIndex];
+    if (message && message.type === 'agent') {
+      // Mark the response as confirmed
+      setMessages(prev => prev.map((msg, idx) => 
+        idx === messageIndex 
+          ? { ...msg, confirmed: true, beingModified: false }
+          : msg
+      ));
+      
+      // You could also trigger additional actions here like:
+      // - Save to database
+      // - Export to document
+      // - Share with team
+      console.log('Response confirmed:', message.content);
+    }
+  };
+
   return (
     <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
@@ -161,20 +271,33 @@ export default function AgentsPage() {
           flexDirection: 'column'
         }}>
           {/* Document selector */}
-          <FormControl sx={{ m: 2 }}>
-            <InputLabel>Select Document</InputLabel>
-            <Select
-              value={currentDocument?.doc_id || ''}
-              onChange={handleDocumentSelect}
-              label="Select Document"
-              disabled={loading || documents.length === 0}
-            >
-              {documents.map((doc) => (
-                <MenuItem key={doc.doc_id} value={doc.doc_id}>
-                  {doc.title}
-                </MenuItem>
-              ))}
-            </Select>
+          <Box sx={{ m: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+              <FormControl sx={{ flexGrow: 1 }}>
+                <InputLabel>Select Document</InputLabel>
+                <Select
+                  value={currentDocument?.doc_id || ''}
+                  onChange={handleDocumentSelect}
+                  label="Select Document"
+                  disabled={loading || documents.length === 0}
+                >
+                  {documents.map((doc) => (
+                    <MenuItem key={doc.doc_id} value={doc.doc_id}>
+                      {doc.title}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <Tooltip title="Refresh documents list" arrow>
+                <IconButton 
+                  onClick={loadProjectDocuments}
+                  disabled={loading}
+                  size="small"
+                >
+                  {loading ? <CircularProgress size={20} /> : '🔄'}
+                </IconButton>
+              </Tooltip>
+            </Box>
             {documents.length === 0 && !loading && (
               <Typography 
                 variant="caption" 
@@ -184,10 +307,33 @@ export default function AgentsPage() {
                   fontSize: '0.75rem'
                 }}
               >
-                No documents available for this project
+                No documents available for this project. 
+                <Button 
+                  size="small" 
+                  onClick={loadProjectDocuments}
+                  sx={{ ml: 1, minWidth: 'auto', p: 0.5 }}
+                >
+                  Retry
+                </Button>
               </Typography>
             )}
-          </FormControl>
+            {loading && (
+              <Typography 
+                variant="caption" 
+                sx={{ 
+                  mt: 1, 
+                  color: 'text.secondary',
+                  fontSize: '0.75rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 1
+                }}
+              >
+                <CircularProgress size={12} />
+                Loading documents...
+              </Typography>
+            )}
+          </Box>
 
           {/* PDF viewer */}
           <Box sx={{ 
@@ -289,6 +435,24 @@ export default function AgentsPage() {
             flexDirection: 'column',
             gap: 2
           }}>
+            {messages.length === 0 && (
+              <Box sx={{ 
+                textAlign: 'center', 
+                py: 4,
+                color: 'text.secondary'
+              }}>
+                <Typography variant="body1" sx={{ mb: 1 }}>
+                  {currentDocument 
+                    ? `Ready to chat about "${currentDocument.title}"`
+                    : 'Select a document to start chatting'
+                  }
+                </Typography>
+                <Typography variant="body2" sx={{ fontSize: '0.9rem' }}>
+                  Ask questions, request summaries, or get insights from your document
+                </Typography>
+              </Box>
+            )}
+            
             {messages.map((message, index) => (
               <Box
                 key={index}
@@ -298,56 +462,195 @@ export default function AgentsPage() {
                   width: '100%'
                 }}
               >
+                <Box sx={{ maxWidth: '85%', width: '100%' }}>
+                  <Paper
+                    elevation={1}
+                    sx={{
+                      p: 2,
+                      backgroundColor: message.type === 'user' 
+                        ? theme.palette.primary.main 
+                        : message.isError
+                          ? '#ffebee'
+                          : message.confirmed
+                            ? '#e8f5e8'
+                            : message.beingModified
+                              ? '#fff3e0'
+                              : '#fff',
+                      color: message.type === 'user' 
+                        ? '#fff' 
+                        : message.isError
+                          ? '#c62828'
+                          : message.confirmed
+                            ? '#2e7d32'
+                            : 'inherit',
+                      borderRadius: message.type === 'user' 
+                        ? '20px 20px 5px 20px'
+                        : '20px 20px 20px 5px',
+                      border: message.isError 
+                        ? '1px solid #e57373' 
+                        : message.confirmed
+                          ? '1px solid #81c784'
+                          : message.beingModified
+                            ? '1px solid #ffb74d'
+                            : 'none'
+                    }}
+                  >
+                    <Typography 
+                      variant="body1" 
+                      sx={{ 
+                        whiteSpace: 'pre-wrap',
+                        wordWrap: 'break-word'
+                      }}
+                    >
+                      {message.content}
+                    </Typography>
+                    
+                    {/* Status indicators */}
+                    {message.confirmed && (
+                      <Typography 
+                        variant="caption" 
+                        sx={{ 
+                          display: 'block',
+                          mt: 1,
+                          color: '#2e7d32',
+                          fontWeight: 'bold',
+                          fontSize: '0.7rem'
+                        }}
+                      >
+                        ✓ Confirmed
+                      </Typography>
+                    )}
+                    
+                    {message.beingModified && (
+                      <Typography 
+                        variant="caption" 
+                        sx={{ 
+                          display: 'block',
+                          mt: 1,
+                          color: '#f57c00',
+                          fontWeight: 'bold',
+                          fontSize: '0.7rem'
+                        }}
+                      >
+                        ✏️ Being modified...
+                      </Typography>
+                    )}
+                    
+                    {message.timestamp && (
+                      <Typography 
+                        variant="caption" 
+                        sx={{ 
+                          display: 'block',
+                          mt: 1,
+                          opacity: 0.7,
+                          fontSize: '0.7rem'
+                        }}
+                      >
+                        {new Date(message.timestamp).toLocaleTimeString()}
+                      </Typography>
+                    )}
+                  </Paper>
+
+                  {/* Action buttons for agent responses */}
+                  {message.type === 'agent' && !message.isError && (
+                    <Box 
+                      sx={{ 
+                        display: 'flex', 
+                        gap: 1, 
+                        mt: 1,
+                        justifyContent: 'flex-start'
+                      }}
+                    >
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        disabled={message.confirmed || message.beingModified}
+                        onClick={() => handleModifyResponse(index)}
+                        sx={{
+                          minWidth: 'auto',
+                          px: 2,
+                          py: 0.5,
+                          fontSize: '0.75rem',
+                          borderColor: message.confirmed 
+                            ? theme.palette.success.light 
+                            : theme.palette.primary.light,
+                          color: message.confirmed 
+                            ? theme.palette.success.main 
+                            : theme.palette.primary.main,
+                          '&:hover': {
+                            borderColor: message.confirmed 
+                              ? theme.palette.success.main 
+                              : theme.palette.primary.main,
+                            backgroundColor: message.confirmed 
+                              ? theme.palette.success.light + '10'
+                              : theme.palette.primary.light + '10'
+                          },
+                          '&:disabled': {
+                            borderColor: theme.palette.grey[300],
+                            color: theme.palette.grey[400]
+                          }
+                        }}
+                      >
+                        {message.beingModified ? 'Modifying...' : 'Modify'}
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="contained"
+                        disabled={message.confirmed}
+                        onClick={() => handleConfirmResponse(index)}
+                        sx={{
+                          minWidth: 'auto',
+                          px: 2,
+                          py: 0.5,
+                          fontSize: '0.75rem',
+                          backgroundColor: message.confirmed 
+                            ? theme.palette.success.light 
+                            : theme.palette.success.main,
+                          '&:hover': {
+                            backgroundColor: message.confirmed 
+                              ? theme.palette.success.light 
+                              : theme.palette.success.dark
+                          },
+                          '&:disabled': {
+                            backgroundColor: theme.palette.grey[300],
+                            color: theme.palette.grey[500]
+                          }
+                        }}
+                      >
+                        {message.confirmed ? 'Confirmed ✓' : 'Confirm'}
+                      </Button>
+                    </Box>
+                  )}
+                </Box>
+              </Box>
+            ))}
+
+            {sendingMessage && (
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'flex-start',
+                  width: '100%'
+                }}
+              >
                 <Paper
                   elevation={1}
                   sx={{
                     p: 2,
-                    maxWidth: '70%',
-                    backgroundColor: message.type === 'user' 
-                      ? theme.palette.primary.main 
-                      : '#fff',
-                    color: message.type === 'user' ? '#fff' : 'inherit',
-                    borderRadius: message.type === 'user' 
-                      ? '20px 20px 5px 20px'
-                      : '20px 20px 20px 5px'
+                    backgroundColor: '#fff',
+                    borderRadius: '20px 20px 20px 5px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1
                   }}
                 >
-                  <Typography variant="body1">
-                    {message.content}
+                  <CircularProgress size={16} />
+                  <Typography variant="body2" color="text.secondary">
+                    AI is thinking...
                   </Typography>
-                  
-                  {/* Show confirmation controls for agent responses */}
-                  {message.type === 'agent' && message.id === responseId && isWaitingForConfirmation && (
-                    <Box sx={{ mt: 2, display: 'flex', gap: 1, justifyContent: 'flex-end' }}>
-                      <Button
-                        size="small"
-                        variant="contained"
-                        color="success"
-                        onClick={() => {
-                          setIsWaitingForConfirmation(false);
-                          setResponseId(null);
-                          // Add your confirmation handling here
-                        }}
-                      >
-                        Confirm
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        color="primary"
-                        onClick={() => {
-                          setPrompt(message.content);
-                          setIsWaitingForConfirmation(false);
-                          setResponseId(null);
-                        }}
-                      >
-                        Modify
-                      </Button>
-                    </Box>
-                  )}
                 </Paper>
               </Box>
-            ))}
+            )}
           </Box>
 
           {/* Input area */}
@@ -360,53 +663,38 @@ export default function AgentsPage() {
               fullWidth
               multiline
               rows={3}
-              placeholder="Ask a question about the document..."
+              placeholder={currentDocument 
+                ? `Ask a question about "${currentDocument.title}"...`
+                : "Select a document to start chatting..."
+              }
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               variant="outlined"
-              disabled={!currentDocument || isWaitingForConfirmation}
+              disabled={!currentDocument || sendingMessage}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
             />
             <Box sx={{ 
               display: 'flex', 
-              justifyContent: 'flex-end', 
+              justifyContent: 'space-between',
+              alignItems: 'center',
               mt: 1 
             }}>
+              <Typography variant="caption" color="text.secondary">
+                {currentDocument ? 'Press Enter to send, Shift+Enter for new line' : ''}
+              </Typography>
               <Button 
                 variant="contained"
-                disabled={!currentDocument || !prompt.trim() || isWaitingForConfirmation}
-                onClick={async () => {
-                  // Add user message
-                  const userMessage = { type: 'user', content: prompt };
-                  setMessages(prev => [...prev, userMessage]);
-                  
-                  try {
-                    // Simulate agent response (replace with actual API call)
-                    const response = await new Promise(resolve => 
-                      setTimeout(() => resolve({
-                        id: Date.now(),
-                        content: `Response to: ${prompt}`
-                      }), 1000)
-                    );
-                    
-                    // Add agent message
-                    const agentMessage = { 
-                      type: 'agent', 
-                      id: response.id,
-                      content: response.content 
-                    };
-                    setMessages(prev => [...prev, agentMessage]);
-                    setResponseId(response.id);
-                    setIsWaitingForConfirmation(true);
-                    
-                    // Clear prompt
-                    setPrompt("");
-                  } catch (error) {
-                    console.error('Error getting response:', error);
-                    // Handle error appropriately
-                  }
-                }}
+                disabled={!currentDocument || !prompt.trim() || sendingMessage}
+                onClick={handleSendMessage}
+                startIcon={sendingMessage ? <CircularProgress size={16} /> : null}
+                sx={{ minWidth: '80px' }}
               >
-                Send
+                {sendingMessage ? 'Sending...' : 'Send'}
               </Button>
             </Box>
           </Paper>

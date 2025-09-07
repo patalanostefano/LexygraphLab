@@ -31,6 +31,7 @@ public class RouterController {
   private final WebClient client;
   private final String extractionUrl;
   private final String searchUrl;
+  private final String generationUrl;
 
   private final long timeoutMs;
   private final int retryCount;
@@ -39,12 +40,14 @@ public class RouterController {
   public RouterController(
       @Value("${agents.extraction}") String extractionUrl,
       @Value("${agents.search}") String searchUrl,
+      @Value("${agents.generation}") String generationUrl,
       @Value("${orchestration.timeoutMs:90000}") long timeoutMs,
       @Value("${orchestration.retry.count:1}") int retryCount,
       @Value("${orchestration.retry.backoffMs:500}") long retryBackoffMs
   ) {
     this.extractionUrl = extractionUrl;
     this.searchUrl = searchUrl;
+    this.generationUrl = generationUrl;
     this.timeoutMs = timeoutMs;
     this.retryCount = retryCount;
     this.retryBackoffMs = retryBackoffMs;
@@ -102,6 +105,12 @@ public class RouterController {
       }
     } else if ("search-agent".equalsIgnoreCase(target)) {
       url = searchUrl + "/api/v1/search";
+    } else if ("generation-agent".equalsIgnoreCase(target)) {
+      url = generationUrl + "/api/v1/agents/process";
+      // Generation agent expects specific payload format
+      if (!payload.containsKey("documentIds") && docIds != null && !docIds.isEmpty()) {
+        payload.put("documentIds", docIds);
+      }
     } else {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "unknown target agent: " + target);
     }
