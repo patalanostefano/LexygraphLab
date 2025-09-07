@@ -11,11 +11,11 @@ import time
 from typing import List, Optional
 
 class GenerationAgentTester:
-    def __init__(self, api_gateway_url: str = "http://localhost:8080"):
-        self.api_gateway_url = api_gateway_url
-        self.generation_endpoint = f"{api_gateway_url}/api/v1/agents/generate"
-        self.process_endpoint = f"{api_gateway_url}/api/v1/agents/process"
-        self.health_endpoint = f"{api_gateway_url}/api/v1/agents/health"
+    def __init__(self, generation_agent_url: str = "http://localhost:8003"):
+        self.generation_agent_url = generation_agent_url
+        self.generation_endpoint = f"{generation_agent_url}/api/v1/agents/generate"
+        self.process_endpoint = f"{generation_agent_url}/api/v1/agents/process"
+        self.health_endpoint = f"{generation_agent_url}/health"
 
     def check_health(self) -> bool:
         """Check if generation agent is healthy"""
@@ -238,9 +238,13 @@ def main():
     
     # Check command line arguments
     if len(sys.argv) > 1:
-        api_gateway_url = sys.argv[1]
+        generation_agent_url = sys.argv[1]
     else:
-        api_gateway_url = "http://localhost:8080"
+        generation_agent_url = "http://localhost:8003"
+
+    print(f"🎯 Target Generation Agent: {generation_agent_url}")
+
+    tester = GenerationAgentTester(generation_agent_url)
     
     if len(sys.argv) > 2:
         # Document ID from command line
@@ -260,7 +264,6 @@ def main():
                     "full_doc": parts[2].lower() == 'true' if len(parts) > 2 else False
                 })
     
-    print(f"🎯 Target API Gateway: {api_gateway_url}")
     print(f"📄 Test Document ID: {test_document_id}")
     
     # Check if document exists first
@@ -270,7 +273,7 @@ def main():
         parts = test_document_id.split('_')
         if len(parts) == 3:
             user_id, project_id, doc_id_part = parts
-            check_url = f"{api_gateway_url}/api/v1/documents/{user_id}/{project_id}/{doc_id_part}/text"
+            check_url = f"http://localhost:8000/api/v1/documents/{user_id}/{project_id}/{doc_id_part}/text"
             response = requests.get(check_url, timeout=10)
             if response.status_code == 200:
                 print(f"✅ Document {test_document_id} exists and accessible")
@@ -289,7 +292,6 @@ def main():
         print("\n🧪 Proceeding with tests anyway (will show expected errors)...")
     
     # Run tests
-    tester = GenerationAgentTester(api_gateway_url)
     success = tester.run_comprehensive_test(test_document_id, custom_scenarios)
     
     if success:

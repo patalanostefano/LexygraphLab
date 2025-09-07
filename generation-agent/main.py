@@ -80,7 +80,7 @@ app = FastAPI(
 )
 
 # Document service URL (will be resolved via API Gateway)
-DOCUMENT_SERVICE_URL = os.getenv("DOCUMENT_SERVICE_URL", "http://api-gateway:8080")
+DOCUMENT_SERVICE_URL = os.getenv("DOCUMENT_SERVICE_URL", "http://document-service:8000")
 
 # Pydantic models
 class GenerationRequest(BaseModel):
