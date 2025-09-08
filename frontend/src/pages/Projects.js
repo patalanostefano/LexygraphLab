@@ -20,6 +20,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import { useNavigate } from 'react-router-dom';
 import { ThemeContext } from '../context/ThemeContext';
 import { getUserProjects } from '../api/documents';
+import useRefreshRedirect from '../hooks/useRefreshRedirect';
 
 // Import shared components
 import ValisLogo from '../components/ValisLogo';
@@ -49,17 +50,28 @@ export default function Projects() {
   const [creating, setCreating] = useState(false);
   const [userAuthenticated, setUserAuthenticated] = useState(false);
 
-  const { userId } = useAuth();
+  const { userId, loading: authLoading } = useAuth();
+
+  // Enable refresh redirect to home page
+  useRefreshRedirect();
 
   // Load projects on component mount
   useEffect(() => {
+    // Don't load projects if auth is still loading
+    if (authLoading) {
+      console.log('⏳ Auth is still loading, waiting...');
+      return;
+    }
+
     if (userId) {
+      console.log('🔄 Loading projects for user:', userId);
       loadProjects();
     } else {
+      console.log('❌ No userId available after auth loading completed');
       setLoading(false);
       setUserAuthenticated(false);
     }
-  }, [userId]);
+  }, [userId, authLoading]);
 
   // Filter projects based on search query
   useEffect(() => {
@@ -167,6 +179,34 @@ export default function Projects() {
     setError('');
     loadProjects();
   };
+
+  // Show loading state while authentication is loading
+  if (authLoading) {
+    return (
+      <PageBackground>
+        <PageHeader>
+          <ValisLogo />
+        </PageHeader>
+        <PageContent>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minHeight: '60vh',
+              gap: 2,
+            }}
+          >
+            <CircularProgress size={40} />
+            <Typography variant="body1" color="text.secondary">
+              Loading authentication...
+            </Typography>
+          </Box>
+        </PageContent>
+      </PageBackground>
+    );
+  }
 
   return (
     <PageBackground>

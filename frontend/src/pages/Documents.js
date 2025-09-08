@@ -21,6 +21,7 @@ import UploadIcon from '@mui/icons-material/Upload';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import TextSnippetIcon from '@mui/icons-material/TextSnippet';
 import ChatIcon from '@mui/icons-material/Chat';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { ThemeContext } from '../context/ThemeContext';
 import {
@@ -32,6 +33,7 @@ import {
   getDocument,
 } from '../api/documents';
 import { useAuth } from '../context/AuthContext';
+import useRefreshRedirect from '../hooks/useRefreshRedirect';
 
 // Import shared components
 import ValisLogo from '../components/ValisLogo';
@@ -73,16 +75,78 @@ export default function Documents() {
   const [uploadProgress, setUploadProgress] = useState(0);
   const [userAuthenticated, setUserAuthenticated] = useState(true); // Assume authenticated initially
 
-  const { userId } = useAuth();
+  const { userId, loading: authLoading } = useAuth();
 
-  // Load documents on component mount
+  // Enable refresh redirect to home page
+  useRefreshRedirect();
+
+  // Load documents on component mount and when projectId changes
   useEffect(() => {
-    loadDocuments();
-  }, [decodedProjectId]);
+    console.log('Documents useEffect triggered:', {
+      decodedProjectId,
+      userId,
+      authLoading,
+      hasProjectId: !!decodedProjectId,
+      hasUserId: !!userId,
+      isAuthLoading: authLoading
+    });
+    
+    // Don't load documents if auth is still loading
+    if (authLoading) {
+      console.log('⏳ Auth is still loading, waiting...');
+      return;
+    }
+    
+    // Only load documents if both projectId and userId are available
+    if (decodedProjectId && userId) {
+      console.log('🔄 Loading documents for project:', decodedProjectId, 'user:', userId);
+      loadDocuments();
+    } else if (!userId) {
+      console.log('❌ No userId available after auth loading completed');
+      setError('Please log in to view project documents.');
+      setLoading(false);
+    } else if (!decodedProjectId) {
+      console.log('❌ No projectId available');
+      setError('Project ID not found in URL');
+      setLoading(false);
+    }
+  }, [decodedProjectId, userId, authLoading]);
+
+  // Initialize project information from URL parameter on mount or refresh
+  useEffect(() => {
+    if (decodedProjectId) {
+      // If we have project info from navigation state, use it
+      if (location.state?.project) {
+        setProject(location.state.project);
+      } else {
+        // On refresh, create project object from projectId
+        setProject({
+          project_id: decodedProjectId,
+          title: decodedProjectId, // Use projectId as title when no navigation state
+          document_count: 0, // Will be updated after loading documents
+        });
+      }
+    }
+  }, [decodedProjectId, location.state]);
+
+  // Update document count when documents are loaded
+  useEffect(() => {
+    setProject(prev => ({
+      ...prev,
+      document_count: documents.length
+    }));
+  }, [documents]);
 
   // Filter documents based on search query
   useEffect(() => {
+    console.log('🔍 Filter useEffect triggered:', {
+      documentsLength: documents.length,
+      searchQuery,
+      documents: documents
+    });
+    
     if (searchQuery.trim() === '') {
+      console.log('📋 No search query, setting all documents as filtered');
       setFilteredDocuments(documents);
     } else {
       const filtered = documents.filter(
@@ -90,32 +154,60 @@ export default function Documents() {
           doc.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           doc.doc_id.toLowerCase().includes(searchQuery.toLowerCase()),
       );
+      console.log('🔍 Filtered documents:', filtered.length, 'out of', documents.length);
       setFilteredDocuments(filtered);
     }
   }, [documents, searchQuery]);
 
   const loadDocuments = async () => {
     try {
+      console.log('🔄 Starting to load documents...', {
+        decodedProjectId,
+        userId,
+        hasProjectId: !!decodedProjectId,
+        hasUserId: !!userId
+      });
+      
+      if (!decodedProjectId) {
+        console.error('❌ No projectId available');
+        setError('Project ID not found');
+        setLoading(false);
+        return;
+      }
+      
+      if (!userId) {
+        console.error('❌ No userId available');
+        setError('User not authenticated');
+        setLoading(false);
+        return;
+      }
+      
       setLoading(true);
       setError('');
 
+      console.log('📡 Calling getProjectDocuments with:', { decodedProjectId, userId });
       const documentsData = await getProjectDocuments(decodedProjectId, userId);
+      console.log('📋 Received documents data:', documentsData);
 
       if (Array.isArray(documentsData)) {
+        console.log('✅ Setting documents:', documentsData.length, 'documents');
+        console.log('📋 Documents data:', documentsData);
         setDocuments(documentsData);
         setUserAuthenticated(true);
+        console.log('✅ Documents state updated, setting loading to false');
         // Update project document count
         setProject((prev) => ({
           ...prev,
           document_count: documentsData.length,
         }));
       } else {
+        console.log('⚠️ Documents data is not array:', documentsData);
         // Handle case where user is not authenticated
         setUserAuthenticated(false);
         setDocuments([]);
       }
     } catch (err) {
-      console.error('Error loading documents:', err);
+      console.error('❌ Error loading documents:', err);
 
       // Check if it's an authentication issue
       if (
@@ -163,29 +255,46 @@ export default function Documents() {
       setUploadProgress(0);
       setError('');
 
-      // Simulate upload progress
-      const progressInterval = setInterval(() => {
-        setUploadProgress((prev) => {
-          if (prev >= 90) return prev;
-          return prev + Math.random() * 20;
-        });
-      }, 200);
+      console.log('🚀 Starting upload process...');
+      console.log('📄 File:', selectedFile.name, 'Size:', selectedFile.size, 'bytes');
+      console.log('📋 Project:', decodedProjectId);
+      console.log('👤 User ID:', userId);
+      console.log('📝 Title:', documentTitle.trim());
 
+      // Validate file size (10MB limit)
+      const maxSize = 10 * 1024 * 1024; // 10MB in bytes
+      if (selectedFile.size > maxSize) {
+        throw new Error('File too large. Please select a PDF smaller than 10MB.');
+      }
+
+      // Validate file type more strictly
+      if (!selectedFile.type.includes('pdf') && !selectedFile.name.toLowerCase().endsWith('.pdf')) {
+        throw new Error('Invalid file type. Please select a valid PDF file.');
+      }
+
+      console.log('📤 Calling upload API...');
       const result = await uploadDocument(
         selectedFile,
         decodedProjectId,
         documentTitle.trim(),
         null,
         userId,
+        // Real progress callback
+        (progress) => {
+          // Ensure progress never exceeds 100% and is a valid number
+          const safeProgress = Math.min(Math.max(progress || 0, 0), 100);
+          setUploadProgress(safeProgress);
+        }
       );
 
-      clearInterval(progressInterval);
-      setUploadProgress(100);
+      console.log('✅ Upload successful:', result);
 
-      console.log('Upload successful:', result);
+      // Ensure we show 100% completion
+      setUploadProgress(100);
 
       // Small delay to show 100% progress
       setTimeout(async () => {
+        console.log('🔄 Reloading documents list...');
         // Reload documents list
         await loadDocuments();
 
@@ -194,9 +303,18 @@ export default function Documents() {
         setSelectedFile(null);
         setDocumentTitle('');
         setUploadProgress(0);
-      }, 500);
+        console.log('✅ Upload process completed!');
+      }, 1000); // Increased delay to better show completion
     } catch (err) {
-      console.error('Error uploading document:', err);
+      console.error('❌ Upload error details:', {
+        message: err.message,
+        stack: err.stack,
+        response: err.response?.data,
+        status: err.response?.status
+      });
+
+      // Reset progress on error
+      setUploadProgress(0);
 
       if (err.message?.includes('not authenticated')) {
         setError('Please log in to upload documents.');
@@ -348,6 +466,39 @@ export default function Documents() {
     });
   };
 
+  const handleRefresh = () => {
+    console.log("Manual refresh triggered");
+    loadDocuments();
+  };
+
+  // Show loading state while authentication is loading
+  if (authLoading) {
+    return (
+      <PageBackground>
+        <PageHeader>
+          <ValisLogo />
+        </PageHeader>
+        <PageContent>
+          <Box
+            sx={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              minHeight: '60vh',
+              gap: 2,
+            }}
+          >
+            <CircularProgress size={40} />
+            <Typography variant="body1" color="text.secondary">
+              Loading authentication...
+            </Typography>
+          </Box>
+        </PageContent>
+      </PageBackground>
+    );
+  }
+
   return (
     <PageBackground>
       {/* Header */}
@@ -362,6 +513,11 @@ export default function Documents() {
               </HeaderActionButton>
             </Tooltip>
           )}
+          <Tooltip title="Refresh Documents" arrow>
+            <HeaderActionButton onClick={handleRefresh}>
+              <RefreshIcon />
+            </HeaderActionButton>
+          </Tooltip>
           <Tooltip title="Back to Projects" arrow>
             <HeaderActionButton onClick={goBack}>
               <ArrowBackIcon />
@@ -500,6 +656,15 @@ export default function Documents() {
               </Box>
             ) : (
               <>
+                {/* Debug info */}
+                {console.log('🎨 Rendering documents section:', {
+                  loading,
+                  userAuthenticated,
+                  documentsLength: documents.length,
+                  filteredDocumentsLength: filteredDocuments.length,
+                  authLoading
+                })}
+                
                 {/* Documents List */}
                 {userAuthenticated && documents.length > 0 && (
                   <Box
@@ -826,12 +991,12 @@ export default function Documents() {
                   variant="body2"
                   sx={{ fontSize: '0.8rem', fontWeight: 600 }}
                 >
-                  {Math.round(uploadProgress)}%
+                  {Math.min(Math.max(Math.round(uploadProgress || 0), 0), 100)}%
                 </Typography>
               </Box>
               <LinearProgress
                 variant="determinate"
-                value={uploadProgress}
+                value={Math.min(Math.max(uploadProgress || 0, 0), 100)}
                 sx={{
                   height: 6,
                   borderRadius: 4,

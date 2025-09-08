@@ -20,11 +20,16 @@ import {
   Alert
 } from '@mui/material';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ZoomInIcon from '@mui/icons-material/ZoomIn';
+import ZoomOutIcon from '@mui/icons-material/ZoomOut';
+import ZoomOutMapIcon from '@mui/icons-material/ZoomOutMap';
+import ResizablePanels from '../components/ResizablePanels';
 import { pdfjs } from 'react-pdf';
 import { getDocument } from '../api/documents';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '@mui/material/styles';
 import { getProjectDocuments, sendChatMessage } from '../api/documents';
+import useRefreshRedirect from '../hooks/useRefreshRedirect';
 
 // Configure PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
@@ -33,8 +38,11 @@ export default function AgentsPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { projectId } = useParams();
-  const { userId } = useAuth();
+  const { userId, loading: authLoading } = useAuth();
   const theme = useTheme();
+
+  // Enable refresh redirect to home page
+  useRefreshRedirect();
 
   // Get project and documents from navigation state
   const project = location.state?.project || {};
@@ -48,23 +56,68 @@ export default function AgentsPage() {
   const [loading, setLoading] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [sendingMessage, setSendingMessage] = useState(false);
+  
+  // Zoom functionality state
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [baseWidth, setBaseWidth] = useState(400);
 
   useEffect(() => {
     console.log('AgentsPage useEffect triggered:', { 
       projectId, 
       userId, 
+      authLoading,
       locationState: location.state,
       documentsFromState: location.state?.documents?.length || 0
     });
 
-    // Always load all documents for the project to ensure dropdown is populated
-    loadProjectDocuments();
-
-    // If a specific document was provided from navigation, load it after documents are loaded
-    if (location.state?.selectedDocument) {
-      loadSelectedDocument(location.state.selectedDocument);
+    // Don't load documents if auth is still loading
+    if (authLoading) {
+      console.log('⏳ Auth is still loading, waiting...');
+      return;
     }
-  }, [location.state, projectId, userId]);
+
+    // Always load all documents for the project to ensure dropdown is populated
+    // This ensures the page works even after refresh when location.state is lost
+    if (projectId && userId) {
+      loadProjectDocuments();
+
+      // If a specific document was provided from navigation state, handle it
+      if (location.state?.selectedDocument) {
+        // Set current document immediately and update URL
+        setCurrentDocument(location.state.selectedDocument);
+        const searchParams = new URLSearchParams(location.search);
+        searchParams.set('document', location.state.selectedDocument.doc_id);
+        navigate(`${location.pathname}?${searchParams.toString()}`, { replace: true });
+        
+        // Load the document content
+        loadSelectedDocument(location.state.selectedDocument, false);
+      }
+    } else if (!userId && !authLoading) {
+      console.log('❌ No userId available after auth loading completed');
+    }
+  }, [projectId, userId, authLoading]); // Removed location.state dependency to avoid unnecessary re-renders
+
+  // Separate useEffect to handle document selection from URL or navigation state
+  useEffect(() => {
+    // If we have documents loaded and no current document selected,
+    // try to select the first document or one from URL params
+    if (documents.length > 0 && !currentDocument) {
+      // Check if there's a document ID in URL search params (for refresh handling)
+      const urlParams = new URLSearchParams(location.search);
+      const docIdFromUrl = urlParams.get('document');
+      
+      if (docIdFromUrl) {
+        const docFromUrl = documents.find(doc => doc.doc_id === docIdFromUrl);
+        if (docFromUrl) {
+          loadSelectedDocument(docFromUrl, false); // Don't update URL since it's already there
+          return;
+        }
+      }
+      
+      // If no document from URL, select the first one and update URL
+      loadSelectedDocument(documents[0], true);
+    }
+  }, [documents, location.search]);
 
   const loadProjectDocuments = async () => {
     if (!projectId || !userId) {
@@ -94,7 +147,7 @@ export default function AgentsPage() {
     }
   };
 
-  const loadSelectedDocument = async (doc) => {
+  const loadSelectedDocument = async (doc, updateUrl = false) => {
     setCurrentDocument(doc);
     setPdfLoading(true);
     setPdfError(null);
@@ -109,6 +162,13 @@ export default function AgentsPage() {
       console.log('Blob URL created:', blobUrl);
       
       setPdfContent(blobUrl);
+      
+      // Update URL if requested (for programmatic selections)
+      if (updateUrl) {
+        const searchParams = new URLSearchParams(location.search);
+        searchParams.set('document', doc.doc_id);
+        navigate(`${location.pathname}?${searchParams.toString()}`, { replace: true });
+      }
     } catch (error) {
       console.error('Error loading PDF:', error);
       setPdfError(error.message || 'Failed to load PDF file');
@@ -125,6 +185,11 @@ export default function AgentsPage() {
         URL.revokeObjectURL(pdfContent);
       }
       await loadSelectedDocument(selectedDoc);
+      
+      // Update URL to include selected document for refresh persistence
+      const searchParams = new URLSearchParams(location.search);
+      searchParams.set('document', selectedDoc.doc_id);
+      navigate(`${location.pathname}?${searchParams.toString()}`, { replace: true });
     }
   };
 
@@ -236,6 +301,59 @@ export default function AgentsPage() {
     }
   };
 
+  // Zoom functionality handlers
+  const handleZoomIn = () => {
+    setZoomLevel(prev => Math.min(prev + 0.25, 3)); // Max zoom 3x
+  };
+
+  const handleZoomOut = () => {
+    setZoomLevel(prev => Math.max(prev - 0.25, 0.5)); // Min zoom 0.5x
+  };
+
+  const handleZoomReset = () => {
+    setZoomLevel(1); // Reset to 100%
+  };
+
+  // Calculate actual width based on zoom level
+  const getDocumentWidth = () => {
+    const maxWidth = Math.min(400, window.innerWidth * 0.35);
+    return maxWidth * zoomLevel;
+  };
+
+  // Show loading state while authentication is loading
+  if (authLoading) {
+    return (
+      <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <Box sx={{ 
+          p: 2, 
+          borderBottom: '1px solid rgba(0, 0, 0, 0.12)', 
+          display: 'flex', 
+          alignItems: 'center' 
+        }}>
+          <IconButton onClick={() => navigate('/projects')} sx={{ mr: 2 }}>
+            <ArrowBackIcon />
+          </IconButton>
+          <Typography variant="h6">Loading...</Typography>
+        </Box>
+        <Box
+          sx={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 2,
+          }}
+        >
+          <CircularProgress size={40} />
+          <Typography variant="body1" color="text.secondary">
+            Loading authentication...
+          </Typography>
+        </Box>
+      </Box>
+    );
+  }
+
   return (
     <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
@@ -257,19 +375,22 @@ export default function AgentsPage() {
 
       {/* Main Content */}
       <Box sx={{ 
-        display: 'flex', 
         height: 'calc(100vh - 64px)',
         border: '1px solid rgba(0, 0, 0, 0.12)',
         borderRadius: '8px',
         overflow: 'hidden'
       }}>
-        {/* Left panel */}
-        <Box sx={{ 
-          width: '40%', 
-          borderRight: '1px solid rgba(0, 0, 0, 0.12)',
-          display: 'flex',
-          flexDirection: 'column'
-        }}>
+        <ResizablePanels
+          defaultLeftWidth={40}
+          minLeftWidth={25}
+          maxLeftWidth={75}
+          storageKey="agents-page-panel-width"
+          leftPanel={
+            <Box sx={{ 
+              height: '100%',
+              display: 'flex',
+              flexDirection: 'column'
+            }}>
           {/* Document selector */}
           <Box sx={{ m: 2 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
@@ -341,6 +462,55 @@ export default function AgentsPage() {
             overflow: 'auto',
             p: 2
           }}>
+            {/* Zoom Controls */}
+            {pdfContent && !loading && !pdfError && !pdfLoading && (
+              <Box sx={{ 
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'center', 
+                mb: 2,
+                gap: 1,
+                flexWrap: 'wrap'
+              }}>
+                <Tooltip title="Zoom Out">
+                  <IconButton 
+                    onClick={handleZoomOut} 
+                    disabled={zoomLevel <= 0.5}
+                    size="small"
+                  >
+                    <ZoomOutIcon />
+                  </IconButton>
+                </Tooltip>
+                
+                <Typography variant="body2" sx={{ 
+                  minWidth: '60px', 
+                  textAlign: 'center',
+                  fontWeight: 'medium'
+                }}>
+                  {Math.round(zoomLevel * 100)}%
+                </Typography>
+                
+                <Tooltip title="Zoom In">
+                  <IconButton 
+                    onClick={handleZoomIn} 
+                    disabled={zoomLevel >= 3}
+                    size="small"
+                  >
+                    <ZoomInIcon />
+                  </IconButton>
+                </Tooltip>
+                
+                <Tooltip title="Reset Zoom (100%)">
+                  <IconButton 
+                    onClick={handleZoomReset}
+                    size="small"
+                  >
+                    <ZoomOutMapIcon />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+            )}
+            
             {loading ? (
               <Paper sx={{ p: 4, textAlign: 'center' }}>
                 <CircularProgress sx={{ mb: 2 }} />
@@ -394,7 +564,7 @@ export default function AgentsPage() {
                   <Page
                     key={`page_${index + 1}`}
                     pageNumber={index + 1}
-                    width={Math.min(400, window.innerWidth * 0.35)}
+                    width={getDocumentWidth()}
                     renderTextLayer={false}
                     renderAnnotationLayer={false}
                   />
@@ -417,14 +587,14 @@ export default function AgentsPage() {
               </Paper>
             )}
           </Box>
-        </Box>
-
-        {/* Right panel - Chat */}
-        <Box sx={{ 
-          flexGrow: 1, 
-          display: 'flex', 
-          flexDirection: 'column'
-        }}>
+            </Box>
+          }
+          rightPanel={
+            <Box sx={{ 
+              height: '100%',
+              display: 'flex', 
+              flexDirection: 'column'
+            }}>
           {/* Chat messages area */}
           <Box sx={{ 
             flexGrow: 1, 
@@ -698,7 +868,9 @@ export default function AgentsPage() {
               </Button>
             </Box>
           </Paper>
-        </Box>
+            </Box>
+          }
+        />
       </Box>
     </Box>
   );

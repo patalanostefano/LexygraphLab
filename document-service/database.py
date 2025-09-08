@@ -80,6 +80,15 @@ class DatabaseManager:
             return False
 
         try:
+            # Clean text content to remove problematic characters
+            if text_content:
+                # Remove null characters and other problematic Unicode characters
+                text_content = text_content.replace('\u0000', '').replace('\x00', '')
+                # Remove other problematic control characters except newlines and tabs
+                import re
+                text_content = re.sub(r'[\x01-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f]', '', text_content)
+                text_content = text_content.strip()
+            
             # Convert bytes to base64 for JSON storage
             file_data_b64 = base64.b64encode(file_data).decode('utf-8')
 
@@ -210,13 +219,23 @@ class DatabaseManager:
             # We need to explicitly convert embeddings to list of floats for Supabase
             chunks_to_insert = []
             for chunk in chunks_data:
+                # Clean chunk text to remove problematic characters
+                chunk_text = chunk['chunk_text']
+                if chunk_text:
+                    # Remove null characters and other problematic Unicode characters
+                    chunk_text = chunk_text.replace('\u0000', '').replace('\x00', '')
+                    # Remove other problematic control characters except newlines and tabs
+                    import re
+                    chunk_text = re.sub(r'[\x01-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f]', '', chunk_text)
+                    chunk_text = chunk_text.strip()
+                
                 chunks_to_insert.append({
                     'id': chunk['id'],
                     'user_id': chunk['user_id'],
                     'project_id': chunk['project_id'],
                     'doc_id': chunk['doc_id'],
                     'chunk_index': chunk['chunk_index'],
-                    'chunk_text': chunk['chunk_text'],
+                    'chunk_text': chunk_text,
                     'embedding': chunk['embedding'],
                     'embedding_size': len(chunk['embedding'])
                 })

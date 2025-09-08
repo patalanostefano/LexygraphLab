@@ -1,4 +1,5 @@
 // Fixed api/documents.js with improved auth consistency and error handling
+import axios from 'axios';
 import apiClient from './apiClient';
 
 // Get user projects (NEW FUNCTION)
@@ -42,6 +43,7 @@ export const uploadDocument = async (
   title,
   docId = null,
   contextUserId,
+  onProgress = null,
 ) => {
   try {
     if (!contextUserId) {
@@ -58,6 +60,12 @@ export const uploadDocument = async (
     console.log(
       `📤 Uploading document: "${title}" to project: ${projectId} for user: ${userId}`,
     );
+    console.log(`📄 File details:`, {
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      lastModified: new Date(file.lastModified).toISOString()
+    });
 
     const formData = new FormData();
     formData.append('file', file);
@@ -66,18 +74,50 @@ export const uploadDocument = async (
     formData.append('title', title.trim());
     if (docId?.trim()) formData.append('doc_id', docId.trim());
 
-    const response = await apiClient.post(
+    // Log form data
+    console.log('📋 Form data being sent:');
+    for (let [key, value] of formData.entries()) {
+      if (key === 'file') {
+        console.log(`  ${key}: [File object] ${value.name}`);
+      } else {
+        console.log(`  ${key}: ${value}`);
+      }
+    }
+
+    console.log('🌐 Making API request to /api/v1/documents/upload');
+    
+    // Create a separate axios instance with longer timeout for uploads
+    const uploadClient = axios.create({
+      baseURL: apiClient.defaults.baseURL,
+      timeout: 180000, // 3 minute timeout for uploads
+    });
+
+    // Copy the auth headers from the main client
+    const authHeaders = {};
+    if (apiClient.defaults.headers['X-User-Id']) {
+      authHeaders['X-User-Id'] = apiClient.defaults.headers['X-User-Id'];
+    }
+
+    const response = await uploadClient.post(
       '/api/v1/documents/upload',
       formData,
       {
-        headers: { 'Content-Type': 'multipart/form-data' },
-        timeout: 30000, // 30 second timeout for uploads
+        headers: { 
+          'Content-Type': 'multipart/form-data',
+          'X-User-Id': userId, // Explicitly set user ID
+          ...authHeaders
+        },
         // Add progress tracking if needed
         onUploadProgress: (progressEvent) => {
           const percentCompleted = Math.round(
             (progressEvent.loaded * 100) / progressEvent.total,
           );
           console.log(`📊 Upload progress: ${percentCompleted}%`);
+          
+          // Call the provided progress callback if available
+          if (onProgress && typeof onProgress === 'function') {
+            onProgress(percentCompleted);
+          }
         },
       },
     );
@@ -86,6 +126,17 @@ export const uploadDocument = async (
     return response.data;
   } catch (error) {
     console.error('❌ Document upload error:', error);
+    console.error('❌ Error details:', {
+      message: error.message,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      config: error.config ? {
+        url: error.config.url,
+        method: error.config.method,
+        timeout: error.config.timeout
+      } : 'No config'
+    });
 
     // Enhanced upload error handling
     if (error.message === 'User not authenticated') {

@@ -99,18 +99,28 @@ async def upload_document(
     temp_path = None
     chunks_data = []
     try:
+        # Create temporary file for chunker service
         with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
             tmp.write(file_content)
             temp_path = tmp.name
 
+        print(f"📄 Sending document to chunker service: {file.filename}")
+        print(f"📊 File size: {len(file_content)} bytes")
+        
+        # Call chunker service with increased timeout
         with open(temp_path, "rb") as f:
             files = {"file": (file.filename, f)}
-            r = requests.post(f"{CHUNKER_URL}/chunk", files=files, timeout=120)
+            print(f"🔗 Calling chunker at: {CHUNKER_URL}/chunk")
+            r = requests.post(f"{CHUNKER_URL}/chunk", files=files, timeout=300)  # 5 minute timeout
 
+        print(f"📋 Chunker response status: {r.status_code}")
+        
         if r.status_code != 200:
+            print(f"❌ Chunker error response: {r.text}")
             raise HTTPException(status_code=500, detail=f"Chunker error: {r.text}")
 
         chunks_from_service = r.json().get("chunks", [])
+        print(f"✅ Received {len(chunks_from_service)} chunks from chunker service")
 
         chunks_to_store = [{
             "id": f"{document_id}_{i}",
@@ -122,9 +132,11 @@ async def upload_document(
             "embedding": chunk['embedding']
         } for i, chunk in enumerate(chunks_from_service)]
 
+        print(f"💾 Storing {len(chunks_to_store)} chunks in database...")
         if not db_manager.store_chunks(chunks_to_store):
             raise HTTPException(status_code=500, detail="Failed to store chunks in database.")
 
+        # Remove embeddings from response (they're large)
         for chunk in chunks_to_store:
             chunk.pop("embedding", None)
 
