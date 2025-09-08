@@ -10,13 +10,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir \
+RUN pip install \
     torch==2.3.0+cpu \
     torchvision==0.18.0+cpu \
     torchaudio==2.3.0+cpu \
     -f https://download.pytorch.org/whl/torch_stable.html
 
-RUN pip install --no-cache-dir \
+RUN pip install \
     spacy \
     pymupdf \
     fastapi \
