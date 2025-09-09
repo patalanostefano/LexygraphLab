@@ -19,10 +19,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean
 
 # Install lightweight CPU-only PyTorch and minimal dependencies
-RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu \
+RUN pip install --upgrade pip \
+    && pip install --index-url https://download.pytorch.org/whl/cpu \
         torch==2.1.1+cpu \
-    && pip install --no-cache-dir \
+    && pip install  \
         fastapi==0.104.1 \
         uvicorn[standard]==0.24.0 \
         requests==2.31.0 \

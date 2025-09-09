@@ -20,14 +20,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean
 
 # Install dependencies (lightweight orchestration service)
-RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir \
+RUN pip install --upgrade pip \
+    && pip install \
         fastapi==0.104.1 \
         uvicorn[standard]==0.24.0 \
         requests==2.31.0 \
         pydantic==2.5.0 \
         python-multipart==0.0.6 \
-        google-generativeai==0.3.2
+        google-genai
 
 # Copy source code
 COPY . .

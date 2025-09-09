@@ -22,7 +22,10 @@ public class GatewayConfig {
     @Value("${services.search-agent.url:http://localhost:8002}")
     private String searchAgentUrl;
 
-    // prendi l'URL da env o usa il default indicato
+    @Value("${services.generation-agent.url:http://localhost:8003}")
+    private String generationAgentUrl;
+
+    // Orchestration service URL
     @Value("${SERVICES_ORCHESTRATION_SERVICE_URL:http://orchestration-service:8005}")
     private String orchestrationServiceUrl;
 
@@ -136,7 +139,7 @@ public class GatewayConfig {
                                 .rewritePath("/api/v1/agents/health", "/health"))
                         .uri(extractionAgentUrl))
 
-                // SEARCH AGENT ROUTES - NEW
+                // SEARCH AGENT ROUTES - EXISTING
 
                 // Main search endpoint
                 .route("search_agent", r -> r
@@ -164,6 +167,32 @@ public class GatewayConfig {
                                 .rewritePath("/api/v1/search/health", "/health"))
                         .uri(searchAgentUrl))
 
+                // ORCHESTRATION AGENT ROUTES - NEW
+
+                // Main orchestration endpoint - Direct to orchestration service
+                .route("orchestration_agent", r -> r
+                        .path("/api/v1/agents/orchestrate")
+                        .and()
+                        .method(HttpMethod.POST)
+                        .filters(f -> f.setRequestHeader("X-Gateway-Source", "api-gateway"))
+                        .uri(orchestrationServiceUrl))
+
+                // Orchestration health check
+                .route("orchestration_agent_health", r -> r
+                        .path("/api/v1/agents/orchestrate/health")
+                        .and()
+                        .method(HttpMethod.GET)
+                        .filters(f -> f
+                                .setRequestHeader("X-Gateway-Source", "api-gateway")
+                                .rewritePath("/api/v1/agents/orchestrate/health", "/health"))
+                        .uri(orchestrationServiceUrl))
+
+                // LEGACY ORCHESTRATION ROUTE - Keep for backward compatibility
+                .route("orchestration-service-route", r -> r
+                        .path("/api/v1/agents/route")
+                        .filters(f -> f.setRequestHeader("X-Gateway-Source", "api-gateway"))
+                        .uri(orchestrationServiceUrl))
+
                 // HEALTH CHECKS - EXISTING
                 .route("document_service_health", r -> r
                         .path("/")
@@ -177,13 +206,6 @@ public class GatewayConfig {
                         .method(HttpMethod.GET)
                         .uri(documentServiceUrl))
 
-
-                // ✅ orchestration-service (router degli agent)
-                .route("orchestration-service-route", r -> r
-                        .path("/api/v1/agents/route")
-                        .uri(orchestrationServiceUrl))
-
-                        
                 // GATEWAY HEALTH - EXISTING
                 .route("health_check", r -> r
                         .path("/api/health")

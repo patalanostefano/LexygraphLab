@@ -23,7 +23,7 @@ RUN pip install \
     uvicorn[standard] \
     requests \
     transformers \
-    python-multipart # <--- Aggiungi questa riga
+    python-multipart 
 
 # Scarica e installa il modello linguistico di spaCy
 RUN python -m spacy download it_core_news_sm

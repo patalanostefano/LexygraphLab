@@ -1,24 +1,4 @@
 services:
-  # Chunker Service (FastAPI/Python)
-  chunker-service:
-    build:
-      context: ./chunker-service
-      dockerfile: Dockerfile
-    # Espone la porta alla rete interna di Docker, consentendo al Document Service di connettersi.
-    expose:
-      - '8000'
-    environment:
-      - PYTHONUNBUFFERED=1
-    networks:
-      - app-network
-    healthcheck:
-      # L'endpoint /health è stato aggiunto al codice Python per il controllo dello stato.
-      test: ['CMD', 'curl', '-f', 'http://localhost:8000/health']
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 15s
-
   # API Gateway (Spring Boot)
   api-gateway:
     build:
@@ -37,8 +17,6 @@ services:
       - app-network
     depends_on:
       document-service:
-        condition: service_healthy
-      extraction-agent:
         condition: service_healthy
       search-agent:
         condition: service_healthy
@@ -71,40 +49,6 @@ services:
       retries: 3
       start_period: 15s
 
-  # Extraction Agent (FastAPI/Python + Transformers - CPU optimized)
-  extraction-agent:
-    build:
-      context: ./extraction-agent
-      dockerfile: Dockerfile
-    ports:
-      - '8001:8001'
-    environment:
-      - PYTHONPATH=/app
-      - PYTHONUNBUFFERED=1
-      - DOCUMENT_SERVICE_URL=http://api-gateway:8080
-      - TORCH_NUM_THREADS=1
-      - OMP_NUM_THREADS=1
-    networks:
-      - app-network
-    depends_on:
-      document-service:
-        condition: service_healthy
-    healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:8001/health']
-      interval: 60s
-      timeout: 45s
-      retries: 2
-      start_period: 180s # Allow time for model loading
-    # Optimized resource limits for CPU inference
-    deploy:
-      resources:
-        limits:
-          memory: 2G
-          cpus: '1.0'
-        reservations:
-          memory: 1G
-          cpus: '0.5'
-
   # Search Agent (FastAPI/Python - Lightweight)
   search-agent:
     build:
@@ -123,7 +67,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 20s
-    # Lightweight resource allocation
     deploy:
       resources:
         limits:
@@ -155,7 +98,6 @@ services:
       timeout: 15s
       retries: 3
       start_period: 30s
-    # Lightweight resource allocation since it uses external Gemini API
     deploy:
       resources:
         limits:
@@ -184,8 +126,6 @@ services:
     depends_on:
       document-service:
         condition: service_healthy
-      extraction-agent:
-        condition: service_healthy
       search-agent:
         condition: service_healthy
       generation-agent:
@@ -199,38 +139,28 @@ services:
       retries: 3
       start_period: 30s
 
-
   orchestration-wrapper:
     build:
       context: ./orchestration-wrapper
-      dockerfile: Dockerfile
-    image: orchestration-wrapper:latest
-    environment:
-      WRAPPER_PORT: 8010
-      SEARCH_AGENT_URL: http://search-agent:8002
-      EXTRACTION_AGENT_URL: http://extraction-agent:8001
-      GENERATION_AGENT_URL: http://generation-agent:8003
-      REQUEST_TIMEOUT_SECONDS: 60
-      RETRY_ATTEMPTS: 1
-      ALLOWED_ORIGINS: "*"
     ports:
-      - "8010:8010"
-    networks:
-      - app-network
-    depends_on:
-      search-agent:
-        condition: service_healthy
-      extraction-agent:
-        condition: service_healthy
-      generation-agent:
-        condition: service_healthy
+      - '8010:8010'
+    environment:
+      - WRAPPER_PORT=8010
+      - DOCUMENT_SERVICE_URL=http://document-service:8000
+      - EXTRACTION_AGENT_URL=http://extraction-agent:8001
+      - SEARCH_AGENT_URL=http://search-agent:8002
+      - GENERATION_AGENT_URL=http://generation-agent:8003
+      - ORCHESTRATION_AGENT_URL=http://orchestration-agent:8005
+      - REQUEST_TIMEOUT_SECONDS=60
+      - RETRY_ATTEMPTS=1
+      - ALLOWED_ORIGINS=*
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8010/health"]
-      interval: 30s
+      test: ['CMD', 'curl', '-fsS', 'http://localhost:8010/health']
+      interval: 20s
       timeout: 10s
-      retries: 3
-      start_period: 15s
-
+      retries: 5
+      start_period: 20s
+    networks: [app-network]
 
   # Frontend (React/Nginx)
   frontend:

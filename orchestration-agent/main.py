@@ -15,7 +15,8 @@ import re
 from contextlib import asynccontextmanager
 import asyncio
 import logging
-import google.generativeai as genai
+from google import genai
+from google.genai import types
 from urllib.parse import quote
 
 # Configure logging
@@ -29,7 +30,7 @@ GEMINI_API_KEYS = [
 ]
 
 # Global variables
-gemini_model = None
+gemini_client = None
 current_gemini_key_index = 0
 service_ready = False
 
@@ -41,10 +42,9 @@ GENERATION_AGENT_URL = os.getenv("GENERATION_AGENT_URL", "http://generation-agen
 
 def configure_gemini():
     """Configure Gemini with current API key"""
-    global gemini_model, current_gemini_key_index
+    global gemini_client, current_gemini_key_index
     try:
-        genai.configure(api_key=GEMINI_API_KEYS[current_gemini_key_index])
-        gemini_model = genai.GenerativeModel("gemini-1.5-flash")
+        gemini_client = genai.Client(api_key=GEMINI_API_KEYS[current_gemini_key_index])
         logger.info(f"Configured Gemini with key index {current_gemini_key_index}")
     except Exception as e:
         logger.error(f"Failed to configure Gemini: {e}")
@@ -303,9 +303,9 @@ async def execute_generation_action(query: str, document_titles: List[str], full
 
 async def plan_and_execute(prompt: str, documents: List[Dict], max_turns: int = 3) -> tuple[List[Dict[str, Any]], str]:
     """Plan and execute agent actions using Gemini"""
-    global gemini_model
+    global gemini_client
     
-    if not gemini_model:
+    if not gemini_client:
         raise HTTPException(status_code=503, detail="Gemini not available")
     
     # Prepare document context
@@ -333,10 +333,13 @@ Respond with JSON actions or direct analysis if no agent actions are needed."""
         logger.info(f"Planning turn {turn + 1}")
         
         try:
-            model = genai.GenerativeModel(model_name="gemini-1.5-flash", system_instruction=SYSTEM_PROMPT)
-            chat = model.start_chat()
+            # Create the full prompt with system instruction
+            full_prompt = f"{SYSTEM_PROMPT}\n\n{current_context}"
             
-            response = chat.send_message(current_context)
+            response = gemini_client.models.generate_content(
+                model="gemini-1.5-flash",
+                contents=full_prompt
+            )
             response_text = response.text
             
             logger.info(f"Gemini response: {response_text[:200]}...")
@@ -388,11 +391,12 @@ Respond with JSON actions or direct analysis if no agent actions are needed."""
                 raise HTTPException(status_code=503, detail="All planning attempts failed")
     
     # If we reach max turns, synthesize final response
-    final_prompt = f"Synthesize the results from all actions taken to provide a comprehensive answer to: {prompt}"
+    final_prompt = f"{SYSTEM_PROMPT}\n\nSynthesize the results from all actions taken to provide a comprehensive answer to: {prompt}"
     try:
-        model = genai.GenerativeModel(model_name="gemini-1.5-flash", system_instruction=SYSTEM_PROMPT)
-        chat = model.start_chat()
-        response = chat.send_message(final_prompt)
+        response = gemini_client.models.generate_content(
+            model="gemini-1.5-flash",
+            contents=final_prompt
+        )
         return actions_taken, response.text
     except Exception as e:
         logger.error(f"Final synthesis failed: {e}")
@@ -405,7 +409,7 @@ async def health_check():
     return {
         "status": "healthy", 
         "service": "orchestration-agent",
-        "gemini_configured": gemini_model is not None,
+        "gemini_configured": gemini_client is not None,
         "service_ready": service_ready
     }
 

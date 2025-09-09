@@ -96,3 +96,48 @@ AGENT_1_ID=research_agent
 AGENT_2_ID=analysis_agent
 AGENT_3_ID=summary_agent
 ```
+
+# Full stack (all services including chunker and extraction agent)
+
+./run-stack.sh full up
+
+# OR
+
+docker-compose -f docker-compose.yml -f docker-compose.full.yml up -d
+
+# Without chunker service (but with extraction agent)
+
+./run-stack.sh no-chunker up
+
+# OR
+
+docker-compose -f docker-compose.yml -f docker-compose.no-chunker.yml up -d
+
+# Without extraction agent (but with chunker)
+
+./run-stack.sh no-extraction up
+
+# OR
+
+docker-compose -f docker-compose.yml -f docker-compose.no-extraction.yml up -d
+
+# Minimal stack (without chunker and extraction agent)
+
+./run-stack.sh minimal up
+
+# OR
+
+docker-compose up -d
+
+# Build specific configuration
+
+./run-stack.sh full build
+./run-stack.sh no-chunker build
+
+# Stop services
+
+./run-stack.sh full down
+
+# View logs
+
+./run-stack.sh full logs

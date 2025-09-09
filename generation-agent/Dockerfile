@@ -19,8 +19,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get clean
 
 # Install lightweight dependencies (no heavy ML models needed)
-RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir \
+RUN pip install --upgrade pip \
+    && pip install \
         fastapi==0.104.1 \
         uvicorn[standard]==0.24.0 \
         requests==2.31.0 \
