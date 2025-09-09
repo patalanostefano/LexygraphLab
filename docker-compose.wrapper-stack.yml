@@ -1,0 +1,132 @@
+name: lexygraphlab-wrapper-stack
+
+services:
+  document-service:
+    build:
+      context: ./document-service
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/health"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 15s
+    networks: [app-network]
+
+  extraction-agent:
+    build: ./extraction-agent
+    container_name: lexygraphlab-extraction-agent
+    environment:
+      - PORT=8001
+    expose:
+      - "8001"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8001/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 15
+
+
+  search-agent:
+    build:
+      context: ./search-agent
+    ports:
+      - "8002:8002"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app
+    depends_on:
+      document-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8002/health"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 15s
+    networks: [app-network]
+
+  generation-agent:
+    build:
+      context: ./generation-agent
+    ports:
+      - "8003:8003"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app
+      - DOCUMENT_SERVICE_URL=http://document-service:8000
+      # Se serve la chiave per Gemini:
+      # - GEMINI_API_KEY=${GEMINI_API_KEY}
+    depends_on:
+      document-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8003/health"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    networks: [app-network]
+
+  orchestration-agent:
+    build:
+      context: ./orchestration-agent
+    ports:
+      - "8005:8005"
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app
+      - DOCUMENT_SERVICE_URL=http://document-service:8000
+      - SEARCH_AGENT_URL=http://search-agent:8002
+      - GENERATION_AGENT_URL=http://generation-agent:8003
+    depends_on:
+      document-service:
+        condition: service_healthy
+      search-agent:
+        condition: service_healthy
+      generation-agent:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8005/health"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    networks: [app-network]
+
+  orchestration-wrapper:
+    build:
+      context: ./orchestration-wrapper
+    ports:
+      - "8010:8010"
+    environment:
+      - WRAPPER_PORT=8010
+      - DOCUMENT_SERVICE_URL=http://document-service:8000
+      - EXTRACTION_AGENT_URL=http://extraction-agent:8001
+      - SEARCH_AGENT_URL=http://search-agent:8002
+      - GENERATION_AGENT_URL=http://generation-agent:8003
+      - ORCHESTRATION_AGENT_URL=http://orchestration-agent:8005
+      - REQUEST_TIMEOUT_SECONDS=60
+      - RETRY_ATTEMPTS=1
+      - ALLOWED_ORIGINS=*
+    depends_on:
+      extraction-agent:
+        condition: service_healthy
+      orchestration-agent:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8010/health"]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    networks: [app-network]
+
+networks:
+  app-network:
+    driver: bridge
