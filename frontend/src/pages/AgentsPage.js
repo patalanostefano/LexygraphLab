@@ -306,8 +306,6 @@ export default function AgentsPage() {
         timestamp: new Date().toISOString(),
         agentId: response.agentId || 'orchestration-agent',
         executionId: response.executionId,
-        actionsTaken: response.actionsTaken || [],
-        documentIds: response.documentIds || [],
       };
 
       setMessages((prev) => [...prev, agentMessage]);
@@ -821,74 +819,6 @@ export default function AgentsPage() {
                           {message.content}
                         </Typography>
 
-                        {/* Actions taken by orchestration agent */}
-                        {message.type === 'agent' &&
-                          message.actionsTaken &&
-                          message.actionsTaken.length > 0 && (
-                            <Accordion
-                              sx={{ mt: 2, backgroundColor: 'transparent' }}
-                            >
-                              <AccordionSummary
-                                expandIcon={<ExpandMoreIcon />}
-                                aria-controls="actions-content"
-                                id="actions-header"
-                                sx={{ minHeight: 'auto', p: 0 }}
-                              >
-                                <Typography
-                                  variant="caption"
-                                  color="text.secondary"
-                                >
-                                  AI Actions Taken (
-                                  {message.actionsTaken.length})
-                                </Typography>
-                              </AccordionSummary>
-                              <AccordionDetails sx={{ p: 1 }}>
-                                {message.actionsTaken.map(
-                                  (action, actionIndex) => (
-                                    <Box
-                                      key={actionIndex}
-                                      sx={{
-                                        mb: 1,
-                                        p: 1,
-                                        backgroundColor: 'rgba(0,0,0,0.05)',
-                                        borderRadius: 1,
-                                      }}
-                                    >
-                                      <Typography
-                                        variant="caption"
-                                        sx={{ fontWeight: 'bold' }}
-                                      >
-                                        Turn {action.turn}:{' '}
-                                        {action.action.action_type.toUpperCase()}
-                                      </Typography>
-                                      <Typography
-                                        variant="caption"
-                                        sx={{ display: 'block', mt: 0.5 }}
-                                      >
-                                        Query: {action.action.query}
-                                      </Typography>
-                                      {action.action.document_titles && (
-                                        <Typography
-                                          variant="caption"
-                                          sx={{
-                                            display: 'block',
-                                            mt: 0.5,
-                                            fontStyle: 'italic',
-                                          }}
-                                        >
-                                          Documents:{' '}
-                                          {action.action.document_titles.join(
-                                            ', ',
-                                          )}
-                                        </Typography>
-                                      )}
-                                    </Box>
-                                  ),
-                                )}
-                              </AccordionDetails>
-                            </Accordion>
-                          )}
-
                         {/* Status indicators */}
                         {message.confirmed && (
                           <Typography
@@ -950,66 +880,16 @@ export default function AgentsPage() {
                             justifyContent: 'flex-start',
                           }}
                         >
-                          <Button
-                            size="small"
-                            variant="outlined"
-                            disabled={
-                              message.confirmed || message.beingModified
-                            }
-                            onClick={() => handleModifyResponse(index)}
+                          <Typography
+                            variant="caption"
                             sx={{
-                              minWidth: 'auto',
-                              px: 2,
-                              py: 0.5,
-                              fontSize: '0.75rem',
-                              borderColor: message.confirmed
-                                ? theme.palette.success.light
-                                : theme.palette.primary.light,
-                              color: message.confirmed
-                                ? theme.palette.success.main
-                                : theme.palette.primary.main,
-                              '&:hover': {
-                                borderColor: message.confirmed
-                                  ? theme.palette.success.main
-                                  : theme.palette.primary.main,
-                                backgroundColor: message.confirmed
-                                  ? theme.palette.success.light + '10'
-                                  : theme.palette.primary.light + '10',
-                              },
-                              '&:disabled': {
-                                borderColor: theme.palette.grey[300],
-                                color: theme.palette.grey[400],
-                              },
+                              color: 'text.secondary',
+                              fontSize: '0.7rem',
+                              fontStyle: 'italic',
                             }}
                           >
-                            {message.beingModified ? 'Modifying...' : 'Modify'}
-                          </Button>
-                          <Button
-                            size="small"
-                            variant="contained"
-                            disabled={message.confirmed}
-                            onClick={() => handleConfirmResponse(index)}
-                            sx={{
-                              minWidth: 'auto',
-                              px: 2,
-                              py: 0.5,
-                              fontSize: '0.75rem',
-                              backgroundColor: message.confirmed
-                                ? theme.palette.success.light
-                                : theme.palette.success.main,
-                              '&:hover': {
-                                backgroundColor: message.confirmed
-                                  ? theme.palette.success.light
-                                  : theme.palette.success.dark,
-                              },
-                              '&:disabled': {
-                                backgroundColor: theme.palette.grey[300],
-                                color: theme.palette.grey[500],
-                              },
-                            }}
-                          >
-                            {message.confirmed ? 'Confirmed ✓' : 'Confirm'}
-                          </Button>
+                            Analysis completed using AI orchestration
+                          </Typography>
                         </Box>
                       )}
                     </Box>

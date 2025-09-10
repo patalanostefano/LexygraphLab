@@ -8,7 +8,7 @@ from typing import List, Optional, Dict, Any, Union
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import uvicorn
-import requests
+import httpx
 import os
 import json
 import re
@@ -18,6 +18,9 @@ import logging
 from google import genai
 from google.genai import types
 from urllib.parse import quote
+
+httpx_client = None
+
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -36,9 +39,7 @@ service_ready = False
 
 # Service URLs
 DOCUMENT_SERVICE_URL = os.getenv("DOCUMENT_SERVICE_URL", "http://document-service:8000")
-EXTRACTION_AGENT_URL = os.getenv("EXTRACTION_AGENT_URL", "http://extraction-agent:8001")
-SEARCH_AGENT_URL = os.getenv("SEARCH_AGENT_URL", "http://search-agent:8002")
-GENERATION_AGENT_URL = os.getenv("GENERATION_AGENT_URL", "http://generation-agent:8003")
+WRAPPER_URL = os.getenv("WRAPPER_URL", "http://orchestration-wrapper:8010")
 
 def configure_gemini():
     """Configure Gemini with current API key"""
@@ -59,13 +60,16 @@ def try_next_gemini_key():
 
 def initialize_service():
     """Initialize the orchestration service"""
-    global service_ready
+    global service_ready, httpx_client
     
     try:
         logger.info("Initializing Orchestration Agent Service...")
         
         # Configure Gemini
         configure_gemini()
+        
+        # Initialize httpx client
+        httpx_client = httpx.AsyncClient(timeout=120.0)
         
         service_ready = True
         logger.info("Orchestration Agent Service initialized successfully!")
@@ -83,6 +87,8 @@ async def lifespan(app: FastAPI):
     yield
     # Shutdown: cleanup if needed
     logger.info("Shutting down Orchestration Agent Service...")
+    if httpx_client:
+        await httpx_client.aclose()
 
 app = FastAPI(
     title="Orchestration Agent Service",
@@ -145,6 +151,7 @@ Always respond with a JSON list of actions to take:
 ]
 
 If no actions are needed, respond with your direct analysis instead of JSON.
+IMPORTANT: After executing actions, always provide a final comprehensive answer that directly addresses the user's question. Do not expose the internal action details to the user - focus on delivering a clear, complete response based on all gathered information.
 """
 
 def extract_json_actions(response_text: str) -> Optional[List[Dict[str, Any]]]:
@@ -176,6 +183,7 @@ def extract_json_actions(response_text: str) -> Optional[List[Dict[str, Any]]]:
 
 async def fetch_document_content(document_id: str) -> Dict[str, Any]:
     """Fetch document content and metadata"""
+    global httpx_client
     try:
         parts = document_id.split('_')
         if len(parts) < 3:
@@ -188,7 +196,8 @@ async def fetch_document_content(document_id: str) -> Dict[str, Any]:
         encoded_project_id = quote(project_id, safe='')
         url = f"{DOCUMENT_SERVICE_URL}/api/v1/documents/{user_id}/{encoded_project_id}/{doc_id}/text"
         
-        response = requests.get(url, timeout=30)
+        # CHANGE FROM requests to httpx:
+        response = await httpx_client.get(url)
         response.raise_for_status()
         
         doc_data = response.json()
@@ -213,7 +222,7 @@ async def fetch_document_content(document_id: str) -> Dict[str, Any]:
     except Exception as e:
         logger.error(f"Failed to fetch document {document_id}: {e}")
         raise HTTPException(status_code=502, detail=f"Failed to fetch document: {e}")
-
+    
 def title_to_document_id(title: str, available_docs: List[Dict]) -> Optional[str]:
     """Convert document title back to document ID"""
     for doc in available_docs:
@@ -223,14 +232,16 @@ def title_to_document_id(title: str, available_docs: List[Dict]) -> Optional[str
 
 async def execute_search_action(query: str) -> str:
     """Execute search agent action"""
+    global httpx_client
     try:
-        url = f"{SEARCH_AGENT_URL}/api/v1/agents/search"
+        url = f"{WRAPPER_URL}/api/v1/agents/search"
         payload = {
             "query": query,
             "agent_id": "search-agent"
         }
         
-        response = requests.post(url, json=payload, timeout=60)
+        # CHANGE FROM requests to httpx:
+        response = await httpx_client.post(url, json=payload)
         response.raise_for_status()
         
         result = response.json()
@@ -240,8 +251,10 @@ async def execute_search_action(query: str) -> str:
         logger.error(f"Search action failed: {e}")
         return f"Search failed: {str(e)}"
 
+
 async def execute_extraction_action(query: str, document_titles: List[str], available_docs: List[Dict]) -> str:
     """Execute extraction agent action"""
+    global httpx_client
     try:
         # Convert titles to document IDs
         document_ids = []
@@ -253,14 +266,15 @@ async def execute_extraction_action(query: str, document_titles: List[str], avai
         if not document_ids:
             return "No valid documents found for extraction"
         
-        url = f"{EXTRACTION_AGENT_URL}/api/v1/agents/process"
+        url = f"{WRAPPER_URL}/api/v1/agents/process"
         payload = {
             "agentId": "extraction-agent",
             "prompt": query,
             "documentIds": document_ids
         }
         
-        response = requests.post(url, json=payload, timeout=120)
+        # CHANGE FROM requests to httpx:
+        response = await httpx_client.post(url, json=payload)
         response.raise_for_status()
         
         result = response.json()
@@ -272,6 +286,7 @@ async def execute_extraction_action(query: str, document_titles: List[str], avai
 
 async def execute_generation_action(query: str, document_titles: List[str], full_doc: bool, available_docs: List[Dict]) -> str:
     """Execute generation agent action"""
+    global httpx_client
     try:
         # Convert titles to document IDs
         document_ids = []
@@ -283,7 +298,7 @@ async def execute_generation_action(query: str, document_titles: List[str], full
         if not document_ids:
             return "No valid documents found for generation"
         
-        url = f"{GENERATION_AGENT_URL}/api/v1/agents/process"
+        url = f"{WRAPPER_URL}/api/v1/agents/process"
         payload = {
             "agentId": "generation-agent",
             "prompt": query,
@@ -291,7 +306,8 @@ async def execute_generation_action(query: str, document_titles: List[str], full
             "fullDoc": full_doc
         }
         
-        response = requests.post(url, json=payload, timeout=120)
+        # CHANGE FROM requests to httpx:
+        response = await httpx_client.post(url, json=payload)
         response.raise_for_status()
         
         result = response.json()
@@ -348,8 +364,9 @@ Respond with JSON actions or direct analysis if no agent actions are needed."""
             actions = extract_json_actions(response_text)
             
             if not actions:
-                # No more actions needed, return final response
-                return actions_taken, response_text
+                # If no JSON actions found, treat response as final answer
+                final_answer = response_text.strip()
+                return actions_taken, final_answer
             
             # Execute actions
             action_results = []
@@ -390,17 +407,35 @@ Respond with JSON actions or direct analysis if no agent actions are needed."""
             else:
                 raise HTTPException(status_code=503, detail="All planning attempts failed")
     
-    # If we reach max turns, synthesize final response
-    final_prompt = f"{SYSTEM_PROMPT}\n\nSynthesize the results from all actions taken to provide a comprehensive answer to: {prompt}"
+    # Synthesize final response using all collected results
+    context_summary = "\n\n".join([
+        f"Action: {action['action']['action_type']} - {action['action']['query']}\nResult: {action['result'][:500]}..."
+        for action in actions_taken
+    ])
+
+    final_synthesis_prompt = f"""Based on the following actions and results, provide a comprehensive final answer to the user's question: "{prompt}"
+
+    ACTIONS AND RESULTS:
+    {context_summary}
+
+    Provide a clear, concise, and complete answer that synthesizes all the information gathered. Focus on directly answering the user's question without mentioning the internal process."""
+
     try:
         response = gemini_client.models.generate_content(
             model="gemini-1.5-flash",
-            contents=final_prompt
+            contents=final_synthesis_prompt
         )
-        return actions_taken, response.text
+        final_response = response.text.strip()
+        return actions_taken, final_response
     except Exception as e:
         logger.error(f"Final synthesis failed: {e}")
-        return actions_taken, "Analysis completed but final synthesis failed."
+        # If synthesis fails, provide a basic summary
+        if actions_taken:
+            basic_summary = f"Analysis completed using {len(actions_taken)} actions. "
+            latest_result = actions_taken[-1].get('result', '')[:200]
+            return actions_taken, basic_summary + latest_result
+        return actions_taken, "Analysis completed but synthesis failed."
+
 
 # Health check endpoint
 @app.get("/")

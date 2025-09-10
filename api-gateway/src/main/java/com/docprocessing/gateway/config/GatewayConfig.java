@@ -26,9 +26,8 @@ public class GatewayConfig {
     private String generationAgentUrl;
 
     // Orchestration service URL
-    @Value("${SERVICES_ORCHESTRATION_SERVICE_URL:http://orchestration-service:8005}")
+    @Value("${SERVICES_ORCHESTRATION_SERVICE_URL:http://orchestration-agent:8005}")
     private String orchestrationServiceUrl;
-
     @Bean
     public CorsWebFilter corsWebFilter() {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
