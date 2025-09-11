@@ -145,7 +145,7 @@ services:
     ports:
       - '8010:8010'
     environment:
-      - WRAPPER_PORT=8010
+      - SERVER_PORT=8010
       - DOCUMENT_SERVICE_URL=http://document-service:8000
       - EXTRACTION_AGENT_URL=http://extraction-agent:8001
       - SEARCH_AGENT_URL=http://search-agent:8002
@@ -181,7 +181,7 @@ services:
     mem_limit: 2g
     cpus: 2
     healthcheck:
-      test: ['CMD', 'curl', '-f', 'http://localhost:80/']
+      test: ['CMD', 'curl', '-f', 'http://localhost:80\']
       interval: 30s
       timeout: 10s
       retries: 3
