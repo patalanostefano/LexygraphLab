@@ -118,65 +118,153 @@ class OrchestrationResponse(BaseModel):
     final_response: str
     message: str
 
-# System prompt for the orchestration agent
-SYSTEM_PROMPT = """You are a Legal Assistant AI specialized in coordinating multiple agents for legal document analysis. Your role is to:
+# System prompts in Italian cutting for now:
+# - GENERATION AGENT: Usa per creare riassunti, analisi o rigenerare documenti con modifiche
+#  {"action_type": "extract", "query": "cosa estrarre", "document_titles": ["doc1", "doc2"]},
+#3. Per domande generiche sui documenti, usa "extract" per ottenere informazioni rilevanti
 
-1. ANALYZE the user's legal query and available documents
-2. PLAN a sequence of actions using available agents
-3. COORDINATE agent execution in the optimal order
-4. SYNTHESIZE results into a comprehensive legal response
 
-AVAILABLE AGENTS:
-- SEARCH AGENT: Use for finding relevant information, case law, regulations, or legal precedents
-  Format: {"action_type": "search", "query": "specific search terms"}
 
-- EXTRACTION AGENT: Use for extracting specific data, entities, dates, parties, or structured information from documents
-  Format: {"action_type": "extract", "query": "what to extract", "document_titles": ["doc1", "doc2"]}
+PLANNING_SYSTEM_PROMPT = """Sei un assistente legale specializzato nel coordinare diversi agenti per l'analisi di documenti legali. Il tuo ruolo è pianificare la sequenza ottimale di azioni.
 
-- GENERATION AGENT: Use for creating summaries, analyses, or regenerating documents with modifications
-  Format: {"action_type": "generate", "query": "generation task", "document_titles": ["doc1"], "full_doc": true/false}
+AGENTI DISPONIBILI:
+- SEARCH AGENT: Usa per trovare informazioni rilevanti, giurisprudenza, normative o precedenti legali
+- EXTRACTION AGENT: Usa per estrarre dati specifici, entità, date, parti o informazioni strutturate dai documenti (consigliato! usalo anche per domande semplici)
 
-WORKFLOW STRATEGY:
-1. ALWAYS start with SEARCH if you need external legal context
-2. Use EXTRACTION for specific data needs from documents
-3. Use GENERATION for synthesis, analysis, or document creation
-4. Chain actions logically (search→extract→generate)
+REGOLE IMPORTANTI:
+1. DEVI SEMPRE rispondere SOLO con un array JSON di azioni
+2. Anche per domande semplici, usa generatore almeno una volta
+3. Per analisi legali, inizia sempre con "search" per il contesto normativo
 
-RESPONSE FORMAT:
-Always respond with a JSON list of actions to take:
+
+FORMATO RISPOSTA - SOLO JSON:
 [
-  {"action_type": "search", "query": "contract law termination clauses"},
-  {"action_type": "extract", "query": "extract all termination clauses and dates", "document_titles": ["Contract A", "Contract B"]},
-  {"action_type": "generate", "query": "analyze termination risks and provide recommendations", "document_titles": ["Contract A"], "full_doc": false}
+  {"action_type": "search", "query": "termini di ricerca specifici"},
+  {"action_type": "generate", "query": "compito di generazione", "document_titles": ["doc1"], "full_doc": true/false}
 ]
 
-If no actions are needed, respond with your direct analysis instead of JSON.
-IMPORTANT: After executing actions, always provide a final comprehensive answer that directly addresses the user's question. Do not expose the internal action details to the user - focus on delivering a clear, complete response based on all gathered information.
-"""
+Non aggiungere testo extra, ritorna solo l'array JSON."""
+
+REASONING_SYSTEM_PROMPT = """Sei un assistente legale esperto che deve fornire risposte complete e accurate basandoti sui risultati degli agenti specializzati.
+
+ISTRUZIONI:
+1. Analizza attentamente i risultati forniti dagli agenti
+2. Se i risultati sono sufficienti per rispondere, fornisci una risposta completa e dettagliata
+3. Se servono ulteriori informazioni, puoi richiedere nuove azioni specificando esattamente cosa serve
+4. Cita sempre le fonti normative e i documenti utilizzati
+5. Spiega chiaramente il ragionamento legale
+6. Menziona quali agenti sono stati utilizzati per ottenere le informazioni
+
+FORMATO RISPOSTA:
+- Se hai informazioni sufficienti: Fornisci risposta completa con citazioni e spiegazioni
+- Se servono più informazioni: Specifica esattamente cosa cercare ulteriormente
+
+Mantieni sempre un tono professionale e preciso."""
 
 def extract_json_actions(response_text: str) -> Optional[List[Dict[str, Any]]]:
-    """Extract JSON actions from Gemini response"""
+    """Extract JSON actions from Gemini response with improved parsing"""
     try:
-        # Try to find JSON array in the response
+        logger.info(f"Attempting to parse JSON from response: {response_text[:500]}...")
+        
+        # Remove markdown code blocks if present
+        cleaned_text = response_text.strip()
+        
+        # Handle markdown code blocks
+        if "```json" in cleaned_text:
+            start_marker = "```json"
+            end_marker = "```"
+            start_idx = cleaned_text.find(start_marker)
+            if start_idx != -1:
+                start_idx += len(start_marker)
+                end_idx = cleaned_text.find(end_marker, start_idx)
+                if end_idx != -1:
+                    cleaned_text = cleaned_text[start_idx:end_idx].strip()
+        
+        # Also handle code blocks without 'json' language specifier
+        elif "```" in cleaned_text:
+            lines = cleaned_text.split('\n')
+            in_code_block = False
+            code_lines = []
+            
+            for line in lines:
+                if line.strip() == "```" or line.strip().startswith("```"):
+                    if in_code_block:
+                        break  # End of code block
+                    else:
+                        in_code_block = True  # Start of code block
+                elif in_code_block:
+                    code_lines.append(line)
+            
+            if code_lines:
+                cleaned_text = '\n'.join(code_lines).strip()
+        
+        # Remove any remaining backticks and extra whitespace
+        cleaned_text = cleaned_text.replace('`', '').strip()
+        
+        # Try to find the JSON array directly
+        start_bracket = cleaned_text.find('[')
+        if start_bracket != -1:
+            # Find matching closing bracket
+            bracket_count = 0
+            end_bracket = -1
+            
+            for i in range(start_bracket, len(cleaned_text)):
+                if cleaned_text[i] == '[':
+                    bracket_count += 1
+                elif cleaned_text[i] == ']':
+                    bracket_count -= 1
+                    if bracket_count == 0:
+                        end_bracket = i
+                        break
+            
+            if end_bracket != -1:
+                json_str = cleaned_text[start_bracket:end_bracket + 1]
+                logger.info(f"Extracted JSON string: {json_str}")
+                
+                try:
+                    actions = json.loads(json_str)
+                    if isinstance(actions, list) and len(actions) > 0:
+                        # Validate action structure
+                        valid_actions = []
+                        for action in actions:
+                            if isinstance(action, dict) and "action_type" in action and "query" in action:
+                                # Ensure document_titles is a list if present
+                                if "document_titles" in action and not isinstance(action["document_titles"], list):
+                                    action["document_titles"] = [str(action["document_titles"])]
+                                valid_actions.append(action)
+                        
+                        if valid_actions:
+                            logger.info(f"Successfully parsed {len(valid_actions)} valid actions")
+                            return valid_actions
+                        else:
+                            logger.warning("No valid actions found in parsed JSON")
+                    else:
+                        logger.warning("Parsed JSON is not a non-empty list")
+                except json.JSONDecodeError as e:
+                    logger.warning(f"JSON parsing failed: {e}")
+        
+        # Fallback: try regex pattern matching
         json_pattern = r'\[[\s\S]*?\]'
-        matches = re.findall(json_pattern, response_text)
+        matches = re.findall(json_pattern, cleaned_text)
         
         for match in matches:
             try:
                 actions = json.loads(match)
                 if isinstance(actions, list) and len(actions) > 0:
-                    # Validate action structure
                     valid_actions = []
                     for action in actions:
                         if isinstance(action, dict) and "action_type" in action:
                             valid_actions.append(action)
                     
                     if valid_actions:
+                        logger.info(f"Regex fallback successful: {len(valid_actions)} actions")
                         return valid_actions
             except json.JSONDecodeError:
                 continue
-                
+        
+        logger.warning("No valid JSON actions found in response")
         return None
+        
     except Exception as e:
         logger.error(f"Error extracting JSON actions: {e}")
         return None
@@ -196,7 +284,6 @@ async def fetch_document_content(document_id: str) -> Dict[str, Any]:
         encoded_project_id = quote(project_id, safe='')
         url = f"{DOCUMENT_SERVICE_URL}/api/v1/documents/{user_id}/{encoded_project_id}/{doc_id}/text"
         
-        # CHANGE FROM requests to httpx:
         response = await httpx_client.get(url)
         response.raise_for_status()
         
@@ -240,7 +327,6 @@ async def execute_search_action(query: str) -> str:
             "agent_id": "search-agent"
         }
         
-        # CHANGE FROM requests to httpx:
         response = await httpx_client.post(url, json=payload)
         response.raise_for_status()
         
@@ -273,7 +359,6 @@ async def execute_extraction_action(query: str, document_titles: List[str], avai
             "documentIds": document_ids
         }
         
-        # CHANGE FROM requests to httpx:
         response = await httpx_client.post(url, json=payload)
         response.raise_for_status()
         
@@ -306,7 +391,6 @@ async def execute_generation_action(query: str, document_titles: List[str], full
             "fullDoc": full_doc
         }
         
-        # CHANGE FROM requests to httpx:
         response = await httpx_client.post(url, json=payload)
         response.raise_for_status()
         
@@ -317,8 +401,8 @@ async def execute_generation_action(query: str, document_titles: List[str], full
         logger.error(f"Generation action failed: {e}")
         return f"Generation failed: {str(e)}"
 
-async def plan_and_execute(prompt: str, documents: List[Dict], max_turns: int = 3) -> tuple[List[Dict[str, Any]], str]:
-    """Plan and execute agent actions using Gemini"""
+async def plan_actions(prompt: str, documents: List[Dict]) -> List[Dict[str, Any]]:
+    """Step 1: Plan actions using dedicated planning prompt"""
     global gemini_client
     
     if not gemini_client:
@@ -330,112 +414,146 @@ async def plan_and_execute(prompt: str, documents: List[Dict], max_turns: int = 
         for doc in documents
     ])
     
-    user_prompt = f"""LEGAL QUERY: {prompt}
+    planning_prompt = f"""QUERY UTENTE: {prompt}
 
-AVAILABLE DOCUMENTS:
+DOCUMENTI DISPONIBILI:
 {doc_context}
 
-Plan the optimal sequence of agent actions to address this legal query. Consider:
-1. Do I need external legal research first?
-2. What specific information should I extract from documents?
-3. What analysis or generation is needed?
-
-Respond with JSON actions or direct analysis if no agent actions are needed."""
+Pianifica la sequenza ottimale di azioni per rispondere a questa domanda legale."""
     
-    actions_taken = []
-    current_context = user_prompt
-    
-    for turn in range(max_turns):
-        logger.info(f"Planning turn {turn + 1}")
-        
+    max_retries = 3
+    for attempt in range(max_retries):
         try:
-            # Create the full prompt with system instruction
-            full_prompt = f"{SYSTEM_PROMPT}\n\n{current_context}"
+            full_prompt = f"{PLANNING_SYSTEM_PROMPT}\n\n{planning_prompt}"
             
             response = gemini_client.models.generate_content(
                 model="gemini-1.5-flash",
                 contents=full_prompt
             )
-            response_text = response.text
+            response_text = response.text.strip()
             
-            logger.info(f"Gemini response: {response_text[:200]}...")
+            logger.info(f"Planning response attempt {attempt + 1}: {response_text[:200]}...")
             
-            # Try to extract JSON actions
+            # Extract JSON actions
             actions = extract_json_actions(response_text)
             
-            if not actions:
-                # If no JSON actions found, treat response as final answer
-                final_answer = response_text.strip()
-                return actions_taken, final_answer
-            
-            # Execute actions
-            action_results = []
-            for action in actions:
-                action_type = action.get("action_type")
-                query = action.get("query", "")
-                
-                logger.info(f"Executing {action_type} action: {query}")
-                
-                if action_type == "search":
-                    result = await execute_search_action(query)
-                    action_results.append(f"Search Results: {result}")
-                    
-                elif action_type == "extract":
-                    document_titles = action.get("document_titles", [])
-                    result = await execute_extraction_action(query, document_titles, documents)
-                    action_results.append(f"Extraction Results: {result}")
-                    
-                elif action_type == "generate":
-                    document_titles = action.get("document_titles", [])
-                    full_doc = action.get("full_doc", False)
-                    result = await execute_generation_action(query, document_titles, full_doc, documents)
-                    action_results.append(f"Generation Results: {result}")
-                
-                actions_taken.append({
-                    "turn": turn + 1,
-                    "action": action,
-                    "result": result
-                })
-            
-            # Update context for next turn
-            current_context = f"PREVIOUS ACTIONS AND RESULTS:\n" + "\n\n".join(action_results) + f"\n\nORIGINAL QUERY: {prompt}\n\nWhat should be done next or provide final analysis?"
+            if actions:
+                logger.info(f"Successfully planned {len(actions)} actions")
+                return actions
+            else:
+                logger.warning(f"No valid JSON actions in attempt {attempt + 1}")
+                if attempt < max_retries - 1:
+                    continue
+                else:
+                    # Fallback: create a default extraction action
+                    logger.info("Creating fallback action")
+                    return [{
+                        "action_type": "extract",
+                        "query": f"Analizza i documenti per rispondere a: {prompt}",
+                        "document_titles": [doc['title'] for doc in documents[:2]]  # Limit to first 2 docs
+                    }]
             
         except Exception as e:
-            logger.error(f"Error in planning turn {turn + 1}: {e}")
-            if turn < len(GEMINI_API_KEYS) - 1:
+            logger.error(f"Planning attempt {attempt + 1} failed: {e}")
+            if attempt < len(GEMINI_API_KEYS) - 1:
                 try_next_gemini_key()
             else:
-                raise HTTPException(status_code=503, detail="All planning attempts failed")
+                raise HTTPException(status_code=503, detail="Action planning failed")
     
-    # Synthesize final response using all collected results
-    context_summary = "\n\n".join([
-        f"Action: {action['action']['action_type']} - {action['action']['query']}\nResult: {action['result'][:500]}..."
-        for action in actions_taken
-    ])
+    # Should not reach here
+    return []
 
-    final_synthesis_prompt = f"""Based on the following actions and results, provide a comprehensive final answer to the user's question: "{prompt}"
+async def execute_planned_actions(actions: List[Dict[str, Any]], documents: List[Dict]) -> List[Dict[str, Any]]:
+    """Step 2: Execute the planned actions"""
+    actions_taken = []
+    
+    for i, action in enumerate(actions):
+        action_type = action.get("action_type")
+        query = action.get("query", "")
+        
+        logger.info(f"Executing action {i+1}/{len(actions)}: {action_type} - {query}")
+        
+        try:
+            if action_type == "search":
+                result = await execute_search_action(query)
+                
+            elif action_type == "extract":
+                document_titles = action.get("document_titles", [doc['title'] for doc in documents])
+                result = await execute_extraction_action(query, document_titles, documents)
+                
+            elif action_type == "generate":
+                document_titles = action.get("document_titles", [doc['title'] for doc in documents])
+                full_doc = action.get("full_doc", False)
+                result = await execute_generation_action(query, document_titles, full_doc, documents)
+            else:
+                result = f"Unknown action type: {action_type}"
+            
+            actions_taken.append({
+                "action": action,
+                "result": result,
+                "success": True
+            })
+            
+        except Exception as e:
+            logger.error(f"Action {action_type} failed: {e}")
+            actions_taken.append({
+                "action": action,
+                "result": f"Action failed: {str(e)}",
+                "success": False
+            })
+    
+    return actions_taken
 
-    ACTIONS AND RESULTS:
-    {context_summary}
+async def generate_final_response(prompt: str, actions_taken: List[Dict[str, Any]], documents: List[Dict]) -> str:
+    """Step 3: Generate final user-facing response"""
+    global gemini_client
+    
+    if not gemini_client:
+        raise HTTPException(status_code=503, detail="Gemini not available")
+    
+    # Prepare results summary
+    results_summary = []
+    for action_data in actions_taken:
+        action = action_data["action"]
+        result = action_data["result"]
+        success = action_data["success"]
+        
+        if success:
+            results_summary.append(f"Azione {action['action_type']}: {action['query']}\nRisultato: {result[:500]}...")
+        else:
+            results_summary.append(f"Azione {action['action_type']} fallita: {result}")
+    
+    results_text = "\n\n".join(results_summary)
+    
+    reasoning_prompt = f"""DOMANDA ORIGINALE: {prompt}
 
-    Provide a clear, concise, and complete answer that synthesizes all the information gathered. Focus on directly answering the user's question without mentioning the internal process."""
+RISULTATI DEGLI AGENTI:
+{results_text}
 
+DOCUMENTI ANALIZZATI:
+{', '.join([doc['title'] for doc in documents])}
+
+Fornisci ora una risposta completa e professionale alla domanda dell'utente utilizzando i risultati ottenuti dagli agenti specializzati."""
+    
     try:
+        full_prompt = f"{REASONING_SYSTEM_PROMPT}\n\n{reasoning_prompt}"
+        
         response = gemini_client.models.generate_content(
             model="gemini-1.5-flash",
-            contents=final_synthesis_prompt
+            contents=full_prompt
         )
-        final_response = response.text.strip()
-        return actions_taken, final_response
+        
+        return response.text.strip()
+        
     except Exception as e:
-        logger.error(f"Final synthesis failed: {e}")
-        # If synthesis fails, provide a basic summary
-        if actions_taken:
-            basic_summary = f"Analysis completed using {len(actions_taken)} actions. "
-            latest_result = actions_taken[-1].get('result', '')[:200]
-            return actions_taken, basic_summary + latest_result
-        return actions_taken, "Analysis completed but synthesis failed."
-
+        logger.error(f"Final response generation failed: {e}")
+        # Fallback response
+        successful_actions = [a for a in actions_taken if a["success"]]
+        if successful_actions:
+            latest_result = successful_actions[-1]["result"][:500]
+            return f"Analisi completata utilizzando {len(successful_actions)} agenti specializzati. {latest_result}"
+        else:
+            return "Mi dispiace, non sono riuscito a completare l'analisi richiesta a causa di errori tecnici."
 
 # Health check endpoint
 @app.get("/")
@@ -478,8 +596,18 @@ async def orchestrate_agents(request: OrchestrationRequest):
         if not documents:
             raise HTTPException(status_code=404, detail="No documents could be retrieved")
         
-        # Plan and execute agent coordination
-        actions_taken, final_response = await plan_and_execute(request.prompt, documents)
+        # NEW TWO-STEP PROCESS
+        
+        # Step 1: Plan actions (always returns JSON actions)
+        planned_actions = await plan_actions(request.prompt, documents)
+        logger.info(f"Planned {len(planned_actions)} actions")
+        
+        # Step 2: Execute planned actions
+        actions_taken = await execute_planned_actions(planned_actions, documents)
+        logger.info(f"Executed {len(actions_taken)} actions")
+        
+        # Step 3: Generate final user-facing response
+        final_response = await generate_final_response(request.prompt, actions_taken, documents)
         
         return OrchestrationResponse(
             success=True,
@@ -489,7 +617,7 @@ async def orchestrate_agents(request: OrchestrationRequest):
             document_ids=request.document_ids,
             actions_taken=actions_taken,
             final_response=final_response,
-            message=f"Successfully orchestrated {len(actions_taken)} actions across {len(documents)} documents"
+            message=f"Analisi completata con successo: {len(actions_taken)} azioni eseguite su {len(documents)} documenti"
         )
         
     except HTTPException:
