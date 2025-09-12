@@ -64,7 +64,7 @@ export const PageBackground = ({ children, transitioning = false }) => {
 export const PageHeader = ({ children }) => (
   <Box
     sx={{
-      p: 3,
+      p: 1,
       display: 'flex',
       justifyContent: 'space-between',
       alignItems: 'center',
@@ -84,7 +84,7 @@ export const PageContent = ({ children, transitioning = false }) => (
       position: 'relative',
       zIndex: 2,
       flexGrow: 1,
-      py: 3, // Reduced from 4
+      py: 0, // Removed padding
       ...(transitioning && {
         animation: 'contentExit 0.8s forwards cubic-bezier(0.19, 1, 0.22, 1)',
         '@keyframes contentExit': {

@@ -1,44 +1,37 @@
 // AgentsPage.js - Updated to use orchestration agent
-import React, { useState, useEffect } from 'react';
-import { useLocation, useParams, useNavigate } from 'react-router-dom';
-import { Document, Page } from 'react-pdf';
-import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
-import 'react-pdf/dist/esm/Page/TextLayer.css';
+import React, { useState, useEffect } from "react";
+import { Document, Page } from "react-pdf";
 import {
   Button,
   TextField,
   Box,
   Paper,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
   Typography,
   IconButton,
   Tooltip,
   CircularProgress,
   Alert,
-  Chip,
   Accordion,
   AccordionSummary,
   AccordionDetails,
-} from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import ZoomInIcon from '@mui/icons-material/ZoomIn';
-import ZoomOutIcon from '@mui/icons-material/ZoomOut';
-import ZoomOutMapIcon from '@mui/icons-material/ZoomOutMap';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import SmartToyIcon from '@mui/icons-material/SmartToy';
-import ResizablePanels from '../components/ResizablePanels';
-import { pdfjs } from 'react-pdf';
-import { getDocument, getProjectDocuments } from '../api/documents';
-import {
-  sendOrchestrationMessage,
-  testOrchestrationService,
-} from '../api/agents';
-import { useAuth } from '../context/AuthContext';
-import { useTheme } from '@mui/material/styles';
-import useRefreshRedirect from '../hooks/useRefreshRedirect';
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+} from "@mui/material";
+import ZoomInIcon from "@mui/icons-material/ZoomIn";
+import ZoomOutIcon from "@mui/icons-material/ZoomOut";
+import ZoomOutMapIcon from "@mui/icons-material/ZoomOutMap";
+import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
+import ResizablePanels from "../components/ResizablePanels";
+import { pdfjs } from "react-pdf";
+import { getDocument, getProjectDocuments } from "../api/documents";
+import { sendPrompt, confirmResponse } from "../api/agents";
+import { testOrchestrationService, sendOrchestrationMessage } from "../services/orchestrationService";
+import { useAuth } from "../context/AuthContext";
+import { useTheme } from "@mui/material/styles";
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import useRefreshRedirect from "../hooks/useRefreshRedirect";
 
 // Configure PDF.js worker
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
@@ -57,25 +50,25 @@ export default function AgentsPage() {
   const project = location.state?.project || {};
   const [documents, setDocuments] = useState(location.state?.documents || []);
   const [currentDocument, setCurrentDocument] = useState(
-    location.state?.selectedDocument || null,
+    location.state?.selectedDocument || null
   );
   const [pdfContent, setPdfContent] = useState(null);
   const [numPages, setNumPages] = useState(null);
-  const [prompt, setPrompt] = useState('');
+  const [prompt, setPrompt] = useState("");
   const [pdfError, setPdfError] = useState(null);
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
   const [sendingMessage, setSendingMessage] = useState(false);
   const [orchestrationServiceStatus, setOrchestrationServiceStatus] =
-    useState('unknown');
+    useState("unknown");
 
   // Zoom functionality state
   const [zoomLevel, setZoomLevel] = useState(1);
   const [baseWidth, setBaseWidth] = useState(400);
 
   useEffect(() => {
-    console.log('AgentsPage useEffect triggered:', {
+    console.log("AgentsPage useEffect triggered:", {
       projectId,
       userId,
       authLoading,
@@ -85,7 +78,7 @@ export default function AgentsPage() {
 
     // Don't load documents if auth is still loading
     if (authLoading) {
-      console.log('⏳ Auth is still loading, waiting...');
+      console.log("⏳ Auth is still loading, waiting...");
       return;
     }
 
@@ -101,7 +94,7 @@ export default function AgentsPage() {
         // Set current document immediately and update URL
         setCurrentDocument(location.state.selectedDocument);
         const searchParams = new URLSearchParams(location.search);
-        searchParams.set('document', location.state.selectedDocument.doc_id);
+        searchParams.set("document", location.state.selectedDocument.doc_id);
         navigate(`${location.pathname}?${searchParams.toString()}`, {
           replace: true,
         });
@@ -110,7 +103,7 @@ export default function AgentsPage() {
         loadSelectedDocument(location.state.selectedDocument, false);
       }
     } else if (!userId && !authLoading) {
-      console.log('❌ No userId available after auth loading completed');
+      console.log("No userId available after auth loading completed");
     }
   }, [projectId, userId, authLoading]);
 
@@ -121,7 +114,7 @@ export default function AgentsPage() {
     if (documents.length > 0 && !currentDocument) {
       // Check if there's a document ID in URL search params (for refresh handling)
       const urlParams = new URLSearchParams(location.search);
-      const docIdFromUrl = urlParams.get('document');
+      const docIdFromUrl = urlParams.get("document");
 
       if (docIdFromUrl) {
         const docFromUrl = documents.find((doc) => doc.doc_id === docIdFromUrl);
@@ -139,39 +132,39 @@ export default function AgentsPage() {
   const checkOrchestrationService = async () => {
     try {
       const isHealthy = await testOrchestrationService();
-      setOrchestrationServiceStatus(isHealthy ? 'healthy' : 'unhealthy');
+      setOrchestrationServiceStatus(isHealthy ? "healthy" : "unhealthy");
     } catch (error) {
-      console.error('Orchestration service check failed:', error);
-      setOrchestrationServiceStatus('unhealthy');
+      console.error("Orchestration service check failed:", error);
+      setOrchestrationServiceStatus("unhealthy");
     }
   };
 
   const loadProjectDocuments = async () => {
     if (!projectId || !userId) {
-      console.error('Missing projectId or userId:', { projectId, userId });
+      console.error("Missing projectId or userId:", { projectId, userId });
       return;
     }
 
     try {
       setLoading(true);
-      console.log('Loading documents for project:', projectId, 'user:', userId);
+      console.log("Loading documents for project:", projectId, "user:", userId);
 
       const documentsData = await getProjectDocuments(projectId, userId);
-      console.log('Loaded documents:', documentsData);
+      console.log("Loaded documents:", documentsData);
 
       if (Array.isArray(documentsData)) {
         setDocuments(documentsData);
         console.log(
-          'Set documents in state:',
+          "Set documents in state:",
           documentsData.length,
-          'documents',
+          "documents"
         );
       } else {
-        console.warn('Documents data is not an array:', documentsData);
+        console.warn("Documents data is not an array:", documentsData);
         setDocuments([]);
       }
     } catch (error) {
-      console.error('Error loading project documents:', error);
+      console.error("Error loading project documents:", error);
       setDocuments([]);
     } finally {
       setLoading(false);
@@ -184,29 +177,29 @@ export default function AgentsPage() {
     setPdfError(null);
 
     try {
-      console.log('Loading PDF for document:', doc.doc_id);
+      console.log("Loading PDF for document:", doc.doc_id);
       const pdfBlob = await getDocument(projectId, doc.doc_id, userId);
-      console.log('PDF blob received:', pdfBlob.size, 'bytes');
+      console.log("PDF blob received:", pdfBlob.size, "bytes");
 
       // Create a proper blob URL
       const blobUrl = URL.createObjectURL(
-        new Blob([pdfBlob], { type: 'application/pdf' }),
+        new Blob([pdfBlob], { type: "application/pdf" })
       );
-      console.log('Blob URL created:', blobUrl);
+      console.log("Blob URL created:", blobUrl);
 
       setPdfContent(blobUrl);
 
       // Update URL if requested (for programmatic selections)
       if (updateUrl) {
         const searchParams = new URLSearchParams(location.search);
-        searchParams.set('document', doc.doc_id);
+        searchParams.set("document", doc.doc_id);
         navigate(`${location.pathname}?${searchParams.toString()}`, {
           replace: true,
         });
       }
     } catch (error) {
-      console.error('Error loading PDF:', error);
-      setPdfError(error.message || 'Failed to load PDF file');
+      console.error("Error loading PDF:", error);
+      setPdfError(error.message || "Failed to load PDF file");
     } finally {
       setPdfLoading(false);
     }
@@ -214,7 +207,7 @@ export default function AgentsPage() {
 
   const handleDocumentSelect = async (event) => {
     const selectedDoc = documents.find(
-      (doc) => doc.doc_id === event.target.value,
+      (doc) => doc.doc_id === event.target.value
     );
     if (selectedDoc) {
       // Clean up previous PDF URL to prevent memory leaks
@@ -225,7 +218,7 @@ export default function AgentsPage() {
 
       // Update URL to include selected document for refresh persistence
       const searchParams = new URLSearchParams(location.search);
-      searchParams.set('document', selectedDoc.doc_id);
+      searchParams.set("document", selectedDoc.doc_id);
       navigate(`${location.pathname}?${searchParams.toString()}`, {
         replace: true,
       });
@@ -241,21 +234,17 @@ export default function AgentsPage() {
     };
   }, [pdfContent]);
 
-  const handleBack = () => {
-    navigate('/projects');
-  };
-
   const handleSendMessage = async () => {
     if (!currentDocument || !prompt.trim() || sendingMessage) {
       return;
     }
 
     // Check orchestration service status before sending
-    if (orchestrationServiceStatus === 'unhealthy') {
+    if (orchestrationServiceStatus === "unhealthy") {
       const errorMessage = {
-        type: 'agent',
+        type: "agent",
         content:
-          'The orchestration service is currently unavailable. Please try again later or contact support.',
+          "The orchestration service is currently unavailable. Please try again later or contact support.",
         timestamp: new Date().toISOString(),
         isError: true,
       };
@@ -265,19 +254,21 @@ export default function AgentsPage() {
 
     // Add user message to chat
     const userMessage = {
-      type: 'user',
+      type: "user",
       content: prompt,
       timestamp: new Date().toISOString(),
     };
     setMessages((prev) => [...prev, userMessage]);
 
     const currentPrompt = prompt;
-    const executionId = `exec_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    setPrompt(''); // Clear input immediately
+    const executionId = `exec_${Date.now()}_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
+    setPrompt(""); // Clear input immediately
     setSendingMessage(true);
 
     try {
-      console.log('Sending message to orchestration agent:', {
+      console.log("Sending message to orchestration agent:", {
         message: currentPrompt,
         currentDocument: currentDocument.doc_id,
         allDocuments: documents.map((doc) => doc.doc_id), // ← Show all docs
@@ -294,27 +285,27 @@ export default function AgentsPage() {
         allDocumentIds, // passes all documents
         userId,
         projectId,
-        executionId,
+        executionId
       );
 
-      console.log('Received response from orchestration agent:', response);
+      console.log("Received response from orchestration agent:", response);
 
       // Add agent message to chat with detailed information
       const agentMessage = {
-        type: 'agent',
+        type: "agent",
         content: response.content,
         timestamp: new Date().toISOString(),
-        agentId: response.agentId || 'orchestration-agent',
+        agentId: response.agentId || "orchestration-agent",
         executionId: response.executionId,
       };
 
       setMessages((prev) => [...prev, agentMessage]);
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error("Error sending message:", error);
 
       // Add error message to chat
       const errorMessage = {
-        type: 'agent',
+        type: "agent",
         content: `I apologize, but I encountered an error: ${error.message}. Please try again.`,
         timestamp: new Date().toISOString(),
         isError: true,
@@ -324,8 +315,8 @@ export default function AgentsPage() {
 
       // If it's a service unavailable error, recheck service status
       if (
-        error.message.includes('unavailable') ||
-        error.message.includes('timeout')
+        error.message.includes("unavailable") ||
+        error.message.includes("timeout")
       ) {
         checkOrchestrationService();
       }
@@ -336,32 +327,32 @@ export default function AgentsPage() {
 
   const handleModifyResponse = (messageIndex) => {
     const message = messages[messageIndex];
-    if (message && message.type === 'agent') {
+    if (message && message.type === "agent") {
       // Set the agent's response as the current prompt for modification
       setPrompt(`Please modify this response: "${message.content}"`);
 
       // Optionally, mark the message as being modified
       setMessages((prev) =>
         prev.map((msg, idx) =>
-          idx === messageIndex ? { ...msg, beingModified: true } : msg,
-        ),
+          idx === messageIndex ? { ...msg, beingModified: true } : msg
+        )
       );
     }
   };
 
   const handleConfirmResponse = (messageIndex) => {
     const message = messages[messageIndex];
-    if (message && message.type === 'agent') {
+    if (message && message.type === "agent") {
       // Mark the response as confirmed
       setMessages((prev) =>
         prev.map((msg, idx) =>
           idx === messageIndex
             ? { ...msg, confirmed: true, beingModified: false }
-            : msg,
-        ),
+            : msg
+        )
       );
 
-      console.log('Response confirmed:', message.content);
+      console.log("Response confirmed:", message.content);
     }
   };
 
@@ -384,74 +375,19 @@ export default function AgentsPage() {
     return maxWidth * zoomLevel;
   };
 
-  // Service status indicator component
-  const ServiceStatusIndicator = () => {
-    const getStatusColor = () => {
-      switch (orchestrationServiceStatus) {
-        case 'healthy':
-          return 'success';
-        case 'unhealthy':
-          return 'error';
-        default:
-          return 'warning';
-      }
-    };
-
-    const getStatusText = () => {
-      switch (orchestrationServiceStatus) {
-        case 'healthy':
-          return 'AI Service Ready';
-        case 'unhealthy':
-          return 'AI Service Unavailable';
-        default:
-          return 'Checking AI Service...';
-      }
-    };
-
-    return (
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-        <Chip
-          icon={<SmartToyIcon />}
-          label={getStatusText()}
-          color={getStatusColor()}
-          size="small"
-          variant="outlined"
-        />
-        {orchestrationServiceStatus === 'unhealthy' && (
-          <Tooltip title="Retry connection" arrow>
-            <IconButton size="small" onClick={checkOrchestrationService}>
-              🔄
-            </IconButton>
-          </Tooltip>
-        )}
-      </Box>
-    );
-  };
+  // Service status indicator component removed
 
   // Show loading state while authentication is loading
   if (authLoading) {
     return (
-      <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-        <Box
-          sx={{
-            p: 2,
-            borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
-            display: 'flex',
-            alignItems: 'center',
-          }}
-        >
-          <IconButton onClick={() => navigate('/projects')} sx={{ mr: 2 }}>
-            <ArrowBackIcon />
-          </IconButton>
-          <Typography variant="h6">Loading...</Typography>
-        </Box>
+      <Box sx={{ height: "100vh", display: "flex", flexDirection: "column" }}>
         <Box
           sx={{
             flex: 1,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
             gap: 2,
           }}
         >
@@ -465,60 +401,67 @@ export default function AgentsPage() {
   }
 
   return (
-    <Box sx={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
-      {/* Header */}
-      <Box
-        sx={{
-          p: 2,
-          borderBottom: '1px solid rgba(0, 0, 0, 0.12)',
-          display: 'flex',
-          alignItems: 'center',
-        }}
-      >
-        <Tooltip title="Back to Projects" arrow>
-          <IconButton onClick={handleBack} size="large">
-            <ArrowBackIcon />
-          </IconButton>
-        </Tooltip>
-        <Typography variant="h6" sx={{ ml: 2 }}>
-          {project.project_id || 'AI Legal Assistant'}
-        </Typography>
-        <Box sx={{ ml: 'auto' }}>
-          <ServiceStatusIndicator />
-        </Box>
-      </Box>
-
-      {/* Main Content */}
-      <Box
-        sx={{
-          height: 'calc(100vh - 64px)',
-          border: '1px solid rgba(0, 0, 0, 0.12)',
-          borderRadius: '8px',
-          overflow: 'hidden',
-        }}
-      >
-        <ResizablePanels
-          defaultLeftWidth={40}
-          minLeftWidth={25}
-          maxLeftWidth={75}
-          storageKey="agents-page-panel-width"
+    <Box sx={{ 
+      width: "100%",
+      height: "100%", 
+      m: 0, 
+      p: 2,
+      display: "flex",
+      alignItems: "stretch",
+      justifyContent: "stretch",
+      boxSizing: "border-box"
+    }}>
+      <Box sx={{
+        width: "100%",
+        height: "100%",
+        border: "3px solid",
+        borderColor: "primary.main",
+        borderRadius: 4,
+        background: "linear-gradient(135deg, rgba(124, 77, 255, 0.05) 0%, rgba(124, 77, 255, 0.02) 100%)",
+        boxShadow: "0 8px 32px rgba(124, 77, 255, 0.15), 0 2px 8px rgba(0, 0, 0, 0.08)",
+        overflow: "hidden",
+        position: "relative",
+        boxSizing: "border-box",
+        "&::before": {
+          content: '""',
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: "linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%, rgba(124, 77, 255, 0.05) 100%)",
+          pointerEvents: "none",
+          zIndex: 1
+        }
+      }}>
+        <Box sx={{ height: "100%", width: "100%", position: "relative", zIndex: 2 }}>
+          <ResizablePanels
+            defaultLeftWidth={40}
+            minLeftWidth={25}
+            maxLeftWidth={75}
+            storageKey="agents-page-panel-width"
           leftPanel={
             <Box
               sx={{
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                m: 1,
+                p: 2,
+                backgroundColor: "rgba(255, 255, 255, 0.9)",
+                borderRadius: 2,
+                backdropFilter: "blur(10px)",
+                zIndex: 2,
+                position: "relative"
               }}
             >
               {/* Document selector */}
-              <Box sx={{ m: 2 }}>
-                <Box
-                  sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}
-                >
-                  <FormControl sx={{ flexGrow: 1 }}>
+              <Box sx={{ p: 0, m: 0, mb: 1 }}>
+                <Box sx={{ mb: 0, mt: 0 }}>
+                  <FormControl fullWidth sx={{ m: 0 }}>
                     <InputLabel>Select Document</InputLabel>
                     <Select
-                      value={currentDocument?.doc_id || ''}
+                      value={currentDocument?.doc_id || ""}
                       onChange={handleDocumentSelect}
                       label="Select Document"
                       disabled={loading || documents.length === 0}
@@ -530,44 +473,16 @@ export default function AgentsPage() {
                       ))}
                     </Select>
                   </FormControl>
-                  <Tooltip title="Refresh documents list" arrow>
-                    <IconButton
-                      onClick={loadProjectDocuments}
-                      disabled={loading}
-                      size="small"
-                    >
-                      {loading ? <CircularProgress size={20} /> : '🔄'}
-                    </IconButton>
-                  </Tooltip>
                 </Box>
-                {documents.length === 0 && !loading && (
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      mt: 1,
-                      color: 'text.secondary',
-                      fontSize: '0.75rem',
-                    }}
-                  >
-                    No documents available for this project.
-                    <Button
-                      size="small"
-                      onClick={loadProjectDocuments}
-                      sx={{ ml: 1, minWidth: 'auto', p: 0.5 }}
-                    >
-                      Retry
-                    </Button>
-                  </Typography>
-                )}
                 {loading && (
                   <Typography
                     variant="caption"
                     sx={{
                       mt: 1,
-                      color: 'text.secondary',
-                      fontSize: '0.75rem',
-                      display: 'flex',
-                      alignItems: 'center',
+                      color: "text.secondary",
+                      fontSize: "0.75rem",
+                      display: "flex",
+                      alignItems: "center",
                       gap: 1,
                     }}
                   >
@@ -581,20 +496,20 @@ export default function AgentsPage() {
               <Box
                 sx={{
                   flexGrow: 1,
-                  overflow: 'auto',
-                  p: 2,
+                  overflow: pdfContent ? "auto" : "hidden",
+                  p: 0,
                 }}
               >
                 {/* Zoom Controls */}
                 {pdfContent && !loading && !pdfError && !pdfLoading && (
                   <Box
                     sx={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      mb: 2,
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      mb: 0,
                       gap: 1,
-                      flexWrap: 'wrap',
+                      flexWrap: "wrap",
                     }}
                   >
                     <Tooltip title="Zoom Out">
@@ -610,9 +525,9 @@ export default function AgentsPage() {
                     <Typography
                       variant="body2"
                       sx={{
-                        minWidth: '60px',
-                        textAlign: 'center',
-                        fontWeight: 'medium',
+                        minWidth: "60px",
+                        textAlign: "center",
+                        fontWeight: "medium",
                       }}
                     >
                       {Math.round(zoomLevel * 100)}%
@@ -637,12 +552,12 @@ export default function AgentsPage() {
                 )}
 
                 {loading ? (
-                  <Paper sx={{ p: 4, textAlign: 'center' }}>
+                  <Paper sx={{ p: 4, textAlign: "center" }}>
                     <CircularProgress sx={{ mb: 2 }} />
                     <Typography>Loading documents...</Typography>
                   </Paper>
                 ) : pdfError ? (
-                  <Paper sx={{ p: 4, textAlign: 'center' }}>
+                  <Paper sx={{ p: 4, textAlign: "center" }}>
                     <Alert severity="error" sx={{ mb: 2 }}>
                       {pdfError}
                     </Alert>
@@ -657,7 +572,7 @@ export default function AgentsPage() {
                     </Button>
                   </Paper>
                 ) : pdfLoading ? (
-                  <Paper sx={{ p: 4, textAlign: 'center' }}>
+                  <Paper sx={{ p: 4, textAlign: "center" }}>
                     <CircularProgress sx={{ mb: 2 }} />
                     <Typography>Loading PDF...</Typography>
                   </Paper>
@@ -665,24 +580,24 @@ export default function AgentsPage() {
                   <Document
                     file={pdfContent}
                     onLoadSuccess={({ numPages }) => {
-                      console.log('PDF loaded successfully, pages:', numPages);
+                      console.log("PDF loaded successfully, pages:", numPages);
                       setNumPages(numPages);
                       setPdfError(null);
                     }}
                     onLoadError={(error) => {
-                      console.error('PDF load error:', error);
+                      console.error("PDF load error:", error);
                       setPdfError(
-                        `Failed to load PDF: ${error.message || 'Unknown error'}`,
+                        `Failed to load PDF: ${error.message || "Unknown error"}`
                       );
                     }}
                     loading={
-                      <Paper sx={{ p: 4, textAlign: 'center' }}>
+                      <Paper sx={{ p: 4, textAlign: "center" }}>
                         <CircularProgress sx={{ mb: 2 }} />
                         <Typography>Loading PDF...</Typography>
                       </Paper>
                     }
                     error={
-                      <Paper sx={{ p: 4, textAlign: 'center' }}>
+                      <Paper sx={{ p: 4, textAlign: "center" }}>
                         <Alert severity="error">
                           Failed to load PDF file. Please try again.
                         </Alert>
@@ -700,23 +615,11 @@ export default function AgentsPage() {
                     ))}
                   </Document>
                 ) : documents.length === 0 ? (
-                  <Paper sx={{ p: 4, textAlign: 'center' }}>
-                    <Typography color="text.secondary">
-                      No documents available for this project.
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ mt: 1 }}
-                    >
-                      Go back to the project page and upload some documents
-                      first.
-                    </Typography>
+                  <Paper sx={{ p: 4, textAlign: "center" }}>
                   </Paper>
                 ) : (
-                  <Paper sx={{ p: 4, textAlign: 'center' }}>
+                  <Paper sx={{ p: 4, textAlign: "center" }}>
                     <Typography color="text.secondary">
-                      Select a document to view and start chatting
                     </Typography>
                   </Paper>
                 )}
@@ -726,94 +629,100 @@ export default function AgentsPage() {
           rightPanel={
             <Box
               sx={{
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                m: 1,
+                p: 2,
+                backgroundColor: "rgba(255, 255, 255, 0.9)",
+                borderRadius: 2,
+                backdropFilter: "blur(10px)",
+                zIndex: 2,
+                position: "relative"
               }}
             >
               {/* Chat messages area */}
               <Box
                 sx={{
                   flexGrow: 1,
-                  p: 2,
-                  overflow: 'auto',
-                  backgroundColor: '#f5f5f5',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 2,
+                  p: 0,
+                  overflow: "hidden",
+                  backgroundColor: "transparent",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 0,
                 }}
               >
-                {messages.length === 0 && (
+                {messages.length === 0 ? (
                   <Box
                     sx={{
-                      textAlign: 'center',
-                      py: 4,
-                      color: 'text.secondary',
+                      flex: 1,
+                      display: "flex",
+                      flexDirection: "column",
                     }}
                   >
-                    <Typography variant="body1" sx={{ mb: 1 }}>
-                      {currentDocument
-                        ? `Ready to analyze "${currentDocument.title}"`
-                        : 'Select a document to start the AI analysis'}
-                    </Typography>
-                    <Typography variant="body2" sx={{ fontSize: '0.9rem' }}>
-                      The orchestration agent will coordinate multiple AI
-                      services to provide comprehensive legal insights
-                    </Typography>
                   </Box>
-                )}
-
-                {messages.map((message, index) => (
+                ) : (
+                  <Box
+                    sx={{
+                      flexGrow: 1,
+                      overflow: "auto",
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 0.5,
+                    }}
+                  >
+                    {messages.map((message, index) => (
                   <Box
                     key={index}
                     sx={{
-                      display: 'flex',
+                      display: "flex",
                       justifyContent:
-                        message.type === 'user' ? 'flex-end' : 'flex-start',
-                      width: '100%',
+                        message.type === "user" ? "flex-end" : "flex-start",
+                      width: "100%",
                     }}
                   >
-                    <Box sx={{ maxWidth: '85%', width: '100%' }}>
+                    <Box sx={{ maxWidth: "85%", width: "100%" }}>
                       <Paper
                         elevation={1}
                         sx={{
-                          p: 2,
+                          p: 1.5,
                           backgroundColor:
-                            message.type === 'user'
+                            message.type === "user"
                               ? theme.palette.primary.main
                               : message.isError
-                                ? '#ffebee'
-                                : message.confirmed
-                                  ? '#e8f5e8'
-                                  : message.beingModified
-                                    ? '#fff3e0'
-                                    : '#fff',
-                          color:
-                            message.type === 'user'
-                              ? '#fff'
-                              : message.isError
-                                ? '#c62828'
-                                : message.confirmed
-                                  ? '#2e7d32'
-                                  : 'inherit',
-                          borderRadius:
-                            message.type === 'user'
-                              ? '20px 20px 5px 20px'
-                              : '20px 20px 20px 5px',
-                          border: message.isError
-                            ? '1px solid #e57373'
-                            : message.confirmed
-                              ? '1px solid #81c784'
+                              ? "#ffebee"
+                              : message.confirmed
+                              ? "#e8f5e8"
                               : message.beingModified
-                                ? '1px solid #ffb74d'
-                                : 'none',
+                              ? "#fff3e0"
+                              : "#fff",
+                          color:
+                            message.type === "user"
+                              ? "#fff"
+                              : message.isError
+                              ? "#c62828"
+                              : message.confirmed
+                              ? "#2e7d32"
+                              : "inherit",
+                          borderRadius:
+                            message.type === "user"
+                              ? "20px 20px 5px 20px"
+                              : "20px 20px 20px 5px",
+                          border: message.isError
+                            ? "1px solid #e57373"
+                            : message.confirmed
+                            ? "1px solid #81c784"
+                            : message.beingModified
+                            ? "1px solid #ffb74d"
+                            : "none",
                         }}
                       >
                         <Typography
                           variant="body1"
                           sx={{
-                            whiteSpace: 'pre-wrap',
-                            wordWrap: 'break-word',
+                            whiteSpace: "pre-wrap",
+                            wordWrap: "break-word",
                           }}
                         >
                           {message.content}
@@ -824,11 +733,11 @@ export default function AgentsPage() {
                           <Typography
                             variant="caption"
                             sx={{
-                              display: 'block',
+                              display: "block",
                               mt: 1,
-                              color: '#2e7d32',
-                              fontWeight: 'bold',
-                              fontSize: '0.7rem',
+                              color: "#2e7d32",
+                              fontWeight: "bold",
+                              fontSize: "0.7rem",
                             }}
                           >
                             ✓ Confirmed
@@ -839,11 +748,11 @@ export default function AgentsPage() {
                           <Typography
                             variant="caption"
                             sx={{
-                              display: 'block',
+                              display: "block",
                               mt: 1,
-                              color: '#f57c00',
-                              fontWeight: 'bold',
-                              fontSize: '0.7rem',
+                              color: "#f57c00",
+                              fontWeight: "bold",
+                              fontSize: "0.7rem",
                             }}
                           >
                             ✏️ Being modified...
@@ -854,16 +763,16 @@ export default function AgentsPage() {
                           <Typography
                             variant="caption"
                             sx={{
-                              display: 'block',
+                              display: "block",
                               mt: 1,
                               opacity: 0.7,
-                              fontSize: '0.7rem',
+                              fontSize: "0.7rem",
                             }}
                           >
                             {new Date(message.timestamp).toLocaleTimeString()}
                             {message.executionId && (
-                              <span style={{ marginLeft: '8px' }}>
-                                ID: {message.executionId.split('_')[2]}
+                              <span style={{ marginLeft: "8px" }}>
+                                ID: {message.executionId.split("_")[2]}
                               </span>
                             )}
                           </Typography>
@@ -871,21 +780,21 @@ export default function AgentsPage() {
                       </Paper>
 
                       {/* Action buttons for agent responses */}
-                      {message.type === 'agent' && !message.isError && (
+                      {message.type === "agent" && !message.isError && (
                         <Box
                           sx={{
-                            display: 'flex',
+                            display: "flex",
                             gap: 1,
                             mt: 1,
-                            justifyContent: 'flex-start',
+                            justifyContent: "flex-start",
                           }}
                         >
                           <Typography
                             variant="caption"
                             sx={{
-                              color: 'text.secondary',
-                              fontSize: '0.7rem',
-                              fontStyle: 'italic',
+                              color: "text.secondary",
+                              fontSize: "0.7rem",
+                              fontStyle: "italic",
                             }}
                           >
                             Analysis completed using AI orchestration
@@ -899,19 +808,19 @@ export default function AgentsPage() {
                 {sendingMessage && (
                   <Box
                     sx={{
-                      display: 'flex',
-                      justifyContent: 'flex-start',
-                      width: '100%',
+                      display: "flex",
+                      justifyContent: "flex-start",
+                      width: "100%",
                     }}
                   >
                     <Paper
                       elevation={1}
                       sx={{
                         p: 2,
-                        backgroundColor: '#fff',
-                        borderRadius: '20px 20px 20px 5px',
-                        display: 'flex',
-                        alignItems: 'center',
+                        backgroundColor: "#fff",
+                        borderRadius: "20px 20px 20px 5px",
+                        display: "flex",
+                        alignItems: "center",
                         gap: 1,
                       }}
                     >
@@ -922,14 +831,16 @@ export default function AgentsPage() {
                     </Paper>
                   </Box>
                 )}
+                  </Box>
+                )}
               </Box>
 
               {/* Input area */}
               <Paper
                 sx={{
-                  p: 2,
-                  borderTop: '1px solid rgba(0, 0, 0, 0.12)',
-                  backgroundColor: '#fff',
+                  p: 0.5,
+                  backgroundColor: "#fff",
+                  boxShadow: "none",
                 }}
               >
                 <TextField
@@ -947,58 +858,58 @@ export default function AgentsPage() {
                   disabled={
                     !currentDocument ||
                     sendingMessage ||
-                    orchestrationServiceStatus === 'unhealthy'
+                    orchestrationServiceStatus === "unhealthy"
                   }
                   onKeyPress={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
+                    if (e.key === "Enter" && !e.shiftKey) {
                       e.preventDefault();
                       handleSendMessage();
                     }
                   }}
-                />
-                <Box
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    mt: 1,
+                  InputProps={{
+                    endAdornment: (
+                      <Box sx={{ 
+                        display: "flex", 
+                        flexDirection: "column", 
+                        alignItems: "flex-end",
+                        gap: 1,
+                        ml: 1
+                      }}>
+                        <Button
+                          variant="contained"
+                          disabled={
+                            !currentDocument ||
+                            !prompt.trim() ||
+                            sendingMessage ||
+                            orchestrationServiceStatus === "unhealthy"
+                          }
+                          onClick={handleSendMessage}
+                          startIcon={
+                            sendingMessage ? (
+                              <CircularProgress size={16} />
+                            ) : null
+                          }
+                          sx={{ 
+                            minWidth: "100px",
+                            height: "36px"
+                          }}
+                        >
+                          {sendingMessage ? "Analyzing..." : "Analyze"}
+                        </Button>
+                        <Typography variant="caption" color="text.secondary" sx={{ fontSize: "0.7rem" }}>
+                          {currentDocument
+                            ? "Enter to send, Shift+Enter for new line"
+                            : ""}
+                        </Typography>
+                      </Box>
+                    )
                   }}
-                >
-                  <Typography variant="caption" color="text.secondary">
-                    {currentDocument
-                      ? 'Press Enter to send, Shift+Enter for new line'
-                      : ''}
-                  </Typography>
-                  <Button
-                    variant="contained"
-                    disabled={
-                      !currentDocument ||
-                      !prompt.trim() ||
-                      sendingMessage ||
-                      orchestrationServiceStatus === 'unhealthy'
-                    }
-                    onClick={handleSendMessage}
-                    startIcon={
-                      sendingMessage ? (
-                        <CircularProgress size={16} />
-                      ) : (
-                        <SmartToyIcon />
-                      )
-                    }
-                    sx={{ minWidth: '120px' }}
-                  >
-                    {sendingMessage ? 'Analyzing...' : 'Analyze'}
-                  </Button>
-                </Box>
-                {orchestrationServiceStatus === 'unhealthy' && (
-                  <Alert severity="warning" sx={{ mt: 1 }}>
-                    AI service is currently unavailable. Please try again later.
-                  </Alert>
-                )}
+                />
               </Paper>
             </Box>
           }
         />
+        </Box>
       </Box>
     </Box>
   );

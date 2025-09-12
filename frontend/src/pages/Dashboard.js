@@ -76,8 +76,8 @@ function Dashboard() {
       transition: 'opacity 0.4s ease-in-out',
       width: '100%',
       height: '100%',
-      padding: '20px',
-      marginTop: '64px' // Add space below header
+      padding: '0',
+      marginTop: '0' // Remove space below header
     };
 
     switch (activePage) {
@@ -272,7 +272,7 @@ function Dashboard() {
           position: 'relative',
           width: '100%',
           height: 'calc(100vh - 64px)', // Subtract header height
-          overflow: 'auto'
+          overflow: 'hidden'
         }}
       >
         {renderPage()}

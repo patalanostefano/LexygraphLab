@@ -23,7 +23,6 @@ import { getUserProjects } from '../api/documents';
 import useRefreshRedirect from '../hooks/useRefreshRedirect';
 
 // Import shared components
-import ValisLogo from '../components/ValisLogo';
 import {
   HeaderActionButton,
   ActionButton,
@@ -185,7 +184,7 @@ export default function Projects() {
     return (
       <PageBackground>
         <PageHeader>
-          <ValisLogo />
+          <Box></Box>
         </PageHeader>
         <PageContent>
           <Box
@@ -212,7 +211,7 @@ export default function Projects() {
     <PageBackground>
       {/* Header */}
       <PageHeader>
-        <ValisLogo />
+        <Box></Box>
 
         <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
           {/* TEST MODE: User ID Display */}
