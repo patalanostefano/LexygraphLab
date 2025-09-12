@@ -1,6 +1,5 @@
 package com.lexygraph.wrapper;
 
-//imports
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -17,40 +16,35 @@ import org.springframework.http.*;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.web.cors.*;
-import org.springframework.web.filter.CorsFilter;
 import org.springframework.web.reactive.function.client.*;
-import reactor.core.publisher.Mono;
 import reactor.netty.http.client.HttpClient;
 
 import java.time.Duration;
 import java.util.*;
 import java.util.function.Supplier;
 
+// CORS (Servlet stack)
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
+
 @SpringBootApplication
 public class OrchestrationWrapperApplication {
 
-  // Imposta la porta da WRAPPER_PORT (niente application.yml)
   public static void main(String[] args) {
     System.setProperty("server.port", System.getenv().getOrDefault("WRAPPER_PORT", "8010"));
     SpringApplication.run(OrchestrationWrapperApplication.class, args);
   }
 
-  // ---------- Config: WebClient con timeout ----------
+  // WebClient con timeout
   @Bean
   public WebClient webClient(@Value("${REQUEST_TIMEOUT_SECONDS:60}") long timeoutSec) {
-    HttpClient httpClient = HttpClient.create()
-        .responseTimeout(Duration.ofSeconds(timeoutSec));
-
-    return WebClient.builder()
-        .clientConnector(new ReactorClientHttpConnector(httpClient))
-        .build();
+    HttpClient httpClient = HttpClient.create().responseTimeout(Duration.ofSeconds(timeoutSec));
+    return WebClient.builder().clientConnector(new ReactorClientHttpConnector(httpClient)).build();
   }
 
-
-  // ---------- Config: CORS ----------
+  // CORS (Servlet)
   @Bean
   public CorsFilter corsFilter(@Value("${ALLOWED_ORIGINS:*}") String allowedOrigins) {
     CorsConfiguration cfg = new CorsConfiguration();
@@ -71,37 +65,29 @@ public class OrchestrationWrapperApplication {
     return new CorsFilter(src);
   }
 
-  // ---------- Service per chiamate downstream + retry ----------
+  // Service per downstream + retry
   @org.springframework.stereotype.Service
   public static class DownstreamService {
     private static final Logger log = LoggerFactory.getLogger(DownstreamService.class);
     private final WebClient webClient;
     private final int retryAttempts;
 
-    public DownstreamService(WebClient webClient,
-                             @Value("${RETRY_ATTEMPTS:1}") int retryAttempts) {
+    public DownstreamService(WebClient webClient, @Value("${RETRY_ATTEMPTS:1}") int retryAttempts) {
       this.webClient = webClient;
       this.retryAttempts = Math.max(1, retryAttempts);
     }
 
-    public static class HttpResult {
-      public final int status;
-      public final String body;
-      public HttpResult(int s, String b) { status = s; body = b; }
-    }
+    public record HttpResult(int status, String body) {}
 
     public HttpResult postJson(String url, Map<String, Object> body, String executionId) {
       Supplier<HttpResult> call = () -> webClient.post()
           .uri(url)
           .headers(h -> {
-            if (executionId != null && !executionId.isBlank())
-              h.add("X-Execution-Id", executionId);
+            if (executionId != null && !executionId.isBlank()) h.add("X-Execution-Id", executionId);
           })
           .contentType(MediaType.APPLICATION_JSON)
           .bodyValue(body == null ? Map.of() : body)
-          .exchangeToMono(resp -> resp
-              .bodyToMono(String.class)
-              .defaultIfEmpty("")
+          .exchangeToMono(resp -> resp.bodyToMono(String.class).defaultIfEmpty("")
               .map(b -> new HttpResult(resp.statusCode().value(), b)))
           .block();
 
@@ -114,7 +100,7 @@ public class OrchestrationWrapperApplication {
     }
   }
 
-  // ---------- DTO (records/POJO) ----------
+  // DTO
   public record SearchIn(@NotBlank String query, String agent_id) {}
   public record SearchOut(String results, List<Map<String,Object>> sources, Map<String,Object> provider_summary) {}
 
@@ -167,7 +153,6 @@ public class OrchestrationWrapperApplication {
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   public static class OrchestrateIn {
-    // accettiamo document_ids e/o documentIds
     private List<String> document_ids;
     private List<String> documentIds;
     @NotBlank private String prompt;
@@ -197,7 +182,7 @@ public class OrchestrationWrapperApplication {
     public String message;
   }
 
-  // ---------- Controller (tutto qui) ----------
+  // Controller
   @RestController
   @Validated
   public static class WrapperController {
@@ -215,7 +200,6 @@ public class OrchestrationWrapperApplication {
 
     public WrapperController(DownstreamService ds) { this.ds = ds; }
 
-    // ---- Health ----
     @GetMapping({"/", "/health"})
     public Map<String,Object> health() {
       return Map.of(
@@ -232,20 +216,17 @@ public class OrchestrationWrapperApplication {
       );
     }
 
-    // ---- Search con fallback ----
     @PostMapping("/api/v1/agents/search")
     public SearchOut search(@Valid @RequestBody SearchIn in,
                             @RequestHeader(value="X-Execution-Id", required=false) String xExecId) {
       String agentId = (in.agent_id() == null || in.agent_id().isBlank()) ? "search-agent" : in.agent_id();
 
-      // 1) nuovo endpoint
       Map<String,Object> newBody = Map.of("query", in.query(), "agent_id", agentId);
       DownstreamService.HttpResult r1 =
           ds.postJson(SEARCH_AGENT_URL + "/api/v1/agents/search", newBody, xExecId);
 
       DownstreamService.HttpResult resp = r1;
       if (r1.status == 404) {
-        // 2) fallback vecchio endpoint
         Map<String,Object> oldBody = Map.of("query", in.query(), "max_results", 5, "include_sources", true);
         resp = ds.postJson(SEARCH_AGENT_URL + "/api/v1/search", oldBody, xExecId);
       }
@@ -263,7 +244,6 @@ public class OrchestrationWrapperApplication {
       }
     }
 
-    // ---- Process (extraction / generation) ----
     @PostMapping("/api/v1/agents/process")
     public AgentOut process(@Valid @RequestBody ProcessIn in,
                             @RequestHeader(value="X-Execution-Id", required=false) String xExecId) {
@@ -312,7 +292,6 @@ public class OrchestrationWrapperApplication {
           return out;
         }
 
-        // fallback: normalizza
         out.setAgentId(agentNorm);
         out.setPrompt(in.getPrompt());
         out.setDocumentIds(in.getDocumentIds());
@@ -325,7 +304,6 @@ public class OrchestrationWrapperApplication {
       }
     }
 
-    // ---- Orchestrate ----
     @PostMapping("/api/v1/agents/orchestrate")
     public OrchestrateOut orchestrate(@Valid @RequestBody OrchestrateIn in,
                                       @RequestHeader(value="X-Execution-Id", required=false) String xExecId) {
@@ -354,7 +332,6 @@ public class OrchestrationWrapperApplication {
       }
     }
 
-    // Alias
     @PostMapping("/api/v1/orchestrate")
     public OrchestrateOut orchestrateAlias(@Valid @RequestBody OrchestrateIn in,
                                            @RequestHeader(value="X-Execution-Id", required=false) String xExecId) {

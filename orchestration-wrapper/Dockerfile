@@ -1,27 +1,36 @@
-# ---- build stage (immutato) ----
-  FROM maven:3.9.6-eclipse-temurin-17 AS build
-  WORKDIR /src
-  COPY pom.xml .
-  RUN mvn -q -DskipTests dependency:go-offline
-  COPY src ./src
-  RUN mvn -q -DskipTests package
-  
-  # ---- runtime stage ----
-  FROM eclipse-temurin:17-jre-alpine
-  WORKDIR /app
-  
-  # >>> AGGIUNTA: installa curl per l'healthcheck
-  RUN apk add --no-cache curl
-  
-  # facoltativo: utente non-root
-  # RUN addgroup -S app && adduser -S app -G app
-  # USER app
-  
-  COPY --from=build /src/target/orchestration-wrapper-*.jar /app/app.jar
-  EXPOSE 8010
-  
-  # >>> AGGIUNTA: healthcheck interno (matcha quello del compose)
-  HEALTHCHECK --interval=20s --timeout=10s --retries=5 --start-period=30s \
-    CMD curl -fsS http://localhost:8010/health || exit 1
-  
-  ENTRYPOINT ["java","-jar","/app/app.jar"]
+# ===== Build =====
+FROM maven:3.9.6-eclipse-temurin-17 AS build
+WORKDIR /proj
+
+# POM
+COPY pom.xml .
+RUN mvn -q -DskipTests dependency:go-offline
+
+# Sorgenti: copia i .java piatti nella cartella del package
+RUN mkdir -p src/main/java/com/lexygraph/wrapper
+COPY ./*.java src/main/java/com/lexygraph/wrapper/
+
+# Compila il jar
+RUN mvn -q -DskipTests package
+
+# ===== Runtime =====
+FROM eclipse-temurin:17-jre-alpine
+WORKDIR /app
+
+# 👇 aggiungi curl per l'healthcheck
+RUN apk add --no-cache curl
+
+COPY --from=build /proj/target/*.jar /app/app.jar
+
+ENV WRAPPER_PORT=8010 \
+    REQUEST_TIMEOUT_SECONDS=60 \
+    RETRY_ATTEMPTS=1 \
+    ALLOWED_ORIGINS=*
+
+EXPOSE 8010
+
+# 👇 healthcheck con curl, puntando alla tua /health
+HEALTHCHECK --interval=15s --timeout=5s --retries=5 \
+  CMD curl -fsS "http://localhost:${WRAPPER_PORT:-8010}/health" || exit 1
+
+ENTRYPOINT ["java","-jar","/app/app.jar"]
