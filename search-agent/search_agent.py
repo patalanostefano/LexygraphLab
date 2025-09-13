@@ -24,7 +24,8 @@ SERPER_API_KEY = "be6ccf9ec3eaff009a633de46aca91d0d348b7f4"
 # Gemini API keys with fallback mechanism
 GEMINI_API_KEYS = [
     "AIzaSyBEsyakskQ7iZnDfnlDGQYwSB0QQJ5fMhA",
-    "AIzaSyAEEjrZnXFKR-uonJWnt46iPYdNLQzSqVI"
+    "AIzaSyAEEjrZnXFKR-uonJWnt46iPYdNLQzSqVI",
+    "AIzaSyCDQBZ50InkrXIkHI7C0p_Xzg1wjroTUkQ"
 ]
 
 class SearchRequest(BaseModel):

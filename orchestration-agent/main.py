@@ -29,7 +29,8 @@ logger = logging.getLogger(__name__)
 # Gemini API configuration
 GEMINI_API_KEYS = [
     "AIzaSyBEsyakskQ7iZnDfnlDGQYwSB0QQJ5fMhA",
-    "AIzaSyAEEjrZnXFKR-uonJWnt46iPYdNLQzSqVI"
+    "AIzaSyAEEjrZnXFKR-uonJWnt46iPYdNLQzSqVI",
+    "AIzaSyCDQBZ50InkrXIkHI7C0p_Xzg1wjroTUkQ"
 ]
 
 # Global variables
@@ -118,48 +119,39 @@ class OrchestrationResponse(BaseModel):
     final_response: str
     message: str
 
-# System prompts in Italian cutting for now:
-# - GENERATION AGENT: Usa per creare riassunti, analisi o rigenerare documenti con modifiche
-#  {"action_type": "extract", "query": "cosa estrarre", "document_titles": ["doc1", "doc2"]},
-#3. Per domande generiche sui documenti, usa "extract" per ottenere informazioni rilevanti
-
-
-
 PLANNING_SYSTEM_PROMPT = """Sei un assistente legale specializzato nel coordinare diversi agenti per l'analisi di documenti legali. Il tuo ruolo è pianificare la sequenza ottimale di azioni.
 
 AGENTI DISPONIBILI:
 - SEARCH AGENT: Usa per trovare informazioni rilevanti, giurisprudenza, normative o precedenti legali
 - EXTRACTION AGENT: Usa per estrarre dati specifici, entità, date, parti o informazioni strutturate dai documenti (consigliato! usalo anche per domande semplici)
+- GENERATION AGENT: Usa SOLO se l'utente lo chiede esplicitamente per creare una lista ordinata di dati
 
 REGOLE IMPORTANTI:
 1. DEVI SEMPRE rispondere SOLO con un array JSON di azioni
-2. Anche per domande semplici, usa generatore almeno una volta
+2. Anche per domande semplici, usa generatore 
 3. Per analisi legali, inizia sempre con "search" per il contesto normativo
 
-
-FORMATO RISPOSTA - SOLO JSON:
+FORMATO RISPOSTA - SOLO JSON una delle due:
 [
   {"action_type": "search", "query": "termini di ricerca specifici"},
   {"action_type": "generate", "query": "compito di generazione", "document_titles": ["doc1"], "full_doc": true/false}
+  {"action_type": "extract", "query": "cosa estrarre", "document_titles": ["doc1", "doc2"]},
 ]
 
 Non aggiungere testo extra, ritorna solo l'array JSON."""
 
-REASONING_SYSTEM_PROMPT = """Sei un assistente legale esperto che deve fornire risposte complete e accurate basandoti sui risultati degli agenti specializzati.
+REASONING_SYSTEM_PROMPT = """Sei un assistente legale esperto che deve fornire una risposta basandoti sui risultati degli agenti specializzati e sui documenti completi forniti.
 
-ISTRUZIONI:
-1. Analizza attentamente i risultati forniti dagli agenti
-2. Se i risultati sono sufficienti per rispondere, fornisci una risposta completa e dettagliata
-3. Se servono ulteriori informazioni, puoi richiedere nuove azioni specificando esattamente cosa serve
-4. Cita sempre le fonti normative e i documenti utilizzati
-5. Spiega chiaramente il ragionamento legale
-6. Menziona quali agenti sono stati utilizzati per ottenere le informazioni
+ISTRUZIONI CRITICHE:
+1. Analizza attentamente i risultati degli agenti E il contenuto completo dei documenti
+2. DEVI sempre fornire una risposta completa e definitiva 
+3. Se i risultati degli agenti sono insufficienti, utilizza direttamente il contenuto dei documenti per rispondere
+4. Se non trovi informazioni sufficienti nei documenti, rispondi comunque specificando i limiti dell'analisi
+5. Cita sempre le fonti utilizzando [nome documento] o [fonte normativa]
 
 FORMATO RISPOSTA:
-- Se hai informazioni sufficienti: Fornisci risposta completa con citazioni e spiegazioni
-- Se servono più informazioni: Specifica esattamente cosa cercare ulteriormente
-
-Mantieni sempre un tono professionale e preciso."""
+Fornisci SEMPRE una risposta completa, professionale e dettagliata.
+Mantieni un tono professionale e preciso, giustificando le tue conclusioni con riferimenti specifici."""
 
 def extract_json_actions(response_text: str) -> Optional[List[Dict[str, Any]]]:
     """Extract JSON actions from Gemini response with improved parsing"""
@@ -269,8 +261,8 @@ def extract_json_actions(response_text: str) -> Optional[List[Dict[str, Any]]]:
         logger.error(f"Error extracting JSON actions: {e}")
         return None
 
-async def fetch_document_content(document_id: str) -> Dict[str, Any]:
-    """Fetch document content and metadata"""
+async def fetch_document_context(document_id: str) -> Dict[str, Any]:
+    """Fetch document title and initial lines for planning context"""
     global httpx_client
     try:
         parts = document_id.split('_')
@@ -288,9 +280,9 @@ async def fetch_document_content(document_id: str) -> Dict[str, Any]:
         response.raise_for_status()
         
         doc_data = response.json()
-        
-        # Extract title and first few lines for context
         chunks = doc_data.get("chunks", [])
+        
+        # Extract title and first few lines for planning context
         if chunks:
             first_chunk = chunks[0].get("text", "")
             title = first_chunk.split('\n')[0][:100] if first_chunk else f"Document {doc_id}"
@@ -302,13 +294,93 @@ async def fetch_document_content(document_id: str) -> Dict[str, Any]:
         return {
             "document_id": document_id,
             "title": title,
-            "first_lines": first_lines,
-            "full_data": doc_data
+            "first_lines": first_lines
         }
         
     except Exception as e:
-        logger.error(f"Failed to fetch document {document_id}: {e}")
-        raise HTTPException(status_code=502, detail=f"Failed to fetch document: {e}")
+        logger.error(f"Failed to fetch document context {document_id}: {e}")
+        raise HTTPException(status_code=502, detail=f"Failed to fetch document context: {e}")
+
+async def fetch_document_full_content(document_id: str) -> Dict[str, Any]:
+    """Fetch complete document content for reasoning agent"""
+    global httpx_client
+    try:
+        parts = document_id.split('_')
+        if len(parts) < 3:
+            raise ValueError(f"Invalid document_id format: {document_id}")
+        
+        user_id = parts[0]
+        doc_id = parts[-1]
+        project_id = '_'.join(parts[1:-1])
+        
+        encoded_project_id = quote(project_id, safe='')
+        
+        # First try to get full chunks (for chunked documents)
+        url = f"{DOCUMENT_SERVICE_URL}/api/v1/documents/{user_id}/{encoded_project_id}/{doc_id}/text"
+        params = {"full_chunks": True}  # Request all chunks for full document processing
+        
+        response = await httpx_client.get(url, params=params)
+        response.raise_for_status()
+        
+        doc_data = response.json()
+        chunks = doc_data.get("chunks", [])
+        
+        # Extract title
+        if chunks:
+            first_chunk = chunks[0].get("text", "")
+            title = first_chunk.split('\n')[0][:100] if first_chunk else f"Document {doc_id}"
+            
+            # Combine all chunks for full content
+            full_text = "\n\n".join([chunk.get("text", "") for chunk in chunks if chunk.get("text")])
+        else:
+            title = f"Document {doc_id}"
+            full_text = "No content available"
+        
+        return {
+            "document_id": document_id,
+            "title": title,
+            "full_text": full_text,
+            "chunks_count": len(chunks),
+            "mode": doc_data.get("mode", "unknown")
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to fetch full document content {document_id}: {e}")
+        
+        # Fallback: try to get regular text if full chunks fail
+        try:
+            url = f"{DOCUMENT_SERVICE_URL}/api/v1/documents/{user_id}/{encoded_project_id}/{doc_id}/text"
+            response = await httpx_client.get(url)
+            response.raise_for_status()
+            
+            doc_data = response.json()
+            chunks = doc_data.get("chunks", [])
+            
+            if chunks:
+                first_chunk = chunks[0].get("text", "")
+                title = first_chunk.split('\n')[0][:100] if first_chunk else f"Document {doc_id}"
+                full_text = first_chunk  # At least get the first chunk
+            else:
+                title = f"Document {doc_id}"
+                full_text = "No content available"
+            
+            return {
+                "document_id": document_id,
+                "title": title,
+                "full_text": full_text,
+                "chunks_count": len(chunks),
+                "mode": "fallback"
+            }
+            
+        except Exception as fallback_error:
+            logger.error(f"Fallback also failed for {document_id}: {fallback_error}")
+            return {
+                "document_id": document_id,
+                "title": f"Document {doc_id}",
+                "full_text": "Content unavailable due to retrieval error",
+                "chunks_count": 0,
+                "mode": "error"
+            }
     
 def title_to_document_id(title: str, available_docs: List[Dict]) -> Optional[str]:
     """Convert document title back to document ID"""
@@ -336,7 +408,6 @@ async def execute_search_action(query: str) -> str:
     except Exception as e:
         logger.error(f"Search action failed: {e}")
         return f"Search failed: {str(e)}"
-
 
 async def execute_extraction_action(query: str, document_titles: List[str], available_docs: List[Dict]) -> str:
     """Execute extraction agent action"""
@@ -401,17 +472,17 @@ async def execute_generation_action(query: str, document_titles: List[str], full
         logger.error(f"Generation action failed: {e}")
         return f"Generation failed: {str(e)}"
 
-async def plan_actions(prompt: str, documents: List[Dict]) -> List[Dict[str, Any]]:
-    """Step 1: Plan actions using dedicated planning prompt"""
+async def plan_actions(prompt: str, document_contexts: List[Dict]) -> List[Dict[str, Any]]:
+    """Step 1: Plan actions using document titles and initial lines for context"""
     global gemini_client
     
     if not gemini_client:
         raise HTTPException(status_code=503, detail="Gemini not available")
     
-    # Prepare document context
+    # Prepare document context with titles and initial lines
     doc_context = "\n".join([
         f"- {doc['title']}: {doc['first_lines']}" 
-        for doc in documents
+        for doc in document_contexts
     ])
     
     planning_prompt = f"""QUERY UTENTE: {prompt}
@@ -450,7 +521,7 @@ Pianifica la sequenza ottimale di azioni per rispondere a questa domanda legale.
                     return [{
                         "action_type": "extract",
                         "query": f"Analizza i documenti per rispondere a: {prompt}",
-                        "document_titles": [doc['title'] for doc in documents[:2]]  # Limit to first 2 docs
+                        "document_titles": [doc['title'] for doc in document_contexts[:2]]  # Limit to first 2 docs
                     }]
             
         except Exception as e:
@@ -463,7 +534,7 @@ Pianifica la sequenza ottimale di azioni per rispondere a questa domanda legale.
     # Should not reach here
     return []
 
-async def execute_planned_actions(actions: List[Dict[str, Any]], documents: List[Dict]) -> List[Dict[str, Any]]:
+async def execute_planned_actions(actions: List[Dict[str, Any]], document_contexts: List[Dict]) -> List[Dict[str, Any]]:
     """Step 2: Execute the planned actions"""
     actions_taken = []
     
@@ -478,13 +549,13 @@ async def execute_planned_actions(actions: List[Dict[str, Any]], documents: List
                 result = await execute_search_action(query)
                 
             elif action_type == "extract":
-                document_titles = action.get("document_titles", [doc['title'] for doc in documents])
-                result = await execute_extraction_action(query, document_titles, documents)
+                document_titles = action.get("document_titles", [doc['title'] for doc in document_contexts])
+                result = await execute_extraction_action(query, document_titles, document_contexts)
                 
             elif action_type == "generate":
-                document_titles = action.get("document_titles", [doc['title'] for doc in documents])
+                document_titles = action.get("document_titles", [doc['title'] for doc in document_contexts])
                 full_doc = action.get("full_doc", False)
-                result = await execute_generation_action(query, document_titles, full_doc, documents)
+                result = await execute_generation_action(query, document_titles, full_doc, document_contexts)
             else:
                 result = f"Unknown action type: {action_type}"
             
@@ -504,14 +575,14 @@ async def execute_planned_actions(actions: List[Dict[str, Any]], documents: List
     
     return actions_taken
 
-async def generate_final_response(prompt: str, actions_taken: List[Dict[str, Any]], documents: List[Dict]) -> str:
-    """Step 3: Generate final user-facing response"""
+async def generate_final_response(prompt: str, actions_taken: List[Dict[str, Any]], full_documents: List[Dict]) -> str:
+    """Step 3: Generate DEFINITIVE final response with full document content and action results"""
     global gemini_client
     
     if not gemini_client:
         raise HTTPException(status_code=503, detail="Gemini not available")
     
-    # Prepare results summary
+    # Prepare action results summary
     results_summary = []
     for action_data in actions_taken:
         action = action_data["action"]
@@ -519,21 +590,34 @@ async def generate_final_response(prompt: str, actions_taken: List[Dict[str, Any
         success = action_data["success"]
         
         if success:
-            results_summary.append(f"Azione {action['action_type']}: {action['query']}\nRisultato: {result[:500]}...")
+            # Truncate very long results to avoid context overflow
+            truncated_result = result[:800] + "..." if len(result) > 800 else result
+            results_summary.append(f"Azione {action['action_type']}: {action['query']}\nRisultato: {truncated_result}")
         else:
             results_summary.append(f"Azione {action['action_type']} fallita: {result}")
     
     results_text = "\n\n".join(results_summary)
     
+    # Prepare FULL document content
+    documents_content = []
+    for doc in full_documents:
+        doc_info = f"=== DOCUMENTO: {doc['title']} ===\n"
+        doc_info += f"Modalità: {doc.get('mode', 'unknown')}, Chunks: {doc.get('chunks_count', 0)}\n"
+        doc_info += f"Contenuto:\n{doc['full_text']}\n"
+        documents_content.append(doc_info)
+    
+    full_documents_text = "\n\n".join(documents_content)
+    
+    # Create definitive reasoning prompt
     reasoning_prompt = f"""DOMANDA ORIGINALE: {prompt}
 
 RISULTATI DEGLI AGENTI:
 {results_text}
 
-DOCUMENTI ANALIZZATI:
-{', '.join([doc['title'] for doc in documents])}
+CONTENUTO COMPLETO DEI DOCUMENTI:
+{full_documents_text}
 
-Fornisci ora una risposta completa e professionale alla domanda dell'utente utilizzando i risultati ottenuti dagli agenti specializzati."""
+Fornisci ora una risposta DEFINITIVA e completa alla domanda dell'utente. Utilizza sia i risultati degli agenti che il contenuto completo dei documenti. Se i risultati degli agenti sono insufficienti, analizza direttamente i documenti per rispondere senza dirlo all'utente."""
     
     try:
         full_prompt = f"{REASONING_SYSTEM_PROMPT}\n\n{reasoning_prompt}"
@@ -547,13 +631,26 @@ Fornisci ora una risposta completa e professionale alla domanda dell'utente util
         
     except Exception as e:
         logger.error(f"Final response generation failed: {e}")
-        # Fallback response
-        successful_actions = [a for a in actions_taken if a["success"]]
-        if successful_actions:
-            latest_result = successful_actions[-1]["result"][:500]
-            return f"Analisi completata utilizzando {len(successful_actions)} agenti specializzati. {latest_result}"
+        # Enhanced fallback response using documents directly
+        if full_documents:
+            successful_actions = [a for a in actions_taken if a["success"]]
+            doc_titles = [doc['title'] for doc in full_documents]
+            
+            fallback_response = f"Basandomi sull'analisi dei documenti forniti ({', '.join(doc_titles)}), "
+            
+            if successful_actions:
+                fallback_response += f"e sui risultati di {len(successful_actions)} agenti specializzati, "
+            
+            fallback_response += "posso rispondere alla tua domanda utilizzando il contenuto disponibile"
+            
+            if not successful_actions:
+                fallback_response += ", anche se si sono verificati alcuni errori tecnici nell'elaborazione degli agenti"
+            
+            fallback_response += "."
+            
+            return fallback_response
         else:
-            return "Mi dispiace, non sono riuscito a completare l'analisi richiesta a causa di errori tecnici."
+            return "Mi dispiace, non sono riuscito a completare l'analisi richiesta a causa di errori nel recupero dei documenti."
 
 # Health check endpoint
 @app.get("/")
@@ -581,33 +678,53 @@ async def orchestrate_agents(request: OrchestrationRequest):
         raise HTTPException(status_code=400, detail="At least one document ID is required")
     
     try:
-        logger.info(f"Starting orchestration for prompt: {request.prompt[:100]}...")
+        logger.info(f"Starting SIMPLIFIED orchestration for prompt: {request.prompt[:100]}...")
         
-        # Fetch all documents
-        documents = []
+        # Step 0: Fetch document contexts (titles + initial lines) for planning
+        document_contexts = []
         for doc_id in request.document_ids:
             try:
-                doc_info = await fetch_document_content(doc_id)
-                documents.append(doc_info)
+                doc_context = await fetch_document_context(doc_id)
+                document_contexts.append(doc_context)
             except Exception as e:
-                logger.warning(f"Failed to fetch document {doc_id}: {e}")
+                logger.warning(f"Failed to fetch document context {doc_id}: {e}")
                 continue
         
-        if not documents:
-            raise HTTPException(status_code=404, detail="No documents could be retrieved")
+        if not document_contexts:
+            raise HTTPException(status_code=404, detail="No document contexts could be retrieved")
         
-        # NEW TWO-STEP PROCESS
-        
-        # Step 1: Plan actions (always returns JSON actions)
-        planned_actions = await plan_actions(request.prompt, documents)
-        logger.info(f"Planned {len(planned_actions)} actions")
+        # Step 1: Plan actions (using document titles + initial lines)
+        planned_actions = await plan_actions(request.prompt, document_contexts)
+        logger.info(f"Planned {len(planned_actions)} actions based on document contexts")
         
         # Step 2: Execute planned actions
-        actions_taken = await execute_planned_actions(planned_actions, documents)
+        actions_taken = await execute_planned_actions(planned_actions, document_contexts)
         logger.info(f"Executed {len(actions_taken)} actions")
         
-        # Step 3: Generate final user-facing response
-        final_response = await generate_final_response(request.prompt, actions_taken, documents)
+        # Step 3: Fetch FULL document content for final reasoning
+        full_documents = []
+        for doc_id in request.document_ids:
+            try:
+                full_doc = await fetch_document_full_content(doc_id)
+                full_documents.append(full_doc)
+            except Exception as e:
+                logger.warning(f"Failed to fetch full document content {doc_id}: {e}")
+                # Use context as fallback if full content fails
+                context = next((ctx for ctx in document_contexts if ctx["document_id"] == doc_id), None)
+                if context:
+                    full_documents.append({
+                        "document_id": doc_id,
+                        "title": context["title"],
+                        "full_text": context["first_lines"],
+                        "chunks_count": 0,
+                        "mode": "context_fallback"
+                    })
+        
+        if not full_documents:
+            raise HTTPException(status_code=404, detail="No full documents could be retrieved")
+        
+        # Step 4: Generate DEFINITIVE final response (with full docs + action results)
+        final_response = await generate_final_response(request.prompt, actions_taken, full_documents)
         
         return OrchestrationResponse(
             success=True,
@@ -617,7 +734,7 @@ async def orchestrate_agents(request: OrchestrationRequest):
             document_ids=request.document_ids,
             actions_taken=actions_taken,
             final_response=final_response,
-            message=f"Analisi completata con successo: {len(actions_taken)} azioni eseguite su {len(documents)} documenti"
+            message=f"Analisi DEFINITIVA completata: {len(actions_taken)} azioni eseguite su {len(full_documents)} documenti completi"
         )
         
     except HTTPException:

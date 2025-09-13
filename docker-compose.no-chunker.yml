@@ -9,7 +9,7 @@ services:
     environment:
       - PYTHONPATH=/app
       - PYTHONUNBUFFERED=1
-      - DOCUMENT_SERVICE_URL=http://api-gateway:8080
+      - DOCUMENT_SERVICE_URL=http://document-service:8000
       - TORCH_NUM_THREADS=1
       - OMP_NUM_THREADS=1
     networks:

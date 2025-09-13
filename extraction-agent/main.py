@@ -26,7 +26,8 @@ torch.set_num_threads(1)
 # Gemini API configuration
 GEMINI_API_KEYS = [
     "AIzaSyBEsyakskQ7iZnDfnlDGQYwSB0QQJ5fMhA",
-    "AIzaSyAEEjrZnXFKR-uonJWnt46iPYdNLQzSqVI"
+    "AIzaSyAEEjrZnXFKR-uonJWnt46iPYdNLQzSqVI",
+    "AIzaSyCDQBZ50InkrXIkHI7C0p_Xzg1wjroTUkQ"
 ]
 
 # Global variables for model components
@@ -109,7 +110,7 @@ app = FastAPI(
 )
 
 # Document service URL (will be resolved via API Gateway)
-DOCUMENT_SERVICE_URL = os.getenv("DOCUMENT_SERVICE_URL", "http://api-gateway:8080")
+DOCUMENT_SERVICE_URL = os.getenv("DOCUMENT_SERVICE_URL", "http://document-service:8000")
 
 # Pydantic models
 class ExtractionRequest(BaseModel):
@@ -327,7 +328,7 @@ async def extract_entities(request: ExtractionRequest):
         logger.error(f"Extraction failed: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Extraction failed: {str(e)}")
 
-# Alternative endpoint for orchestrator compatibility
+# Alternative endpoint for wrapper compatibility
 @app.post("/api/v1/agents/process")
 async def process_agent_task(request: dict):
     """Process agent task (orchestrator compatibility endpoint)"""
@@ -337,7 +338,8 @@ async def process_agent_task(request: dict):
     document_ids = request.get("documentIds", [])
     execution_id = request.get("executionId")
     
-    if agent_id != "extractor-agent":
+    # FIXED: Single validation that accepts both variations
+    if agent_id not in ["extractor-agent", "extraction-agent"]:
         raise HTTPException(status_code=400, detail="Invalid agent ID")
     
     extraction_request = ExtractionRequest(
