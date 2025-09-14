@@ -18,14 +18,12 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Configuration
-TAVILY_API_KEY = "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"
-SERPER_API_KEY = "be6ccf9ec3eaff009a633de46aca91d0d348b7f4"
+TAVILY_API_KEY = ""
+SERPER_API_KEY = ""
 
 # Gemini API keys with fallback mechanism
 GEMINI_API_KEYS = [
-    "AIzaSyBEsyakskQ7iZnDfnlDGQYwSB0QQJ5fMhA",
-    "AIzaSyAEEjrZnXFKR-uonJWnt46iPYdNLQzSqVI",
-    "AIzaSyCDQBZ50InkrXIkHI7C0p_Xzg1wjroTUkQ"
+    ""
 ]
 
 class SearchRequest(BaseModel):

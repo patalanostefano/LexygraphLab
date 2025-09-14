@@ -25,9 +25,7 @@ torch.set_num_threads(1)
 
 # Gemini API configuration
 GEMINI_API_KEYS = [
-    "AIzaSyBEsyakskQ7iZnDfnlDGQYwSB0QQJ5fMhA",
-    "AIzaSyAEEjrZnXFKR-uonJWnt46iPYdNLQzSqVI",
-    "AIzaSyCDQBZ50InkrXIkHI7C0p_Xzg1wjroTUkQ"
+    ""
 ]
 
 # Global variables for model components
